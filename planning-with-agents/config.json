@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Configuration for planning-with-agents skill - Multi-agent collaborative planning system",
+
+  "storage": {
+    "baseDirectory": ".memory",
+    "description": "Base directory for storing planning files and sub-agent workspaces. Relative paths are resolved from the current working directory.",
+    "autoCreateDirectory": true
+  },
+
+  "files": {
+    "taskPlan": {
+      "filename": "task_plan.md",
+      "description": "Master agent's task planning and progress tracking file"
+    },
+    "notes": {
+      "filename": "notes.md",
+      "description": "Master agent's research findings and notes"
+    },
+    "deliverable": {
+      "filenamePattern": "[name].md",
+      "description": "Final deliverable file"
+    },
+    "agentStatus": {
+      "filename": ".agent_status.yaml",
+      "description": "Sub-agent status file (created in each sub-agent directory)"
+    },
+    "dependencies": {
+      "filename": "dependencies.yaml",
+      "description": "DAG dependency graph for sub-agent execution"
+    },
+    "executionLog": {
+      "filename": "execution.log",
+      "description": "Unified execution log for all agents"
+    },
+    "context": {
+      "filename": "context.yaml",
+      "description": "Context passed to sub-agents"
+    }
+  },
+
+  "sub_agents": {
+    "enabled": true,
+    "description": "Configuration for automatic sub-agent activation and management",
+
+    "triggers": {
+      "description": "Rules for automatically triggering sub-agent creation",
+
+      "semantic_matching": {
+        "enabled": true,
+        "description": "Match task descriptions against predefined keywords and patterns",
+        "keywords": [
+          "微服务架构", "全栈应用", "复杂系统", "distributed system", "microservices",
+          "full-stack", "multi-tier", "end-to-end", "comprehensive", "large-scale"
+        ],
+        "patterns": [
+          "实现.*系统", "设计.*架构", "构建.*平台",
+          "build.*application", "design.*system", "implement.*platform",
+          "create.*infrastructure", "develop.*service"
+        ]
+      },
+
+      "agent_type_triggers": {
+        "enabled": true,
+        "description": "Trigger based on agent type and task complexity",
+        "rules": [
+          {
+            "agent_type": "backend-architect",
+            "condition": "phase_count > 3",
+            "description": "Backend architecture tasks with >3 phases"
+          },
+          {
+            "agent_type": "frontend-developer",
+            "condition": "component_count > 5",
+            "description": "Frontend tasks with >5 components"
+          },
+          {
+            "agent_type": "data-engineer",
+            "condition": "pipeline_count > 2",
+            "description": "Data engineering tasks with >2 pipelines"
+          }
+        ]
+      },
+
+      "complexity_threshold": {
+        "enabled": true,
+        "description": "Trigger based on estimated task complexity",
+        "max_phases": 5,
+        "estimated_hours": 2,
+        "file_count": 10,
+        "description_tokens": 500
+      },
+
+      "explicit_markers": {
+        "enabled": true,
+        "description": "Explicit markers in task description that force sub-agent creation",
+        "markers": [
+          "#use-subagent", "#delegate", "#分解任务", "#parallel",
+          "SPLIT_TASK", "USE_AGENTS"
+        ]
+      }
+    },
+
+    "ai_fallback": {
+      "enabled": true,
+      "description": "Use AI judgment when rules don't match",
+      "prompt_template": "基于以下任务描述,判断是否需要分解为多个子任务由不同的 Sub Agents 处理。考虑任务的复杂度、涉及的技术栈数量、预估工作量、并行潜力等因素。\n\n任务描述:\n{task_description}\n\n当前阶段数: {phase_count}\n预估文件数: {file_count}\n\n如果需要分解,请说明:\n1. 分解原因\n2. 建议的子任务划分\n3. 子任务之间的依赖关系\n\n如果不需要分解,请简要说明原因。"
+    },
+
+    "naming": {
+      "scheme": "hash",
+      "description": "Naming scheme for sub-agent directories: 'hash' (default), 'timestamp', or 'sequential'",
+      "hash_length": 6,
+      "prefix": "agent-"
+    }
+  },
+
+  "execution": {
+    "description": "Execution and scheduling configuration",
+
+    "scheduling": {
+      "mode": "dag",
+      "description": "Scheduling mode: 'sequential', 'dag' (dependency-aware), or 'parallel' (no deps)",
+      "max_concurrent_agents": 3,
+      "dependency_timeout_minutes": 60,
+      "poll_interval_seconds": 5
+    },
+
+    "failure_handling": {
+      "strategy": "debug_agent",
+      "description": "Failure handling strategy: 'fail_fast', 'continue', 'debug_agent', or 'retry'",
+      "max_retries": 2,
+      "retry_delay_seconds": 10,
+      "debug_agent_timeout_minutes": 10,
+      "debug_agent_enabled": true
+    }
+  },
+
+  "resource_limits": {
+    "description": "Resource limits and cost controls to prevent runaway execution",
+
+    "max_total_agents": 20,
+    "max_depth": 5,
+    "max_concurrent_agents": 3,
+    "single_agent_timeout_minutes": 30,
+    "global_timeout_minutes": 180,
+
+    "disk_quota_mb": 100,
+    "auto_cleanup_on_completion": false,
+
+    "cost_controls": {
+      "enabled": true,
+      "warning_threshold_usd": 5.0,
+      "hard_limit_usd": 10.0,
+      "require_confirmation_above_usd": 2.0,
+      "token_price_per_1k": {
+        "input": 0.003,
+        "output": 0.015
+      }
+    }
+  },
+
+  "observability": {
+    "description": "Observability and monitoring configuration",
+
+    "agent_tree_view": {
+      "enabled": true,
+      "update_frequency": "on_status_change",
+      "include_in_task_plan": true,
+      "format": "ascii_tree"
+    },
+
+    "execution_log": {
+      "enabled": true,
+      "level": "INFO",
+      "format": "%(asctime)s [%(levelname)s] [%(agent_id)s] %(message)s",
+      "max_size_mb": 10,
+      "backup_count": 3
+    },
+
+    "mermaid_diagrams": {
+      "enabled": true,
+      "generate_on": ["task_start", "task_complete", "on_demand"],
+      "include_status_colors": true,
+      "include_timing": true
+    },
+
+    "performance_metrics": {
+      "enabled": true,
+      "track": [
+        "duration",
+        "token_usage",
+        "cost",
+        "parallel_efficiency",
+        "agent_count",
+        "success_rate"
+      ],
+      "generate_report": true
+    }
+  },
+
+  "context_passing": {
+    "description": "Configuration for context passed from master to sub-agents",
+
+    "include_global_context": true,
+    "include_sibling_results": true,
+    "include_research_notes": true,
+    "include_parent_decisions": true,
+
+    "max_context_size_tokens": 10000,
+    "auto_summarize_if_exceeds": true,
+    "summary_target_tokens": 5000,
+
+    "sibling_results_format": "summary_only",
+    "include_artifact_paths": true
+  },
+
+  "behavior": {
+    "description": "General behavior settings",
+
+    "addToGitignore": false,
+    "archiveOnCompletion": false,
+    "archiveDirectory": ".memory/archive",
+
+    "verbose_logging": false,
+    "interactive_mode": false,
+    "auto_approve_subagents": true,
+
+    "preserve_intermediate_files": true,
+    "generate_documentation": true
+  },
+
+  "templates": {
+    "description": "Custom template configuration",
+
+    "useCustomTemplates": false,
+    "customTemplateDirectory": ".memory/templates",
+    "available_templates": [
+      "agent_status.yaml",
+      "dependencies.yaml",
+      "context.yaml"
+    ]
+  },
+
+  "_metadata": {
+    "version": "1.0.0",
+    "lastModified": "2026-01-06",
+    "compatibleWith": "claude-code >= 1.0.0",
+    "author": "Planning-with-Agents Team",
+    "license": "MIT"
+  }
+}

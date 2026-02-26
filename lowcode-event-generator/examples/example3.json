@@ -1,0 +1,3745 @@
+{
+  "layoutType": "grid",
+  "name": "overdue_order_select",
+  "label": "超期订单查询",
+  "autoIncrementId": 8515,
+  "gridLayout": [
+    {
+      "i": "KObjectTableWrapper-243",
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 24
+    }
+  ],
+  "componentList": [
+    {
+      "XXXId": "KObjectTableWrapper-243",
+      "name": "KObjectTableWrapper-243",
+      "label": "对象表格243",
+      "type": "KObjectTableWrapper",
+      "showLabel": false,
+      "description": "通过配置对象模型，实现表格的快速渲染",
+      "componentProps": {
+        "entityType": "ProdOrder",
+        "entityName": "生产订单",
+        "renderType": "SCHEMA",
+        "includeDefaultButtons": [],
+        "excludeDefaultButtons": [
+          "onAdd",
+          "onBatchDelete",
+          "onImport",
+          "onExport",
+          "onSingleEdit",
+          "onSingleDelete"
+        ],
+        "columns": [
+          {
+            "XXXId": "column-8219",
+            "type": "KInput",
+            "name": "id",
+            "label": "对象",
+            "visible": false,
+            "id": "id",
+            "required": false,
+            "disabled": false,
+            "componentProps": {},
+            "index": 1
+          },
+          {
+            "XXXId": "column-8164",
+            "type": "KInput",
+            "name": "entityType",
+            "label": "实体类型",
+            "visible": false,
+            "id": "entityType",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 2
+          },
+          {
+            "XXXId": "column-8213",
+            "type": "KUserSelector",
+            "name": "creator",
+            "label": "创建者",
+            "visible": true,
+            "id": "creator",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "User",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 3
+          },
+          {
+            "XXXId": "column-8214",
+            "type": "KDatePicker",
+            "name": "createTime",
+            "label": "创建时间",
+            "visible": true,
+            "id": "createTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 4
+          },
+          {
+            "XXXId": "column-8215",
+            "type": "KUserSelector",
+            "name": "modifier",
+            "label": "修改者",
+            "visible": true,
+            "id": "modifier",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "User",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 5
+          },
+          {
+            "XXXId": "column-8216",
+            "type": "KDatePicker",
+            "name": "latestUpdateTime",
+            "label": "最近修改时间",
+            "visible": true,
+            "id": "latestUpdateTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 6
+          },
+          {
+            "XXXId": "column-8217",
+            "type": "KInputNumber",
+            "name": "softDeleteFlag",
+            "label": "软删除标记",
+            "visible": true,
+            "id": "softDeleteFlag",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 2
+            },
+            "index": 7
+          },
+          {
+            "XXXId": "column-8218",
+            "type": "KInput",
+            "name": "env",
+            "label": "环境标识",
+            "visible": true,
+            "id": "env",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 80
+            },
+            "index": 8
+          },
+          {
+            "XXXId": "column-8165",
+            "type": "KInput",
+            "name": "code",
+            "label": "编码",
+            "visible": true,
+            "id": "code",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 512
+            },
+            "index": 9
+          },
+          {
+            "XXXId": "column-8166",
+            "type": "KInput",
+            "name": "name",
+            "label": "名称",
+            "visible": false,
+            "id": "name",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 512
+            },
+            "index": 10
+          },
+          {
+            "XXXId": "column-8167",
+            "type": "KInput",
+            "name": "remark",
+            "label": "备注",
+            "visible": true,
+            "id": "remark",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 1024
+            },
+            "index": 11
+          },
+          {
+            "XXXId": "column-8168",
+            "type": "KSelect",
+            "name": "orderType",
+            "label": "订单类型",
+            "visible": true,
+            "id": "orderType",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "orderType",
+              "options": [
+                {
+                  "label": "标准",
+                  "value": "OT_010_STANDARD"
+                }
+              ]
+            },
+            "index": 12
+          },
+          {
+            "XXXId": "column-8413",
+            "type": "KObjectSelector",
+            "name": "material#id",
+            "label": "物料",
+            "visible": true,
+            "id": "material",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Material",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 13
+          },
+          {
+            "XXXId": "column-8170",
+            "type": "KObjectSelector",
+            "name": "bom",
+            "label": "物料清单",
+            "visible": true,
+            "id": "bom",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Bom",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 14
+          },
+          {
+            "XXXId": "column-8171",
+            "type": "KInput",
+            "name": "manuModel",
+            "label": "制造型号",
+            "visible": true,
+            "id": "manuModel",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 15
+          },
+          {
+            "XXXId": "column-8172",
+            "type": "KObjectSelector",
+            "name": "routing",
+            "label": "工艺路线",
+            "visible": true,
+            "id": "routing",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Routing",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 16
+          },
+          {
+            "XXXId": "column-8173",
+            "type": "KSelect",
+            "name": "unit",
+            "label": "计量单位",
+            "visible": true,
+            "id": "unit",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "options": [
+                {
+                  "label": "个",
+                  "value": "PCS"
+                }
+              ]
+            },
+            "index": 17
+          },
+          {
+            "XXXId": "column-8174",
+            "type": "KInputNumber",
+            "name": "plannedQty",
+            "label": "计划数量",
+            "visible": true,
+            "id": "plannedQty",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 3
+            },
+            "index": 18
+          },
+          {
+            "XXXId": "column-8175",
+            "type": "KInputNumber",
+            "name": "plannedOutputQty",
+            "label": "计划产出数量",
+            "visible": true,
+            "id": "plannedOutputQty",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 3
+            },
+            "index": 19
+          },
+          {
+            "XXXId": "column-8176",
+            "type": "KInputNumber",
+            "name": "qualifiedQty",
+            "label": "合格数量",
+            "visible": true,
+            "id": "qualifiedQty",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 3
+            },
+            "index": 20
+          },
+          {
+            "XXXId": "column-8177",
+            "type": "KInputNumber",
+            "name": "scrappedQty",
+            "label": "报废数量",
+            "visible": true,
+            "id": "scrappedQty",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 3
+            },
+            "index": 21
+          },
+          {
+            "XXXId": "column-8178",
+            "type": "KInputNumber",
+            "name": "releasedQty",
+            "label": "已释放数量",
+            "visible": true,
+            "id": "releasedQty",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 3
+            },
+            "index": 22
+          },
+          {
+            "XXXId": "column-8179",
+            "type": "KDatePicker",
+            "name": "plannedStartTime",
+            "label": "计划开始时间",
+            "visible": true,
+            "id": "plannedStartTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 23
+          },
+          {
+            "XXXId": "column-8180",
+            "type": "KDatePicker",
+            "name": "plannedEndTime",
+            "label": "计划结束时间",
+            "visible": true,
+            "id": "plannedEndTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 24
+          },
+          {
+            "XXXId": "column-8181",
+            "type": "KDatePicker",
+            "name": "actualStartTime",
+            "label": "实际开始时间",
+            "visible": true,
+            "id": "actualStartTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 25
+          },
+          {
+            "XXXId": "column-8182",
+            "type": "KSelect",
+            "name": "prodPlanType",
+            "label": "计划类型",
+            "visible": true,
+            "id": "prodPlanType",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "prodPlanType",
+              "options": [
+                {
+                  "label": "无",
+                  "value": "PPT_010_NONE"
+                },
+                {
+                  "label": "零部件生产计划",
+                  "value": "PPT_030_PRODUCE"
+                },
+                {
+                  "label": "零部件加工计划",
+                  "value": "PPT_050_PROCESS"
+                }
+              ]
+            },
+            "index": 26
+          },
+          {
+            "XXXId": "column-8183",
+            "type": "KSelect",
+            "name": "prodScheduleState",
+            "label": "排产状态",
+            "visible": true,
+            "id": "prodScheduleState",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "prodScheduleState",
+              "options": [
+                {
+                  "label": "无",
+                  "value": "PSS_010_NONE"
+                },
+                {
+                  "label": "零部件生产已排产",
+                  "value": "PSS_030_PRODUCE"
+                }
+              ]
+            },
+            "index": 27
+          },
+          {
+            "XXXId": "column-8184",
+            "type": "KDatePicker",
+            "name": "actualEndTime",
+            "label": "实际结束时间",
+            "visible": true,
+            "id": "actualEndTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 28
+          },
+          {
+            "XXXId": "column-8185",
+            "type": "KInputNumber",
+            "name": "priority",
+            "label": "优先级",
+            "visible": true,
+            "id": "priority",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "precision": 2
+            },
+            "index": 29
+          },
+          {
+            "XXXId": "column-8186",
+            "type": "KInput",
+            "name": "stage",
+            "label": "工艺阶段",
+            "visible": true,
+            "id": "stage",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 30
+          },
+          {
+            "XXXId": "column-8187",
+            "type": "KDatePicker",
+            "name": "specifiedStartTime",
+            "label": "指定开始时间",
+            "visible": true,
+            "id": "specifiedStartTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 31
+          },
+          {
+            "XXXId": "column-8188",
+            "type": "KPersonSelector",
+            "name": "planner",
+            "label": "计划员",
+            "visible": true,
+            "id": "planner",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Person",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 32
+          },
+          {
+            "XXXId": "column-8189",
+            "type": "KDatePicker",
+            "name": "specifiedEndTime",
+            "label": "指定结束时间",
+            "visible": true,
+            "id": "specifiedEndTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 33
+          },
+          {
+            "XXXId": "column-8190",
+            "type": "KSelect",
+            "name": "controlStatus",
+            "label": "控制状态",
+            "visible": true,
+            "id": "controlStatus",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "controlStatus",
+              "options": [
+                {
+                  "label": "正常",
+                  "value": "CS_010_NORMAL"
+                },
+                {
+                  "label": "暂停",
+                  "value": "CS_020_PAUSED"
+                },
+                {
+                  "label": "取消",
+                  "value": "CS_030_CANCEL"
+                }
+              ]
+            },
+            "index": 34
+          },
+          {
+            "XXXId": "column-8191",
+            "type": "KDatePicker",
+            "name": "changedCompletionTime",
+            "label": "变更后完成时间",
+            "visible": true,
+            "id": "changedCompletionTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 35
+          },
+          {
+            "XXXId": "column-8192",
+            "type": "KSelect",
+            "name": "releasedStatus",
+            "label": "释放状态",
+            "visible": true,
+            "id": "releasedStatus",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "releasedStatus",
+              "options": [
+                {
+                  "label": "未释放",
+                  "value": "PO_010_NO"
+                },
+                {
+                  "label": "部分释放",
+                  "value": "PO_020_PART"
+                },
+                {
+                  "label": "全部释放",
+                  "value": "PO_030_ALL"
+                }
+              ]
+            },
+            "index": 36
+          },
+          {
+            "XXXId": "column-8193",
+            "type": "KOrgSelector",
+            "name": "bizOrg",
+            "label": "所属组织",
+            "visible": true,
+            "id": "bizOrg",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "BizOrg",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 37
+          },
+          {
+            "XXXId": "column-8195",
+            "type": "KOrgSelector",
+            "name": "factory",
+            "label": "所属工厂",
+            "visible": false,
+            "id": "factory",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "BizOrg",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 38
+          },
+          {
+            "XXXId": "column-8196",
+            "type": "KDatePicker",
+            "name": "updatTime",
+            "label": "更新时间",
+            "visible": true,
+            "id": "updatTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 39
+          },
+          {
+            "XXXId": "column-8197",
+            "type": "KInput",
+            "name": "lifecycleState",
+            "label": "生命周期状态",
+            "visible": true,
+            "id": "lifecycleState",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256,
+              "options": [
+                {
+                  "label": "已创建",
+                  "value": "PO_010_CREATED"
+                },
+                {
+                  "label": "已发布",
+                  "value": "PO_020_PUBLISHED"
+                },
+                {
+                  "label": "已展开",
+                  "value": "PO_030_EXPANDED"
+                },
+                {
+                  "label": "已释放",
+                  "value": "PO_040_RELEASED"
+                },
+                {
+                  "label": "已开工",
+                  "value": "PO_050_STARTED"
+                },
+                {
+                  "label": "已完工",
+                  "value": "PO_060_FINISHED"
+                },
+                {
+                  "label": "已关闭",
+                  "value": "PO_070_CLOSED"
+                }
+              ]
+            },
+            "index": 40
+          },
+          {
+            "XXXId": "column-8199",
+            "type": "KInput",
+            "name": "lifecycleTemplate",
+            "label": "生命周期模板",
+            "visible": true,
+            "id": "lifecycleTemplate",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 512
+            },
+            "index": 41
+          },
+          {
+            "XXXId": "column-8200",
+            "type": "KDatePicker",
+            "name": "adjustTime",
+            "label": "调整时间",
+            "visible": true,
+            "id": "adjustTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 42
+          },
+          {
+            "XXXId": "column-8201",
+            "type": "KInput",
+            "name": "model",
+            "label": "型号",
+            "visible": true,
+            "id": "model",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 43
+          },
+          {
+            "XXXId": "column-8202",
+            "type": "KInput",
+            "name": "sapPlanCategory",
+            "label": "SAP计划类别",
+            "visible": true,
+            "id": "sapPlanCategory",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 44
+          },
+          {
+            "XXXId": "column-8203",
+            "type": "KInput",
+            "name": "wbsNumber",
+            "label": "WBS号",
+            "visible": true,
+            "id": "wbsNumber",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 45
+          },
+          {
+            "XXXId": "column-8204",
+            "type": "KInput",
+            "name": "orderNumber",
+            "label": "令号",
+            "visible": true,
+            "id": "orderNumber",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 46
+          },
+          {
+            "XXXId": "column-8205",
+            "type": "KInput",
+            "name": "routingNumber",
+            "label": "表五路线",
+            "visible": true,
+            "id": "routingNumber",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 4000
+            },
+            "index": 47
+          },
+          {
+            "XXXId": "column-8206",
+            "type": "KDatePicker",
+            "name": "assemblyTime",
+            "label": "装配时间",
+            "visible": true,
+            "id": "assemblyTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 48
+          },
+          {
+            "XXXId": "column-8198",
+            "type": "KPersonSelector",
+            "name": "adjuster",
+            "label": "调整人员",
+            "visible": true,
+            "id": "adjuster",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Person",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 49
+          },
+          {
+            "XXXId": "column-8194",
+            "type": "KPersonSelector",
+            "name": "updater",
+            "label": "更新人",
+            "visible": true,
+            "id": "updater",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "entityType": "Person",
+              "multiple": false,
+              "referencePropColumn": ["code", "name"]
+            },
+            "index": 50
+          },
+          {
+            "XXXId": "column-8207",
+            "type": "KDatePicker",
+            "name": "completeSetTime",
+            "label": "齐套时间",
+            "visible": true,
+            "id": "completeSetTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 51
+          },
+          {
+            "XXXId": "column-8208",
+            "type": "KSelect",
+            "name": "lifecycleStateType",
+            "label": "生命周期阶段",
+            "visible": true,
+            "id": "lifecycleStateType",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "lifecycleStateType",
+              "options": [
+                {
+                  "label": "创建",
+                  "value": "CREATE"
+                },
+                {
+                  "label": "活动",
+                  "value": "ACTIVE"
+                },
+                {
+                  "label": "发布",
+                  "value": "RELEASE"
+                },
+                {
+                  "label": "废弃",
+                  "value": "OBSOLETE"
+                }
+              ]
+            },
+            "index": 52
+          },
+          {
+            "XXXId": "column-8209",
+            "type": "KInput",
+            "name": "integrationSystem",
+            "label": "集成系统",
+            "visible": true,
+            "id": "integrationSystem",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 256
+            },
+            "index": 53
+          },
+          {
+            "XXXId": "column-8210",
+            "type": "KInput",
+            "name": "integrationId",
+            "label": "集成数据主键",
+            "visible": true,
+            "id": "integrationId",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "length": 512
+            },
+            "index": 54
+          },
+          {
+            "XXXId": "column-8211",
+            "type": "KDatePicker",
+            "name": "importTime",
+            "label": "集成创建时间",
+            "visible": true,
+            "id": "importTime",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "showTime": true,
+              "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "index": 55
+          },
+          {
+            "XXXId": "column-8212",
+            "type": "KSelect",
+            "name": "securityLevel",
+            "label": "密级",
+            "visible": true,
+            "id": "securityLevel",
+            "required": false,
+            "disabled": false,
+            "componentProps": {
+              "enumType": "securityLevel",
+              "options": [
+                {
+                  "label": "公开",
+                  "value": "10"
+                },
+                {
+                  "label": "内部",
+                  "value": "20"
+                },
+                {
+                  "label": "秘密",
+                  "value": "30"
+                },
+                {
+                  "label": "机密",
+                  "value": "40"
+                },
+                {
+                  "label": "绝密",
+                  "value": "50"
+                }
+              ]
+            },
+            "index": 56
+          }
+        ],
+        "filters": {
+          "XXXId": "filters-244",
+          "columnCount": 4,
+          "body": [
+            {
+              "XXXId": "filter-8278",
+              "type": "KFilterInput",
+              "name": "id",
+              "label": "对象",
+              "visible": false,
+              "componentProps": {},
+              "required": false
+            },
+            {
+              "XXXId": "filter-8279",
+              "type": "KFilterInput",
+              "name": "entityType",
+              "label": "实体类型",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8280",
+              "type": "KFilterUserSelector",
+              "name": "creator",
+              "label": "创建者",
+              "visible": false,
+              "componentProps": {
+                "entityType": "User",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8281",
+              "type": "KFilterDatePicker",
+              "name": "createTime",
+              "label": "创建时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8282",
+              "type": "KFilterUserSelector",
+              "name": "modifier",
+              "label": "修改者",
+              "visible": false,
+              "componentProps": {
+                "entityType": "User",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8283",
+              "type": "KFilterDatePicker",
+              "name": "latestUpdateTime",
+              "label": "最近修改时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8284",
+              "type": "KFilterInputNumber",
+              "name": "softDeleteFlag",
+              "label": "软删除标记",
+              "visible": false,
+              "componentProps": {
+                "precision": 2
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8285",
+              "type": "KFilterInput",
+              "name": "env",
+              "label": "环境标识",
+              "visible": false,
+              "componentProps": {
+                "length": 80
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8286",
+              "type": "KFilterInput",
+              "name": "code",
+              "label": "编码",
+              "visible": false,
+              "componentProps": {
+                "length": 512
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8287",
+              "type": "KFilterInput",
+              "name": "name",
+              "label": "名称",
+              "visible": false,
+              "componentProps": {
+                "length": 512
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8288",
+              "type": "KFilterInput",
+              "name": "remark",
+              "label": "备注",
+              "visible": false,
+              "componentProps": {
+                "length": 1024
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8289",
+              "type": "KFilterSelect",
+              "name": "orderType",
+              "label": "订单类型",
+              "visible": false,
+              "componentProps": {
+                "enumType": "orderType",
+                "options": [
+                  {
+                    "label": "标准",
+                    "value": "OT_010_STANDARD"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8290",
+              "type": "KFilterObjectSelector",
+              "name": "material",
+              "label": "物料",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Material",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              }
+            },
+            {
+              "XXXId": "filter-8291",
+              "type": "KFilterObjectSelector",
+              "name": "bom",
+              "label": "物料清单",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Bom",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8292",
+              "type": "KFilterInput",
+              "name": "manuModel",
+              "label": "制造型号",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8293",
+              "type": "KFilterObjectSelector",
+              "name": "routing",
+              "label": "工艺路线",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Routing",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8294",
+              "type": "KFilterSelect",
+              "name": "unit",
+              "label": "计量单位",
+              "visible": false,
+              "componentProps": {
+                "options": [
+                  {
+                    "label": "个",
+                    "value": "PCS"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8295",
+              "type": "KFilterInputNumber",
+              "name": "plannedQty",
+              "label": "计划数量",
+              "visible": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8296",
+              "type": "KFilterInputNumber",
+              "name": "plannedOutputQty",
+              "label": "计划产出数量",
+              "visible": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8297",
+              "type": "KFilterInputNumber",
+              "name": "qualifiedQty",
+              "label": "合格数量",
+              "visible": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8298",
+              "type": "KFilterInputNumber",
+              "name": "scrappedQty",
+              "label": "报废数量",
+              "visible": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8299",
+              "type": "KFilterInputNumber",
+              "name": "releasedQty",
+              "label": "已释放数量",
+              "visible": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8300",
+              "type": "KFilterDatePicker",
+              "name": "plannedStartTime",
+              "label": "计划开始时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8301",
+              "type": "KFilterDatePicker",
+              "name": "plannedEndTime",
+              "label": "计划结束时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8302",
+              "type": "KFilterDatePicker",
+              "name": "actualStartTime",
+              "label": "实际开始时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8303",
+              "type": "KFilterSelect",
+              "name": "prodPlanType",
+              "label": "计划类型",
+              "visible": false,
+              "componentProps": {
+                "enumType": "prodPlanType",
+                "options": [
+                  {
+                    "label": "无",
+                    "value": "PPT_010_NONE"
+                  },
+                  {
+                    "label": "零部件生产计划",
+                    "value": "PPT_030_PRODUCE"
+                  },
+                  {
+                    "label": "零部件加工计划",
+                    "value": "PPT_050_PROCESS"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8304",
+              "type": "KFilterSelect",
+              "name": "prodScheduleState",
+              "label": "排产状态",
+              "visible": false,
+              "componentProps": {
+                "enumType": "prodScheduleState",
+                "options": [
+                  {
+                    "label": "无",
+                    "value": "PSS_010_NONE"
+                  },
+                  {
+                    "label": "零部件生产已排产",
+                    "value": "PSS_030_PRODUCE"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8305",
+              "type": "KFilterDatePicker",
+              "name": "actualEndTime",
+              "label": "实际结束时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8306",
+              "type": "KFilterInputNumber",
+              "name": "priority",
+              "label": "优先级",
+              "visible": false,
+              "componentProps": {
+                "precision": 2
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8307",
+              "type": "KFilterInput",
+              "name": "stage",
+              "label": "工艺阶段",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8308",
+              "type": "KFilterDatePicker",
+              "name": "specifiedStartTime",
+              "label": "指定开始时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8309",
+              "type": "KFilterPersonSelector",
+              "name": "planner",
+              "label": "计划员",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8310",
+              "type": "KFilterDatePicker",
+              "name": "specifiedEndTime",
+              "label": "指定结束时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8311",
+              "type": "KFilterSelect",
+              "name": "controlStatus",
+              "label": "控制状态",
+              "visible": false,
+              "componentProps": {
+                "enumType": "controlStatus",
+                "options": [
+                  {
+                    "label": "正常",
+                    "value": "CS_010_NORMAL"
+                  },
+                  {
+                    "label": "暂停",
+                    "value": "CS_020_PAUSED"
+                  },
+                  {
+                    "label": "取消",
+                    "value": "CS_030_CANCEL"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8312",
+              "type": "KFilterDatePicker",
+              "name": "changedCompletionTime",
+              "label": "变更后完成时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8313",
+              "type": "KFilterSelect",
+              "name": "releasedStatus",
+              "label": "释放状态",
+              "visible": false,
+              "componentProps": {
+                "enumType": "releasedStatus",
+                "options": [
+                  {
+                    "label": "未释放",
+                    "value": "PO_010_NO"
+                  },
+                  {
+                    "label": "部分释放",
+                    "value": "PO_020_PART"
+                  },
+                  {
+                    "label": "全部释放",
+                    "value": "PO_030_ALL"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8314",
+              "type": "KFilterOrgSelector",
+              "name": "bizOrg",
+              "label": "所属组织",
+              "visible": false,
+              "componentProps": {
+                "entityType": "BizOrg",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8315",
+              "type": "KFilterOrgSelector",
+              "name": "factory",
+              "label": "所属工厂",
+              "visible": false,
+              "componentProps": {
+                "entityType": "BizOrg",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8316",
+              "type": "KFilterDatePicker",
+              "name": "updatTime",
+              "label": "更新时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8317",
+              "type": "KFilterInput",
+              "name": "lifecycleState",
+              "label": "生命周期状态",
+              "visible": false,
+              "componentProps": {
+                "length": 256,
+                "options": [
+                  {
+                    "label": "已创建",
+                    "value": "PO_010_CREATED"
+                  },
+                  {
+                    "label": "已发布",
+                    "value": "PO_020_PUBLISHED"
+                  },
+                  {
+                    "label": "已展开",
+                    "value": "PO_030_EXPANDED"
+                  },
+                  {
+                    "label": "已释放",
+                    "value": "PO_040_RELEASED"
+                  },
+                  {
+                    "label": "已开工",
+                    "value": "PO_050_STARTED"
+                  },
+                  {
+                    "label": "已完工",
+                    "value": "PO_060_FINISHED"
+                  },
+                  {
+                    "label": "已关闭",
+                    "value": "PO_070_CLOSED"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8318",
+              "type": "KFilterInput",
+              "name": "lifecycleTemplate",
+              "label": "生命周期模板",
+              "visible": false,
+              "componentProps": {
+                "length": 512
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8319",
+              "type": "KFilterDatePicker",
+              "name": "adjustTime",
+              "label": "调整时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8320",
+              "type": "KFilterInput",
+              "name": "model",
+              "label": "型号",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8321",
+              "type": "KFilterInput",
+              "name": "sapPlanCategory",
+              "label": "SAP计划类别",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8322",
+              "type": "KFilterInput",
+              "name": "wbsNumber",
+              "label": "WBS号",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8323",
+              "type": "KFilterInput",
+              "name": "orderNumber",
+              "label": "令号",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8324",
+              "type": "KFilterInput",
+              "name": "routingNumber",
+              "label": "表五路线",
+              "visible": false,
+              "componentProps": {
+                "length": 4000
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8325",
+              "type": "KFilterDatePicker",
+              "name": "assemblyTime",
+              "label": "装配时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8326",
+              "type": "KFilterPersonSelector",
+              "name": "adjuster",
+              "label": "调整人员",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8327",
+              "type": "KFilterPersonSelector",
+              "name": "updater",
+              "label": "更新人",
+              "visible": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8328",
+              "type": "KFilterDatePicker",
+              "name": "completeSetTime",
+              "label": "齐套时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8329",
+              "type": "KFilterSelect",
+              "name": "lifecycleStateType",
+              "label": "生命周期阶段",
+              "visible": false,
+              "componentProps": {
+                "enumType": "lifecycleStateType",
+                "options": [
+                  {
+                    "label": "创建",
+                    "value": "CREATE"
+                  },
+                  {
+                    "label": "活动",
+                    "value": "ACTIVE"
+                  },
+                  {
+                    "label": "发布",
+                    "value": "RELEASE"
+                  },
+                  {
+                    "label": "废弃",
+                    "value": "OBSOLETE"
+                  }
+                ]
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8330",
+              "type": "KFilterInput",
+              "name": "integrationSystem",
+              "label": "集成系统",
+              "visible": false,
+              "componentProps": {
+                "length": 256
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8331",
+              "type": "KFilterInput",
+              "name": "integrationId",
+              "label": "集成数据主键",
+              "visible": false,
+              "componentProps": {
+                "length": 512
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8332",
+              "type": "KFilterDatePicker",
+              "name": "importTime",
+              "label": "集成创建时间",
+              "visible": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "required": false
+            },
+            {
+              "XXXId": "filter-8333",
+              "type": "KFilterSelect",
+              "name": "securityLevel",
+              "label": "密级",
+              "visible": false,
+              "componentProps": {
+                "enumType": "securityLevel",
+                "options": [
+                  {
+                    "label": "公开",
+                    "value": "10"
+                  },
+                  {
+                    "label": "内部",
+                    "value": "20"
+                  },
+                  {
+                    "label": "秘密",
+                    "value": "30"
+                  },
+                  {
+                    "label": "机密",
+                    "value": "40"
+                  },
+                  {
+                    "label": "绝密",
+                    "value": "50"
+                  }
+                ]
+              },
+              "required": false
+            }
+          ]
+        },
+        "customButtons": [
+          {
+            "type": "KButton",
+            "componentProps": {
+              "type": "primary"
+            },
+            "XXXId": "btn-5360",
+            "name": "update_changed_time",
+            "label": "HX修改变更完成时间",
+            "position": "header",
+            "accessCode": "Uncontrolled",
+            "order": 1
+          }
+        ],
+        "defaultSort": [],
+        "isFetchOnMounted": true,
+        "fastCopyColumns": ["code"],
+        "addForm": {
+          "type": "object-form",
+          "id": "add-form-245",
+          "columnCount": 4,
+          "body": [
+            {
+              "XXXId": "add-form-250",
+              "type": "KInput",
+              "name": "id",
+              "label": "对象",
+              "visible": true,
+              "id": "id",
+              "required": false,
+              "componentProps": {},
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-251",
+              "type": "KInput",
+              "name": "entityType",
+              "label": "实体类型",
+              "visible": true,
+              "id": "entityType",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-252",
+              "type": "KUserSelector",
+              "name": "creator",
+              "label": "创建者",
+              "visible": true,
+              "id": "creator",
+              "required": false,
+              "componentProps": {
+                "entityType": "User",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-253",
+              "type": "KDatePicker",
+              "name": "createTime",
+              "label": "创建时间",
+              "visible": true,
+              "id": "createTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-254",
+              "type": "KUserSelector",
+              "name": "modifier",
+              "label": "修改者",
+              "visible": true,
+              "id": "modifier",
+              "required": false,
+              "componentProps": {
+                "entityType": "User",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-255",
+              "type": "KDatePicker",
+              "name": "latestUpdateTime",
+              "label": "最近修改时间",
+              "visible": true,
+              "id": "latestUpdateTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-256",
+              "type": "KInputNumber",
+              "name": "softDeleteFlag",
+              "label": "软删除标记",
+              "visible": true,
+              "id": "softDeleteFlag",
+              "required": false,
+              "componentProps": {},
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-257",
+              "type": "KInput",
+              "name": "env",
+              "label": "环境标识",
+              "visible": true,
+              "id": "env",
+              "required": false,
+              "componentProps": {
+                "length": 80
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-258",
+              "type": "KInput",
+              "name": "code",
+              "label": "编码",
+              "visible": true,
+              "id": "code",
+              "required": false,
+              "componentProps": {
+                "length": 512
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-259",
+              "type": "KInput",
+              "name": "name",
+              "label": "名称",
+              "visible": true,
+              "id": "name",
+              "required": false,
+              "componentProps": {
+                "length": 512
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-260",
+              "type": "KInput",
+              "name": "remark",
+              "label": "备注",
+              "visible": true,
+              "id": "remark",
+              "required": false,
+              "componentProps": {
+                "length": 1024
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-261",
+              "type": "KSelect",
+              "name": "orderType",
+              "label": "订单类型",
+              "visible": true,
+              "id": "orderType",
+              "required": false,
+              "componentProps": {
+                "enumType": "orderType",
+                "options": [
+                  {
+                    "label": "标准",
+                    "value": "OT_010_STANDARD"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-8413",
+              "type": "KObjectSelector",
+              "name": "material#id",
+              "label": "物料",
+              "visible": true,
+              "id": "material",
+              "required": false,
+              "componentProps": {
+                "entityType": "Material",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-263",
+              "type": "KObjectSelector",
+              "name": "bom",
+              "label": "物料清单",
+              "visible": true,
+              "id": "bom",
+              "required": false,
+              "componentProps": {
+                "entityType": "Bom",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-264",
+              "type": "KInput",
+              "name": "manuModel",
+              "label": "制造型号",
+              "visible": true,
+              "id": "manuModel",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-265",
+              "type": "KObjectSelector",
+              "name": "routing",
+              "label": "工艺路线",
+              "visible": true,
+              "id": "routing",
+              "required": false,
+              "componentProps": {
+                "entityType": "Routing",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-266",
+              "type": "KSelect",
+              "name": "unit",
+              "label": "计量单位",
+              "visible": true,
+              "id": "unit",
+              "required": false,
+              "componentProps": {
+                "options": [
+                  {
+                    "label": "个",
+                    "value": "PCS"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-267",
+              "type": "KInputNumber",
+              "name": "plannedQty",
+              "label": "计划数量",
+              "visible": true,
+              "id": "plannedQty",
+              "required": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-268",
+              "type": "KInputNumber",
+              "name": "plannedOutputQty",
+              "label": "计划产出数量",
+              "visible": true,
+              "id": "plannedOutputQty",
+              "required": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-269",
+              "type": "KInputNumber",
+              "name": "qualifiedQty",
+              "label": "合格数量",
+              "visible": true,
+              "id": "qualifiedQty",
+              "required": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-270",
+              "type": "KInputNumber",
+              "name": "scrappedQty",
+              "label": "报废数量",
+              "visible": true,
+              "id": "scrappedQty",
+              "required": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-271",
+              "type": "KInputNumber",
+              "name": "releasedQty",
+              "label": "已释放数量",
+              "visible": true,
+              "id": "releasedQty",
+              "required": false,
+              "componentProps": {
+                "precision": 3
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-272",
+              "type": "KDatePicker",
+              "name": "plannedStartTime",
+              "label": "计划开始时间",
+              "visible": true,
+              "id": "plannedStartTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-273",
+              "type": "KDatePicker",
+              "name": "plannedEndTime",
+              "label": "计划结束时间",
+              "visible": true,
+              "id": "plannedEndTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-274",
+              "type": "KDatePicker",
+              "name": "actualStartTime",
+              "label": "实际开始时间",
+              "visible": true,
+              "id": "actualStartTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-275",
+              "type": "KSelect",
+              "name": "prodPlanType",
+              "label": "计划类型",
+              "visible": true,
+              "id": "prodPlanType",
+              "required": false,
+              "componentProps": {
+                "enumType": "prodPlanType",
+                "options": [
+                  {
+                    "label": "无",
+                    "value": "PPT_010_NONE"
+                  },
+                  {
+                    "label": "零部件生产计划",
+                    "value": "PPT_030_PRODUCE"
+                  },
+                  {
+                    "label": "零部件加工计划",
+                    "value": "PPT_050_PROCESS"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-276",
+              "type": "KSelect",
+              "name": "prodScheduleState",
+              "label": "排产状态",
+              "visible": true,
+              "id": "prodScheduleState",
+              "required": false,
+              "componentProps": {
+                "enumType": "prodScheduleState",
+                "options": [
+                  {
+                    "label": "无",
+                    "value": "PSS_010_NONE"
+                  },
+                  {
+                    "label": "零部件生产已排产",
+                    "value": "PSS_030_PRODUCE"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-277",
+              "type": "KDatePicker",
+              "name": "actualEndTime",
+              "label": "实际结束时间",
+              "visible": true,
+              "id": "actualEndTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-278",
+              "type": "KInputNumber",
+              "name": "priority",
+              "label": "优先级",
+              "visible": true,
+              "id": "priority",
+              "required": false,
+              "componentProps": {},
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-279",
+              "type": "KInput",
+              "name": "stage",
+              "label": "工艺阶段",
+              "visible": true,
+              "id": "stage",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-280",
+              "type": "KDatePicker",
+              "name": "specifiedStartTime",
+              "label": "指定开始时间",
+              "visible": true,
+              "id": "specifiedStartTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-281",
+              "type": "KPersonSelector",
+              "name": "planner",
+              "label": "计划员",
+              "visible": true,
+              "id": "planner",
+              "required": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-282",
+              "type": "KDatePicker",
+              "name": "specifiedEndTime",
+              "label": "指定结束时间",
+              "visible": true,
+              "id": "specifiedEndTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-283",
+              "type": "KSelect",
+              "name": "controlStatus",
+              "label": "控制状态",
+              "visible": true,
+              "id": "controlStatus",
+              "required": false,
+              "componentProps": {
+                "enumType": "controlStatus",
+                "options": [
+                  {
+                    "label": "正常",
+                    "value": "CS_010_NORMAL"
+                  },
+                  {
+                    "label": "暂停",
+                    "value": "CS_020_PAUSED"
+                  },
+                  {
+                    "label": "取消",
+                    "value": "CS_030_CANCEL"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-284",
+              "type": "KDatePicker",
+              "name": "changedCompletionTime",
+              "label": "变更后完成时间",
+              "visible": true,
+              "id": "changedCompletionTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-285",
+              "type": "KSelect",
+              "name": "releasedStatus",
+              "label": "释放状态",
+              "visible": true,
+              "id": "releasedStatus",
+              "required": false,
+              "componentProps": {
+                "enumType": "releasedStatus",
+                "options": [
+                  {
+                    "label": "未释放",
+                    "value": "PO_010_NO"
+                  },
+                  {
+                    "label": "部分释放",
+                    "value": "PO_020_PART"
+                  },
+                  {
+                    "label": "全部释放",
+                    "value": "PO_030_ALL"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-286",
+              "type": "KOrgSelector",
+              "name": "bizOrg",
+              "label": "所属组织",
+              "visible": true,
+              "id": "bizOrg",
+              "required": false,
+              "componentProps": {
+                "entityType": "BizOrg",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-288",
+              "type": "KOrgSelector",
+              "name": "factory",
+              "label": "所属工厂",
+              "visible": true,
+              "id": "factory",
+              "required": false,
+              "componentProps": {
+                "entityType": "BizOrg",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-289",
+              "type": "KDatePicker",
+              "name": "updatTime",
+              "label": "更新时间",
+              "visible": true,
+              "id": "updatTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-290",
+              "type": "KInput",
+              "name": "lifecycleState",
+              "label": "生命周期状态",
+              "visible": true,
+              "id": "lifecycleState",
+              "required": false,
+              "componentProps": {
+                "length": 256,
+                "options": [
+                  {
+                    "label": "已创建",
+                    "value": "PO_010_CREATED"
+                  },
+                  {
+                    "label": "已发布",
+                    "value": "PO_020_PUBLISHED"
+                  },
+                  {
+                    "label": "已展开",
+                    "value": "PO_030_EXPANDED"
+                  },
+                  {
+                    "label": "已释放",
+                    "value": "PO_040_RELEASED"
+                  },
+                  {
+                    "label": "已开工",
+                    "value": "PO_050_STARTED"
+                  },
+                  {
+                    "label": "已完工",
+                    "value": "PO_060_FINISHED"
+                  },
+                  {
+                    "label": "已关闭",
+                    "value": "PO_070_CLOSED"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-292",
+              "type": "KInput",
+              "name": "lifecycleTemplate",
+              "label": "生命周期模板",
+              "visible": true,
+              "id": "lifecycleTemplate",
+              "required": false,
+              "componentProps": {
+                "length": 512
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-293",
+              "type": "KDatePicker",
+              "name": "adjustTime",
+              "label": "调整时间",
+              "visible": true,
+              "id": "adjustTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-294",
+              "type": "KInput",
+              "name": "model",
+              "label": "型号",
+              "visible": true,
+              "id": "model",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-295",
+              "type": "KInput",
+              "name": "sapPlanCategory",
+              "label": "SAP计划类别",
+              "visible": true,
+              "id": "sapPlanCategory",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-296",
+              "type": "KInput",
+              "name": "wbsNumber",
+              "label": "WBS号",
+              "visible": true,
+              "id": "wbsNumber",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-297",
+              "type": "KInput",
+              "name": "orderNumber",
+              "label": "令号",
+              "visible": true,
+              "id": "orderNumber",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-298",
+              "type": "KInput",
+              "name": "routingNumber",
+              "label": "表五路线",
+              "visible": true,
+              "id": "routingNumber",
+              "required": false,
+              "componentProps": {
+                "length": 4000
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-299",
+              "type": "KDatePicker",
+              "name": "assemblyTime",
+              "label": "装配时间",
+              "visible": true,
+              "id": "assemblyTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-291",
+              "type": "KPersonSelector",
+              "name": "adjuster",
+              "label": "调整人员",
+              "visible": true,
+              "id": "adjuster",
+              "required": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-287",
+              "type": "KPersonSelector",
+              "name": "updater",
+              "label": "更新人",
+              "visible": true,
+              "id": "updater",
+              "required": false,
+              "componentProps": {
+                "entityType": "Person",
+                "multiple": false,
+                "referencePropColumn": ["code", "name"]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-300",
+              "type": "KDatePicker",
+              "name": "completeSetTime",
+              "label": "齐套时间",
+              "visible": true,
+              "id": "completeSetTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-301",
+              "type": "KSelect",
+              "name": "lifecycleStateType",
+              "label": "生命周期阶段",
+              "visible": true,
+              "id": "lifecycleStateType",
+              "required": false,
+              "componentProps": {
+                "enumType": "lifecycleStateType",
+                "options": [
+                  {
+                    "label": "创建",
+                    "value": "CREATE"
+                  },
+                  {
+                    "label": "活动",
+                    "value": "ACTIVE"
+                  },
+                  {
+                    "label": "发布",
+                    "value": "RELEASE"
+                  },
+                  {
+                    "label": "废弃",
+                    "value": "OBSOLETE"
+                  }
+                ]
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-302",
+              "type": "KInput",
+              "name": "integrationSystem",
+              "label": "集成系统",
+              "visible": true,
+              "id": "integrationSystem",
+              "required": false,
+              "componentProps": {
+                "length": 256
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-303",
+              "type": "KInput",
+              "name": "integrationId",
+              "label": "集成数据主键",
+              "visible": true,
+              "id": "integrationId",
+              "required": false,
+              "componentProps": {
+                "length": 512
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-304",
+              "type": "KDatePicker",
+              "name": "importTime",
+              "label": "集成创建时间",
+              "visible": true,
+              "id": "importTime",
+              "required": false,
+              "componentProps": {
+                "showTime": true,
+                "format": "YYYY-MM-DD HH:mm:ss"
+              },
+              "disabled": false
+            },
+            {
+              "XXXId": "add-form-305",
+              "type": "KSelect",
+              "name": "securityLevel",
+              "label": "密级",
+              "visible": true,
+              "id": "securityLevel",
+              "required": false,
+              "componentProps": {
+                "enumType": "securityLevel",
+                "options": [
+                  {
+                    "label": "公开",
+                    "value": "10"
+                  },
+                  {
+                    "label": "内部",
+                    "value": "20"
+                  },
+                  {
+                    "label": "秘密",
+                    "value": "30"
+                  },
+                  {
+                    "label": "机密",
+                    "value": "40"
+                  },
+                  {
+                    "label": "绝密",
+                    "value": "50"
+                  }
+                ]
+              },
+              "disabled": false
+            }
+          ]
+        },
+        "editForm": {
+          "type": "object-detail-form",
+          "id": "edit-form-246",
+          "columnCount": 4,
+          "body": [
+            {
+              "body": [
+                {
+                  "XXXId": "edit-form-8401",
+                  "type": "KInput",
+                  "name": "id",
+                  "label": "对象",
+                  "visible": true,
+                  "id": "id",
+                  "componentProps": {},
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8402",
+                  "type": "KInput",
+                  "name": "entityType",
+                  "label": "实体类型",
+                  "visible": true,
+                  "id": "entityType",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8403",
+                  "type": "KUserSelector",
+                  "name": "creator",
+                  "label": "创建者",
+                  "visible": true,
+                  "id": "creator",
+                  "componentProps": {
+                    "entityType": "User",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8404",
+                  "type": "KDatePicker",
+                  "name": "createTime",
+                  "label": "创建时间",
+                  "visible": true,
+                  "id": "createTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8405",
+                  "type": "KUserSelector",
+                  "name": "modifier",
+                  "label": "修改者",
+                  "visible": true,
+                  "id": "modifier",
+                  "componentProps": {
+                    "entityType": "User",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8406",
+                  "type": "KDatePicker",
+                  "name": "latestUpdateTime",
+                  "label": "最近修改时间",
+                  "visible": true,
+                  "id": "latestUpdateTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8407",
+                  "type": "KInputNumber",
+                  "name": "softDeleteFlag",
+                  "label": "软删除标记",
+                  "visible": true,
+                  "id": "softDeleteFlag",
+                  "componentProps": {},
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8408",
+                  "type": "KInput",
+                  "name": "env",
+                  "label": "环境标识",
+                  "visible": true,
+                  "id": "env",
+                  "componentProps": {
+                    "length": 80
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8409",
+                  "type": "KInput",
+                  "name": "code",
+                  "label": "编码",
+                  "visible": true,
+                  "id": "code",
+                  "componentProps": {
+                    "length": 512
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8410",
+                  "type": "KInput",
+                  "name": "name",
+                  "label": "名称",
+                  "visible": true,
+                  "id": "name",
+                  "componentProps": {
+                    "length": 512
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8411",
+                  "type": "KInput",
+                  "name": "remark",
+                  "label": "备注",
+                  "visible": true,
+                  "id": "remark",
+                  "componentProps": {
+                    "length": 1024
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8412",
+                  "type": "KSelect",
+                  "name": "orderType",
+                  "label": "订单类型",
+                  "visible": true,
+                  "id": "orderType",
+                  "componentProps": {
+                    "enumType": "orderType",
+                    "options": [
+                      {
+                        "label": "标准",
+                        "value": "OT_010_STANDARD"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8413",
+                  "type": "KObjectSelector",
+                  "name": "material#id",
+                  "label": "物料",
+                  "visible": true,
+                  "id": "material",
+                  "componentProps": {
+                    "entityType": "Material",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8414",
+                  "type": "KObjectSelector",
+                  "name": "bom",
+                  "label": "物料清单",
+                  "visible": true,
+                  "id": "bom",
+                  "componentProps": {
+                    "entityType": "Bom",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8415",
+                  "type": "KInput",
+                  "name": "manuModel",
+                  "label": "制造型号",
+                  "visible": true,
+                  "id": "manuModel",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8416",
+                  "type": "KObjectSelector",
+                  "name": "routing",
+                  "label": "工艺路线",
+                  "visible": true,
+                  "id": "routing",
+                  "componentProps": {
+                    "entityType": "Routing",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8417",
+                  "type": "KSelect",
+                  "name": "unit",
+                  "label": "计量单位",
+                  "visible": true,
+                  "id": "unit",
+                  "componentProps": {
+                    "options": [
+                      {
+                        "label": "个",
+                        "value": "PCS"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8418",
+                  "type": "KInputNumber",
+                  "name": "plannedQty",
+                  "label": "计划数量",
+                  "visible": true,
+                  "id": "plannedQty",
+                  "componentProps": {
+                    "precision": 3
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8419",
+                  "type": "KInputNumber",
+                  "name": "plannedOutputQty",
+                  "label": "计划产出数量",
+                  "visible": true,
+                  "id": "plannedOutputQty",
+                  "componentProps": {
+                    "precision": 3
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8420",
+                  "type": "KInputNumber",
+                  "name": "qualifiedQty",
+                  "label": "合格数量",
+                  "visible": true,
+                  "id": "qualifiedQty",
+                  "componentProps": {
+                    "precision": 3
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8421",
+                  "type": "KInputNumber",
+                  "name": "scrappedQty",
+                  "label": "报废数量",
+                  "visible": true,
+                  "id": "scrappedQty",
+                  "componentProps": {
+                    "precision": 3
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8422",
+                  "type": "KInputNumber",
+                  "name": "releasedQty",
+                  "label": "已释放数量",
+                  "visible": true,
+                  "id": "releasedQty",
+                  "componentProps": {
+                    "precision": 3
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8423",
+                  "type": "KDatePicker",
+                  "name": "plannedStartTime",
+                  "label": "计划开始时间",
+                  "visible": true,
+                  "id": "plannedStartTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8424",
+                  "type": "KDatePicker",
+                  "name": "plannedEndTime",
+                  "label": "计划结束时间",
+                  "visible": true,
+                  "id": "plannedEndTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8425",
+                  "type": "KDatePicker",
+                  "name": "actualStartTime",
+                  "label": "实际开始时间",
+                  "visible": true,
+                  "id": "actualStartTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8426",
+                  "type": "KSelect",
+                  "name": "prodPlanType",
+                  "label": "计划类型",
+                  "visible": true,
+                  "id": "prodPlanType",
+                  "componentProps": {
+                    "enumType": "prodPlanType",
+                    "options": [
+                      {
+                        "label": "无",
+                        "value": "PPT_010_NONE"
+                      },
+                      {
+                        "label": "零部件生产计划",
+                        "value": "PPT_030_PRODUCE"
+                      },
+                      {
+                        "label": "零部件加工计划",
+                        "value": "PPT_050_PROCESS"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8427",
+                  "type": "KSelect",
+                  "name": "prodScheduleState",
+                  "label": "排产状态",
+                  "visible": true,
+                  "id": "prodScheduleState",
+                  "componentProps": {
+                    "enumType": "prodScheduleState",
+                    "options": [
+                      {
+                        "label": "无",
+                        "value": "PSS_010_NONE"
+                      },
+                      {
+                        "label": "零部件生产已排产",
+                        "value": "PSS_030_PRODUCE"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8428",
+                  "type": "KDatePicker",
+                  "name": "actualEndTime",
+                  "label": "实际结束时间",
+                  "visible": true,
+                  "id": "actualEndTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8429",
+                  "type": "KInputNumber",
+                  "name": "priority",
+                  "label": "优先级",
+                  "visible": true,
+                  "id": "priority",
+                  "componentProps": {},
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8430",
+                  "type": "KInput",
+                  "name": "stage",
+                  "label": "工艺阶段",
+                  "visible": true,
+                  "id": "stage",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8431",
+                  "type": "KDatePicker",
+                  "name": "specifiedStartTime",
+                  "label": "指定开始时间",
+                  "visible": true,
+                  "id": "specifiedStartTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8432",
+                  "type": "KPersonSelector",
+                  "name": "planner",
+                  "label": "计划员",
+                  "visible": true,
+                  "id": "planner",
+                  "componentProps": {
+                    "entityType": "Person",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8433",
+                  "type": "KDatePicker",
+                  "name": "specifiedEndTime",
+                  "label": "指定结束时间",
+                  "visible": true,
+                  "id": "specifiedEndTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8434",
+                  "type": "KSelect",
+                  "name": "controlStatus",
+                  "label": "控制状态",
+                  "visible": true,
+                  "id": "controlStatus",
+                  "componentProps": {
+                    "enumType": "controlStatus",
+                    "options": [
+                      {
+                        "label": "正常",
+                        "value": "CS_010_NORMAL"
+                      },
+                      {
+                        "label": "暂停",
+                        "value": "CS_020_PAUSED"
+                      },
+                      {
+                        "label": "取消",
+                        "value": "CS_030_CANCEL"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8435",
+                  "type": "KDatePicker",
+                  "name": "changedCompletionTime",
+                  "label": "变更后完成时间",
+                  "visible": true,
+                  "id": "changedCompletionTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8436",
+                  "type": "KSelect",
+                  "name": "releasedStatus",
+                  "label": "释放状态",
+                  "visible": true,
+                  "id": "releasedStatus",
+                  "componentProps": {
+                    "enumType": "releasedStatus",
+                    "options": [
+                      {
+                        "label": "未释放",
+                        "value": "PO_010_NO"
+                      },
+                      {
+                        "label": "部分释放",
+                        "value": "PO_020_PART"
+                      },
+                      {
+                        "label": "全部释放",
+                        "value": "PO_030_ALL"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8437",
+                  "type": "KOrgSelector",
+                  "name": "bizOrg",
+                  "label": "所属组织",
+                  "visible": true,
+                  "id": "bizOrg",
+                  "componentProps": {
+                    "entityType": "BizOrg",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8438",
+                  "type": "KOrgSelector",
+                  "name": "factory",
+                  "label": "所属工厂",
+                  "visible": true,
+                  "id": "factory",
+                  "componentProps": {
+                    "entityType": "BizOrg",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8439",
+                  "type": "KDatePicker",
+                  "name": "updatTime",
+                  "label": "更新时间",
+                  "visible": true,
+                  "id": "updatTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8440",
+                  "type": "KInput",
+                  "name": "lifecycleState",
+                  "label": "生命周期状态",
+                  "visible": true,
+                  "id": "lifecycleState",
+                  "componentProps": {
+                    "length": 256,
+                    "options": [
+                      {
+                        "label": "已创建",
+                        "value": "PO_010_CREATED"
+                      },
+                      {
+                        "label": "已发布",
+                        "value": "PO_020_PUBLISHED"
+                      },
+                      {
+                        "label": "已展开",
+                        "value": "PO_030_EXPANDED"
+                      },
+                      {
+                        "label": "已释放",
+                        "value": "PO_040_RELEASED"
+                      },
+                      {
+                        "label": "已开工",
+                        "value": "PO_050_STARTED"
+                      },
+                      {
+                        "label": "已完工",
+                        "value": "PO_060_FINISHED"
+                      },
+                      {
+                        "label": "已关闭",
+                        "value": "PO_070_CLOSED"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8441",
+                  "type": "KInput",
+                  "name": "lifecycleTemplate",
+                  "label": "生命周期模板",
+                  "visible": true,
+                  "id": "lifecycleTemplate",
+                  "componentProps": {
+                    "length": 512
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8442",
+                  "type": "KDatePicker",
+                  "name": "adjustTime",
+                  "label": "调整时间",
+                  "visible": true,
+                  "id": "adjustTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8443",
+                  "type": "KInput",
+                  "name": "model",
+                  "label": "型号",
+                  "visible": true,
+                  "id": "model",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8444",
+                  "type": "KInput",
+                  "name": "sapPlanCategory",
+                  "label": "SAP计划类别",
+                  "visible": true,
+                  "id": "sapPlanCategory",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8445",
+                  "type": "KInput",
+                  "name": "wbsNumber",
+                  "label": "WBS号",
+                  "visible": true,
+                  "id": "wbsNumber",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8446",
+                  "type": "KInput",
+                  "name": "orderNumber",
+                  "label": "令号",
+                  "visible": true,
+                  "id": "orderNumber",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8447",
+                  "type": "KInput",
+                  "name": "routingNumber",
+                  "label": "表五路线",
+                  "visible": true,
+                  "id": "routingNumber",
+                  "componentProps": {
+                    "length": 4000
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8448",
+                  "type": "KDatePicker",
+                  "name": "assemblyTime",
+                  "label": "装配时间",
+                  "visible": true,
+                  "id": "assemblyTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8449",
+                  "type": "KUserSelector",
+                  "name": "adjuster",
+                  "label": "调整人员",
+                  "visible": true,
+                  "id": "adjuster",
+                  "componentProps": {
+                    "entityType": "User",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8450",
+                  "type": "KUserSelector",
+                  "name": "updater",
+                  "label": "更新人",
+                  "visible": true,
+                  "id": "updater",
+                  "componentProps": {
+                    "entityType": "User",
+                    "multiple": false,
+                    "referencePropColumn": ["code", "name"]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8451",
+                  "type": "KDatePicker",
+                  "name": "completeSetTime",
+                  "label": "齐套时间",
+                  "visible": true,
+                  "id": "completeSetTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8452",
+                  "type": "KSelect",
+                  "name": "lifecycleStateType",
+                  "label": "生命周期阶段",
+                  "visible": true,
+                  "id": "lifecycleStateType",
+                  "componentProps": {
+                    "enumType": "lifecycleStateType",
+                    "options": [
+                      {
+                        "label": "创建",
+                        "value": "CREATE"
+                      },
+                      {
+                        "label": "活动",
+                        "value": "ACTIVE"
+                      },
+                      {
+                        "label": "发布",
+                        "value": "RELEASE"
+                      },
+                      {
+                        "label": "废弃",
+                        "value": "OBSOLETE"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8453",
+                  "type": "KInput",
+                  "name": "integrationSystem",
+                  "label": "集成系统",
+                  "visible": true,
+                  "id": "integrationSystem",
+                  "componentProps": {
+                    "length": 256
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8454",
+                  "type": "KInput",
+                  "name": "integrationId",
+                  "label": "集成数据主键",
+                  "visible": true,
+                  "id": "integrationId",
+                  "componentProps": {
+                    "length": 512
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8455",
+                  "type": "KDatePicker",
+                  "name": "importTime",
+                  "label": "集成创建时间",
+                  "visible": true,
+                  "id": "importTime",
+                  "componentProps": {
+                    "showTime": true,
+                    "format": "YYYY-MM-DD HH:mm:ss"
+                  },
+                  "required": false,
+                  "disabled": false
+                },
+                {
+                  "XXXId": "edit-form-8456",
+                  "type": "KSelect",
+                  "name": "securityLevel",
+                  "label": "密级",
+                  "visible": true,
+                  "id": "securityLevel",
+                  "componentProps": {
+                    "enumType": "securityLevel",
+                    "options": [
+                      {
+                        "label": "公开",
+                        "value": "10"
+                      },
+                      {
+                        "label": "内部",
+                        "value": "20"
+                      },
+                      {
+                        "label": "秘密",
+                        "value": "30"
+                      },
+                      {
+                        "label": "机密",
+                        "value": "40"
+                      }
+                    ]
+                  },
+                  "required": false,
+                  "disabled": false
+                }
+              ],
+              "id": "mainInfo",
+              "label": "基本信息",
+              "name": "mainInfo",
+              "type": "form"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "XXXId": "modal_5362",
+      "name": "modal_5362",
+      "label": "修改变更完成时间",
+      "type": "KModal",
+      "gridLayout": [
+        {
+          "w": 24,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "i": "DynamicForm-5365",
+          "moved": false,
+          "static": false
+        }
+      ],
+      "description": "通过配置弹窗内容，实现弹窗的快速渲染",
+      "componentProps": {
+        "width": 600,
+        "height": 300,
+        "title": "修改变更完成时间",
+        "name": "modal_5362",
+        "size": "custom",
+        "defaultExpand": false,
+        "popupMethod": "KModal",
+        "popupPosition": "withinPage",
+        "closeIcon": true,
+        "maskClosable": false,
+        "buttons": [
+          {
+            "XXXId": "btn-5369",
+            "name": "cancel",
+            "label": "取消",
+            "position": "right",
+            "accessCode": "Uncontrolled",
+            "order": 1,
+            "componentProps": {
+              "type": "default"
+            },
+            "type": "KButton"
+          },
+          {
+            "XXXId": "btn-5368",
+            "name": "confirm",
+            "label": "确认",
+            "position": "right",
+            "accessCode": "Uncontrolled",
+            "order": 2,
+            "componentProps": {
+              "type": "primary"
+            },
+            "type": "KButton"
+          }
+        ],
+        "mask": true
+      }
+    },
+    {
+      "XXXId": "DynamicForm-5365",
+      "name": "DynamicForm-5365",
+      "label": "表单Form5365",
+      "type": "DynamicForm",
+      "showLabel": false,
+      "description": "通过传入json，实现表单的动态渲染",
+      "componentProps": {
+        "responsive": false,
+        "columnCount": 1,
+        "size": "middle",
+        "layout": "horizontal",
+        "labelAlign": "left",
+        "labelWidth": 130,
+        "labelCol": {
+          "span": 4
+        },
+        "wrapperCol": {
+          "span": 14
+        },
+        "body": [
+          {
+            "label": "变更后完成时间",
+            "name": "changedTime",
+            "type": "KDatePicker",
+            "required": true,
+            "disabled": false,
+            "XXXId": "formItem-5366",
+            "order": 1
+          },
+          {
+            "label": "原因",
+            "name": "reason",
+            "type": "KInput",
+            "required": false,
+            "disabled": false,
+            "XXXId": "formItem-5367",
+            "order": 2
+          }
+        ]
+      }
+    }
+  ],
+  "eventList": [
+    {
+      "eventMode": "code",
+      "triggerId": "__MAIN_PAGE__",
+      "containerId": "__MAIN_PAGE__",
+      "eventLabel": "#挂载完成",
+      "eventName": "mounted",
+      "actions": [],
+      "script": "// 事件参数： 页面组件props object, 需要结合具体场景来确认对象的信息;\nconst props = '${props}';\nconst now = new Date();\n\nconst y = now.getFullYear();\nconst m = String(now.getMonth() + 1).padStart(2, '0');\nconst d = String(now.getDate()).padStart(2, '0');\n\nconst startOfDayStr = y + \"-\" + m + \"-\" + d + \" 00:00:00\"\nconst param130 = [{\n    items:[{\n        items:[\n            {\n              var: \"changedCompletionTime\",\n              compare: \"30\",\n              values: [\n                startOfDayStr\n              ]\n            },\n            {\n              join: \"OR\",\n              items: [\n                {\n                  var: \"changedCompletionTime\",\n                  compare: \"90\"\n                },\n                {\n                  var: \"plannedEndTime\",\n                  compare: \"30\",\n                  values: [\n                    startOfDayStr\n                  ]\n                }\n              ]\n            }\n        ]\n    }]\n}]\n\nrenderEngine.getInstance('KObjectTableWrapper-243').setConditionItem(param130);\n"
+    },
+    {
+      "eventMode": "code",
+      "triggerId": "btn-5360",
+      "containerId": "KObjectTableWrapper-243",
+      "eventLabel": "对象表格243#HX修改变更完成时间点击",
+      "eventName": "click",
+      "actions": [],
+      "script": "const selectRows = renderEngine.getInstance('KObjectTableWrapper-243').getSelectedRows();// 组件操作语句:弹窗5362执行显示弹窗;\nif (selectRows.length > 0) {\n    renderEngine.getInstance('modal_5362').show();\n} else {\n    // 弹窗信息\n    showNotification({\n        type: 'warning',\n        title: '请选择数据',\n        content: '',\n        detailContent: ''\n    })\n}\n"
+    },
+    {
+      "eventMode": "config",
+      "triggerId": "btn-5369",
+      "containerId": "modal_5362",
+      "eventLabel": "修改变更完成时间#取消点击",
+      "eventName": "click",
+      "actions": [
+        {
+          "statementCategory": "component",
+          "label": "组件操作语句",
+          "description": "修改变更完成时间执行隐藏弹窗",
+          "id": "action-5375",
+          "order": 0,
+          "script": "renderEngine.getInstance('modal_5362').hide()",
+          "statementConfig": {
+            "componentId": "modal_5362",
+            "componentLabel": "修改变更完成时间",
+            "componentType": "KModal",
+            "method": {
+              "name": "hide",
+              "label": "隐藏弹窗",
+              "description": "隐藏弹窗"
+            }
+          }
+        }
+      ],
+      "script": "// 组件操作语句:修改变更完成时间执行隐藏弹窗;\nrenderEngine.getInstance('modal_5362').hide();\n"
+    },
+    {
+      "eventMode": "code",
+      "triggerId": "btn-5368",
+      "containerId": "modal_5362",
+      "eventLabel": "修改变更完成时间#确认点击",
+      "eventName": "click",
+      "actions": [],
+      "script": "// 组件操作语句:对象表格243执行获取选中行;\nconst selectRows = renderEngine.getInstance('KObjectTableWrapper-243').getSelectedRows();\n//获取表单数据\nconst formValue = renderEngine.getInstance('DynamicForm-5365').getValue();\n//获取变更后完成时间\nconst changedTime = formValue['changedTime']\n\n//记录不符合条件的数据\nconst errorData = []\nselectRows.forEach(item => {\n    if (changedTime < item.plannedEndTime || changedTime < item.changedCompletionTime) {\n        errorData.push(item)\n    }\n})\nif (errorData.length > 0) {\n    const errCode = errorData.map(x => x.code).join(',')\n    const msg = errCode + '以上订单更新失败，请检查'\n    // 弹窗信息\n    showNotification({\n        type: 'error',\n        title: '更新失败',\n        content: '变更完成时间失败',\n        detailContent: msg\n    })\n    return false\n}\n\nconst now = new Date();\n\nconst y = now.getFullYear();\nconst m = String(now.getMonth() + 1).padStart(2, '0');\nconst d = String(now.getDate()).padStart(2, '0');\n\nconst h = String(now.getHours()).padStart(2, '0');\nconst min = String(now.getMinutes()).padStart(2, '0');\nconst s = String(now.getSeconds()).padStart(2, '0');\n\nconst newtime = y + '-' + m + '-' + d + \" \" + h + \":\" + min + ':' + s\nconst currentInfo = JSON.parse(localStorage.getItem('km-userInfo'))\nconst userId = currentInfo.userId\nconst saveParams = selectRows.map(x => {\n    return {\n        id: x.id,\n        entityType: x.entityType,\n        changedCompletionTime: formValue['changedTime'],\n        adjuster: { id: userId, entityType: \"User\", code: null, name: null },\n        adjustTime: newtime\n    }\n})\n// API调用模板\nrequestHostApi({\n    url: '#{dev_runtime_api_host}/v1/dm/manage/batchUpdate',\n    method: 'POST',\n    data: {\n        object: saveParams\n    }\n}).then(res => {\n    if (res.code === 0) {\n        // 弹窗信息\n        showNotification({\n            type: 'success',\n            title: '修改成功',\n            content: '',\n            detailContent: ''\n        })\n        //修改成功之后插入生产计划时间调整关系表\n        const insertRow = selectRows.map(item => {\n            return {\n                entityType: 'HxProdOrderAdjustLink',\n                source: { id: item.id, entityType: item.entityType },\n                adjustReason: formValue['reason'],\n                adjustBeforeTime: item.changedCompletionTime,\n                adjustAfterTime: formValue['changedTime']\n            }\n        })\n        // API调用模板\n        requestHostApi({\n            url: '#{dev_runtime_api_host}/v1/dm/manage/batchInsert',\n            method: 'POST',\n            data: {\n                object: insertRow\n            }\n        }).then(res => {\n            if (res.code === 0) {\n                // 弹窗信息\n                showNotification({\n                    type: 'success',\n                    title: '添加成功',\n                    content: '',\n                    detailContent: ''\n                })\n                renderEngine.getInstance('modal_5362').hide();\n                renderEngine.getInstance('KObjectTableWrapper-243').refresh();\n            } else {\n                // 弹窗信息\n                showNotification({\n                    type: 'error',\n                    title: '添加失败',\n                    content: res.msg,\n                    detailContent: res.msg\n                })\n            }\n        }).catch(err => {\n            // 处理错误\n            console.error('API调用失败:', err);\n        });\n\n    } else {\n        // 弹窗信息\n        showNotification({\n            type: 'error',\n            title: '修改失败',\n            content: res.msg,\n            detailContent: res.msg\n        })\n    }\n}).catch(err => {\n    // 处理错误\n    console.error('API调用失败:', err);\n});\n\n\n\n\n\n"
+    }
+  ]
+}

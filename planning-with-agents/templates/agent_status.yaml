@@ -1,0 +1,74 @@
+# Agent Status File Template
+# This file is created and maintained by each Sub Agent to communicate its status
+
+agent_id: ""  # Unique agent identifier (e.g., "a3b2c1")
+task_description: ""  # Brief description of the agent's task
+status: "pending"  # pending | in-progress | completed | failed | blocked
+parent_agent: "master"  # ID of the parent agent
+depth: 1  # Nesting depth (master = 0, sub = 1, sub-sub = 2, etc.)
+
+# Timestamps
+created_at: ""  # ISO 8601 format: "2026-01-06T18:30:00Z"
+started_at: ""  # When execution began
+completed_at: ""  # When execution finished
+updated_at: ""  # Last update time
+
+# Execution metrics
+execution_time_seconds: 0
+
+# Task summary and results
+summary: |
+  Brief summary of what was accomplished.
+  Include key decisions, challenges overcome, and outcomes.
+
+# Output artifacts
+artifacts:
+  - path: ""  # Path to output file (e.g., ".memory/agent-a3b2c1/deliverable.md")
+    type: ""  # documentation | code | test | config | data
+    description: ""  # What this artifact contains
+    size_bytes: 0
+
+# Dependencies tracking
+dependencies_met:
+  - dependency_id: null  # IDs of dependencies that were satisfied
+
+# Error information (if status is 'failed')
+errors: []
+# Example error entry:
+# - error_type: "ImportError"
+#   message: "Missing dependency: jsonwebtoken"
+#   timestamp: "2026-01-06T19:10:45Z"
+#   stack_trace: |
+#     Full stack trace here...
+
+# Sub-agents created by this agent (if any)
+sub_agents: []
+# Example:
+# - agent_id: "b4c3d2"
+#   task: "Implement unit tests"
+#   status: "completed"
+
+# Metadata and metrics
+metadata:
+  token_usage:
+    input: 0
+    output: 0
+    total: 0
+  estimated_cost_usd: 0.0
+  files_created: 0
+  files_modified: 0
+  tests_added: 0
+  tests_passed: 0
+  code_coverage_percent: 0
+
+# Performance breakdown (optional)
+performance:
+  thinking_time_seconds: 0
+  coding_time_seconds: 0
+  testing_time_seconds: 0
+
+# Context received from parent
+context_received:
+  global_context_tokens: 0
+  sibling_results_count: 0
+  research_notes_tokens: 0

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lowcode Event Generator"
+  short_description: "Generate low-code EventConfig and JS scripts from schema"
+  default_prompt: "Use $lowcode-event-generator to generate code-mode EventConfig and script from my schema and interaction requirements."

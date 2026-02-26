@@ -1,0 +1,655 @@
+{
+  "layoutType": "grid",
+  "name": "new_order_release",
+  "label": "释放1.0",
+  "autoIncrementId": 7413,
+  "gridLayout": [
+    {
+      "i": "KFilterTable-5",
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 10
+    },
+    {
+      "i": "KFilterTable-11",
+      "x": 0,
+      "y": 10,
+      "w": 24,
+      "h": 12
+    },
+    {
+      "i": "DynamicToolStrip-73",
+      "x": 0,
+      "y": 22,
+      "w": 24,
+      "h": 2
+    }
+  ],
+  "componentList": [
+    {
+      "XXXId": "KFilterTable-5",
+      "name": "KFilterTable-5",
+      "label": "生产订单",
+      "type": "KFilterTable",
+      "showLabel": false,
+      "description": "支持自定义列配置、搜索、分页、编辑等功能的高级表格组件",
+      "componentProps": {
+        "columns": [
+          {
+            "columnType": "normal",
+            "label": "id",
+            "name": "id",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": false,
+            "disabled": true,
+            "required": false,
+            "order": 1,
+            "XXXId": "column-589",
+            "originalName": "id"
+          },
+          {
+            "columnType": "normal",
+            "label": "生产订单编码",
+            "name": "code",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 2,
+            "XXXId": "column-17",
+            "originalName": "product_num"
+          },
+          {
+            "columnType": "normal",
+            "label": "生产订单名称",
+            "name": "name",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 3,
+            "XXXId": "column-593"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料编码",
+            "name": "materialCode",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 4,
+            "XXXId": "column-19",
+            "originalName": "material#code"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料名称",
+            "name": "materialName",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 5,
+            "XXXId": "column-26",
+            "originalName": "material#name"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料版本",
+            "name": "materiaVersion",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 6,
+            "XXXId": "column-28",
+            "originalName": "material#version"
+          },
+          {
+            "columnType": "normal",
+            "label": "计划投入数量",
+            "name": "plannedQty",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": true,
+            "order": 7,
+            "XXXId": "column-30",
+            "originalName": "plan_num"
+          },
+          {
+            "columnType": "normal",
+            "label": "本次释放数量",
+            "name": "currentQty",
+            "type": "KInputNumber",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": false,
+            "required": true,
+            "order": 8,
+            "XXXId": "column-36",
+            "originalName": "release_number"
+          },
+          {
+            "columnType": "normal",
+            "label": "每份数量",
+            "name": "unitQty",
+            "type": "KInputNumber",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": false,
+            "required": true,
+            "order": 9,
+            "XXXId": "column-38",
+            "originalName": "number"
+          },
+          {
+            "columnType": "normal",
+            "label": "已释放数量",
+            "name": "releasedQty",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": true,
+            "order": 10,
+            "XXXId": "column-40",
+            "originalName": "released_number"
+          },
+          {
+            "columnType": "normal",
+            "label": "计划开始日期",
+            "name": "plannedStartTime",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 11,
+            "XXXId": "column-42",
+            "originalName": "plan_start_time"
+          },
+          {
+            "columnType": "normal",
+            "label": "计划结束日",
+            "name": "plannedEndTime",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 12,
+            "XXXId": "column-44",
+            "originalName": "plan_end_tiem"
+          },
+          {
+            "name": "action",
+            "label": "操作",
+            "type": "custom",
+            "columnType": "operation",
+            "fixed": "right",
+            "align": "left",
+            "width": 150,
+            "visible": true,
+            "required": false,
+            "disabled": false,
+            "operationButtons": [
+              {
+                "label": "释放",
+                "action": "release",
+                "XXXId": "op-btn-46"
+              },
+              {
+                "label": "生成产品编号",
+                "action": "build_order",
+                "XXXId": "op-btn-47"
+              }
+            ],
+            "order": 13,
+            "XXXId": "column-48"
+          }
+        ],
+        "pagination": {
+          "pageSize": 100,
+          "showSizeChanger": true,
+          "pageSizeOptions": [
+            "100",
+            "200",
+            "500",
+            "1000"
+          ]
+        },
+        "rowButtons": [],
+        "isEditing": true,
+        "selectionType": "checkbox",
+        "operationButtons": [
+          {
+            "label": "释放",
+            "action": "release",
+            "XXXId": "op-btn-46"
+          },
+          {
+            "label": "生成产品编号",
+            "action": "build_order",
+            "XXXId": "op-btn-47"
+          }
+        ],
+        "label": "生产订单"
+      }
+    },
+    {
+      "XXXId": "KFilterTable-11",
+      "name": "KFilterTable-11",
+      "label": "制造订单",
+      "type": "KFilterTable",
+      "showLabel": false,
+      "description": "支持自定义列配置、搜索、分页、编辑等功能的高级表格组件",
+      "componentProps": {
+        "columns": [
+          {
+            "columnType": "normal",
+            "label": "产品编号",
+            "name": "projectNumber",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 1,
+            "XXXId": "column-1054"
+          },
+          {
+            "columnType": "normal",
+            "label": "制造订单ID",
+            "name": "id",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": false,
+            "disabled": true,
+            "required": false,
+            "order": 2,
+            "XXXId": "column-948",
+            "originalName": "id"
+          },
+          {
+            "columnType": "normal",
+            "label": "计划投入数量",
+            "name": "plannedQty",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 3,
+            "XXXId": "column-53",
+            "originalName": "plan_num"
+          },
+          {
+            "columnType": "normal",
+            "label": "制造型号",
+            "name": "manuType",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 4,
+            "XXXId": "column-970",
+            "originalName": "manuType"
+          },
+          {
+            "columnType": "normal",
+            "label": "图号",
+            "name": "materialDrawingNumber",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": false,
+            "order": 5,
+            "XXXId": "column-57",
+            "originalName": "drawing_num"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料编码",
+            "name": "materialCode",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": true,
+            "order": 6,
+            "XXXId": "column-59",
+            "originalName": "material#code"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料名称",
+            "name": "materialName",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": true,
+            "order": 7,
+            "XXXId": "column-61",
+            "originalName": "material#name"
+          },
+          {
+            "columnType": "normal",
+            "label": "物料版本",
+            "name": "materialVersion",
+            "type": "KInput",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": true,
+            "required": true,
+            "order": 8,
+            "XXXId": "column-63",
+            "originalName": "material#version"
+          },
+          {
+            "columnType": "normal",
+            "label": "指定计划开始时间",
+            "name": "specifiedPlannedStartTime",
+            "type": "KDatePicker",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": false,
+            "required": true,
+            "order": 9,
+            "XXXId": "column-65",
+            "originalName": "appoint_start_time"
+          },
+          {
+            "columnType": "normal",
+            "label": "指定计划结束时间",
+            "name": "specifiedPlannedEndTime",
+            "type": "KDatePicker",
+            "width": 150,
+            "align": "left",
+            "visible": true,
+            "disabled": false,
+            "required": true,
+            "order": 10,
+            "XXXId": "column-67",
+            "originalName": "appoint_end_time"
+          }
+        ],
+        "pagination": {
+          "pageSize": 200,
+          "showSizeChanger": true,
+          "pageSizeOptions": [
+            "100",
+            "200",
+            "500",
+            "1000"
+          ]
+        },
+        "rowButtons": [],
+        "isEditing": true,
+        "selectionType": "checkbox",
+        "operationButtons": [],
+        "label": "制造订单"
+      }
+    },
+    {
+      "XXXId": "DynamicToolStrip-73",
+      "name": "DynamicToolStrip-73",
+      "label": "工具栏73",
+      "type": "DynamicToolStrip",
+      "showLabel": false,
+      "description": "通过配置工具栏内容，实现工具栏的快速渲染",
+      "componentProps": {
+        "body": [
+          {
+            "label": "确认",
+            "name": "confirm",
+            "buttonType": "primary",
+            "accessCode": "Uncontrolled",
+            "position": "right",
+            "XXXId": "btn-82",
+            "order": 1,
+            "componentProps": {
+              "type": "primary"
+            },
+            "type": "KPermissionButton"
+          }
+        ],
+        "firstItemPrimary": false,
+        "alignment": "flex-end"
+      }
+    },
+    {
+      "XXXId": "modal_101",
+      "name": "modal_101",
+      "label": "生成产品编号",
+      "type": "KModal",
+      "gridLayout": [
+        {
+          "w": 24,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "i": "DynamicForm-102",
+          "moved": false,
+          "static": false
+        }
+      ],
+      "description": "通过配置弹窗内容，实现弹窗的快速渲染",
+      "componentProps": {
+        "width": 600,
+        "height": 300,
+        "title": "生成产品编号",
+        "name": "modal_101",
+        "size": "custom",
+        "defaultExpand": false,
+        "popupMethod": "KModal",
+        "popupPosition": "withinPage",
+        "showCloseIcon": true,
+        "clickMaskToClose": false,
+        "buttons": [
+          {
+            "XXXId": "btn-108",
+            "name": "cancel",
+            "label": "取消",
+            "position": "right",
+            "accessCode": "Uncontrolled",
+            "order": 1,
+            "componentProps": {
+              "type": "default"
+            },
+            "type": "KButton"
+          },
+          {
+            "label": "确认",
+            "name": "onOk",
+            "buttonType": "primary",
+            "position": "right",
+            "accessCode": "Uncontrolled",
+            "type": "KButton",
+            "componentProps": {
+              "type": "primary"
+            },
+            "XXXId": "btn-3915",
+            "order": 2
+          }
+        ],
+        "closeIcon": true,
+        "mask": false,
+        "maskClosable": false
+      }
+    },
+    {
+      "XXXId": "DynamicForm-102",
+      "name": "DynamicForm-102",
+      "label": "基础表单102",
+      "type": "DynamicForm",
+      "showLabel": false,
+      "description": "通过传入json，实现表单的动态渲染",
+      "componentProps": {
+        "responsive": false,
+        "columnCount": 1,
+        "size": "middle",
+        "layout": "horizontal",
+        "labelAlign": "left",
+        "labelWidth": 120,
+        "labelCol": {
+          "span": 4
+        },
+        "wrapperCol": {
+          "span": 14
+        },
+        "body": [
+          {
+            "label": "类型",
+            "name": "type",
+            "type": "KSelect",
+            "defaultValue": "1",
+            "required": false,
+            "disabled": false,
+            "dataType": "custom",
+            "options": [
+              {
+                "label": "总装",
+                "value": "1"
+              },
+              {
+                "label": "部装",
+                "value": "2"
+              }
+            ],
+            "XXXId": "formItem-103",
+            "order": 1
+          },
+          {
+            "label": "产品编号",
+            "name": "PRODCUT_NUMBER",
+            "type": "KInputNumber",
+            "required": false,
+            "disabled": false,
+            "XXXId": "formItem-104",
+            "order": 2
+          },
+          {
+            "label": "前缀",
+            "name": "PREFIX",
+            "type": "KInput",
+            "required": false,
+            "disabled": false,
+            "XXXId": "formItem-105",
+            "order": 3
+          },
+          {
+            "label": "起始编号",
+            "name": "START_NUMBER",
+            "type": "KInputNumber",
+            "required": false,
+            "disabled": false,
+            "XXXId": "formItem-106",
+            "order": 4
+          }
+        ]
+      }
+    }
+  ],
+  "eventList": [
+    {
+      "triggerId": "__MAIN_PAGE__",
+      "containerId": "__MAIN_PAGE__",
+      "eventLabel": "#挂载完成",
+      "eventName": "mounted",
+      "actions": [],
+      "script": "// 事件参数： 页面组件props object;\nconst props = '${props}';\n// 变量赋值语句:变量(props.ids) -> id;\nconst id = props.ids;\n// API调用:POST 根据生产订单ID列表获取可释放的订单信息（API专用） (/api/suite/v1/prodOrder/listProdOrderByIdsForRelease) (回调: 成功处理);\nrequestHostApi({url: '#{dev_product_api_host}/api/suite/v1/prodOrder/listProdOrderByIdsForRelease', method: 'POST', data: { object: [id] }}).then(response => {\n// 提取响应数据：data.prodOrderReleaseList\nconst resData = response.data.prodOrderReleaseList;\n// 生产订单执行设置数据；(1：变量(resData))\nconst param7404 = resData;\nrenderEngine.getInstance('KFilterTable-5').setValue(param7404);\n});\n",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "btn-82",
+      "eventName": "click",
+      "actions": [],
+      "script": "// 变量赋值语句:制造订单执行获取数据 -> dataSource;\nconst dataSource = renderEngine.getInstance('KFilterTable-11').getValue();\n// 条件判断语句:如果 变量(dataSource) 为空，否则;\nif (typeof dataSource === 'object' ? lodash.isEmpty(dataSource) : !dataSource) {\n    // 顶部消息【警告】：内容：订单未释放，请先释放订单；延时：3秒;\n    message['warning']('订单未释放，请先释放订单', 3);\n} else {\n    // 布尔值: 假 -> result;\n    let result = false;\n    // 循环遍历 变量(dataSource)，包含 1 个操作;\n    const loopDataSource = dataSource;\n    for (const item of loopDataSource) {\n        if (lodash.isEmpty(item.projectNumber)) {\n            // 执行: result=true;\n            result = true\n        };\n    };\n    // 制造订单执行获取数据 -> manuOrderSource;\n    const manuOrderSource = renderEngine.getInstance('KFilterTable-11').getValue();\n    // 生产订单执行获取数据 -> planOrderSource;\n    const planOrderSource = renderEngine.getInstance('KFilterTable-5').getValue();\n    // 如果 变量(result) 等于 布尔值: 真，否则;\n    if (result == true) {\n        // 弹窗确认\n        KModal.confirm({\n            title: '确认释放',\n            content: '未生成产品编码，是否确认释放？',\n            onOk: () => {\n                // 空数组 -> saveValue1;\n                const saveValue1 = [];\n                // 循环遍历 变量(manuOrderSource)，包含 2 个操作;\n                const loopDataSource = manuOrderSource;\n                for (const item of loopDataSource) {\n                    const releaseValue = { id: item.id, prodOrderId: planOrderSource[0].id, planQty: item.plannedQty, planStartTime: item.plannedStartTime, planEndTime: item.plannedEndTime };\n                    saveValue1.push(releaseValue)\n                };\n                // POST 确认释放生产订单 (/api/suite/v1/prodOrder/confirmRelease) (回调: 成功处理);\n                requestHostApi({ url: '#{dev_product_api_host}/api/suite/v1/prodOrder/confirmRelease', method: 'POST', data: { object: saveValue1 } }).then(response => {\n                    // 弹窗信息\n                    showNotification({\n                        type: 'success',\n                        title: '释放成功',\n                        content: '',\n                        detailContent: '',\n                        duration: 3\n                    })\n                    //关闭主应用弹窗\n                    window.closeExpandModal()\n                })\n            },\n            onCancel: () => {\n\n            }\n        });\n    } else {\n        // 空数组 -> saveValue1;\n        const saveValue1 = [];\n        // 循环遍历 变量(manuOrderSource)，包含 2 个操作;\n        const loopDataSource = manuOrderSource;\n        for (const item of loopDataSource) {\n            const releaseValue = { id: item.id, prodOrderId: planOrderSource[0].id, planQty: item.plannedQty, planStartTime: item.plannedStartTime, planEndTime: item.plannedEndTime };\n            saveValue1.push(releaseValue)\n        };\n        // POST 确认释放生产订单 (/api/suite/v1/prodOrder/confirmRelease) (回调: 成功处理);\n        requestHostApi({ url: '#{dev_product_api_host}/api/suite/v1/prodOrder/confirmRelease', method: 'POST', data: { object: saveValue1 } }).then(response => {\n            // 提取响应数据：data\n            const resData = response.data;\n            // 对象(1个属性) -> saveValue\n            const saveValue = { PROJECT_NUMBERS: [] };\n            // 循环遍历 制造订单执行获取数据，包含 2 个操作\n            const loopDataSource = renderEngine.getInstance('KFilterTable-11').getValue();\n            for (const item of loopDataSource) {\n                const newItem = { PLAN_ID: item.id, PROJECT_NUMBER: item.projectNumber };\n                saveValue.PROJECT_NUMBERS.push(newItem)\n            };\n            // POST 保存制造计划产品编号 (/api/bjhx/v1/order/save-project-type-codes) (回调: 成功处理, 错误处理)\n            requestHostApi({ url: '#{dev_product_api_host}/api/bjhx/v1/order/save-project-type-codes', method: 'POST', data: { object: saveValue } }).then(response => {\n                // 提取响应数据：ok\n                const resData = response.ok;\n                // 右侧通知【成功】：标题：成功；内容：字符串值: \"生产编号保存成功\"；详情：字符串值: \"\"；延时：3秒\n                showNotification({ type: 'success', title: '成功', content: \"生产编号保存成功\", detailContent: \"\", duration: 3 });\n                //关闭主应用弹窗\n                window.closeExpandModal()\n            }).catch(error1 => {\n                // 提取错误数据：msg\n                const error = error1.response ? error1.response.msg : error1;\n                // 右侧通知【错误】：标题：保存失败；内容：变量(error)；详情：变量(error)；延时：3秒\n                showNotification({ type: 'error', title: '保存失败', content: error, detailContent: error, duration: 3 });\n            });\n        });\n    };\n};\n",
+      "controlName": "确认点击",
+      "containerId": "DynamicToolStrip-73",
+      "eventLabel": "工具栏73#确认点击",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "formItem-103",
+      "eventName": "change",
+      "actions": [],
+      "script": "// 事件参数： 输入框值 string;\nconst value = '${value}';\n// 条件判断语句:如果 变量(value) 等于 字符串值: \"1\"，否则;\nif (value == \"1\") {\n// 基础表单102执行更新字段状态；(1：JSON数组(3项));\nconst param6669 = [{\"name\": \"PRODCUT_NUMBER\",\"status\": {\"visible\": true}},{\"name\": \"PREFIX\",\"status\": {\"visible\": false}},{\"name\": \"START_NUMBER\",\"status\": {\"visible\": false}}];\nrenderEngine.getInstance('DynamicForm-102').updateFieldStates(param6669);\n} else {\n// 基础表单102执行更新字段状态；(1：JSON数组(3项));\nconst param6655 = [{\"name\": \"PRODCUT_NUMBER\",\"status\": {\"visible\": false}},{\"name\": \"PREFIX\",\"status\": {\"visible\": true}},{\"name\": \"START_NUMBER\",\"status\": {\"visible\": true}}];\nrenderEngine.getInstance('DynamicForm-102').updateFieldStates(param6655);\n};\n",
+      "containerId": "DynamicForm-102",
+      "eventLabel": "基础表单102#类型值变化",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "op-btn-47",
+      "eventName": "click",
+      "actions": [],
+      "script": "// 事件参数： 当前行数据 object;\nconst record = '${record}';\n// 条件判断语句:如果 表格组件11执行获取数据 为空，否则;\nif (typeof renderEngine.getInstance('KFilterTable-11').getValue() === 'object' ? lodash.isEmpty(renderEngine.getInstance('KFilterTable-11').getValue()) : !renderEngine.getInstance('KFilterTable-11').getValue()) {\n// 右侧通知【警告】：标题：提示；内容：字符串值: \"请先释放订单\"；详情：字符串值: \"\"；延时：3秒;\nshowNotification({type: 'warning',title: '提示',content: \"请先释放订单\",detailContent: \"\",duration: 3});\n} else {\n// 生成产品编号执行显示弹窗;\nrenderEngine.getInstance('modal_101').show()};\n",
+      "componentName": "生成产品编号点击(行按钮)",
+      "containerId": "KFilterTable-5",
+      "eventLabel": "生产订单#生成产品编号点击(行按钮)",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "op-btn-46",
+      "eventName": "click",
+      "actions": [],
+      "script": "// 事件参数： 当前行数据 object;\nconst record = '${record}';\n// 条件判断语句:如果 变量(record.currentQty) 为空 || 变量(record.unitQty) 为空;\nif ((typeof record.currentQty === 'object' ? lodash.isEmpty(record.currentQty) : !record.currentQty) || (typeof record.unitQty === 'object' ? lodash.isEmpty(record.unitQty) : !record.unitQty)) {\n// 右侧通知【警告】：标题：提示；内容：字符串值: \"本次释放数量或者每份数量不可为空\"；详情：未设置；延时：3秒;\nshowNotification({type: 'warning',title: '提示',content: \"本次释放数量或者每份数量不可为空\",detailContent: '',duration: 3});\n// 执行: return false;\nreturn false};\n// 条件判断语句:如果 变量(record.currentQty) 小于 变量(record.unitQty)，否则;\nif (record.currentQty < record.unitQty) {\n// 顶部消息【警告】：内容：每份数量不能大于本次释放数量；延时：3秒;\nmessage['warning']('每份数量不能大于本次释放数量', 3);\n} else {\n// POST 模拟释放生产订单 (/api/suite/v1/prodOrder/simulateRelease) (回调: 成功处理, 错误处理);\nrequestHostApi({url: '#{dev_product_api_host}/api/suite/v1/prodOrder/simulateRelease', method: 'POST', data: { object: [{ id: record.id, currentQty: record.currentQty, unitQty: record.unitQty }] }}).then(response => {\n// 提取响应数据：data\nconst resData = response.data;\n// 表格组件11执行设置数据；(1：变量(resData))\nconst param928 = resData;\nrenderEngine.getInstance('KFilterTable-11').setValue(param928);\n}).catch(error1 => {\n// 提取错误数据：msg\nconst error = error1.response ? error1.response.msg : error1;\n// 右侧通知【错误】：标题：释放失败；内容：变量(error)；详情：变量(error)；延时：3秒\nshowNotification({type: 'error',title: '释放失败',content: error,detailContent: error,duration: 3});\n});\n};\n",
+      "controlName": "释放点击(行按钮)",
+      "containerId": "KFilterTable-5",
+      "eventLabel": "生产订单#释放点击(行按钮)",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "btn-108",
+      "eventName": "click",
+      "actions": [],
+      "script": "// 组件操作语句:订单释放执行隐藏弹窗;\nrenderEngine.getInstance('modal_101').hide();\n",
+      "containerId": "modal_101",
+      "eventLabel": "生成产品编号#取消点击",
+      "eventMode": "code"
+    },
+    {
+      "triggerId": "btn-3915",
+      "eventName": "click",
+      "actions": [],
+      "script": "// JS脚本语句:执行JS脚本 (26行);\n// 变量赋值语句:基础表单102执行获取表单值 -> params;\nconst params = renderEngine.getInstance('DynamicForm-102').getValue();\n// 变量赋值语句:对象(3个属性) -> formValue;\nconst formValue = { PREFIX: params.PREFIX, START_NUMBER: params.START_NUMBER,PRODCUT_NUMBER:params.PRODCUT_NUMBER, PLAN_IDS: [] };\nconst manuData = renderEngine.getInstance('KFilterTable-11').getValue();\nfor(const item of manuData){formValue.PLAN_IDS.push(item.id);\n};\n// API调用:生成制造计划产品编号: POST #{dev_product_api_host}/api/bjhx/v1/order/generate-project-type-codes (参数: { object: formValue }) (回调: 成功处理);\nrequestHostApi({ method: 'post', url: '#{dev_product_api_host}/api/bjhx/v1/order/generate-project-type-codes', data: { object: formValue } }).then(response => {\n// 提取响应数据：data.codeList\nconst resData = response.data.CodeList;\n// 空数组 -> newData\nconst newData = [];\n12\n// 循环遍历 变量(resData)，包含 2 个操作\nconst loopDataSource = resData;\nfor (const item of loopDataSource) {const newItem = { id: item.PlanId, projectNumber: item.ProjectNumber };\nconst xxxxx1 = newData.push(newItem);\n};\n// 制造订单执行设置数据；(1：变量(newData))\nconst param1488 = newData;\nparam1488.forEach((item,i)=>manuData[i]&&(manuData[i].projectNumber=item.projectNumber));\nconsole.log('____xxxxxx____',manuData);\nrenderEngine.getInstance('KFilterTable-11').setValue(manuData);\n// 生成产品编号执行隐藏弹窗\nrenderEngine.getInstance('modal_101').hide()});\n",
+      "containerId": "modal_101",
+      "eventLabel": "生成产品编号#确认点击",
+      "eventMode": "code"
+    }
+  ]
+}

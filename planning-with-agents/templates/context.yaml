@@ -1,0 +1,75 @@
+# Context File Template
+# Passed to Sub Agents to provide necessary background information
+
+# Global project context
+global_context:
+  project_goal: ""  # High-level objective of the entire project
+  constraints: []
+  # Example:
+  # - "Must use TypeScript"
+  # - "Must be mobile-responsive"
+  # - "Budget: $5000"
+
+# Key decisions made by parent/master agent
+parent_decisions:
+  - decision: ""
+    rationale: ""
+    timestamp: ""
+  # Example:
+  # - decision: "Use JWT for authentication"
+  #   rationale: "Stateless, scalable, industry standard"
+  #   timestamp: "2026-01-06T18:00:00Z"
+
+# Results from sibling agents (agents at the same level)
+sibling_results:
+  - agent_id: ""
+    task: ""
+    status: ""  # completed | in-progress
+    artifacts: []
+    # Example:
+    # - ".memory/agent-7b2f9e/database_schema.sql"
+    summary: ""
+  # Example:
+  # - agent_id: "7b2f9e"
+  #   task: "Design database schema"
+  #   status: "completed"
+  #   artifacts:
+  #     - ".memory/agent-7b2f9e/schema.sql"
+  #   summary: "Created normalized schema with users, products, orders tables"
+
+# Important research notes from parent
+research_notes: |
+  Key findings from architecture research and exploration.
+
+  Example:
+  - OAuth2 providers: Google, GitHub recommended
+  - Password hashing: bcrypt with cost factor 12
+  - Session management: Redis for token blacklist
+
+# Technical stack and tools
+technical_stack:
+  languages: []  # ["TypeScript", "Python"]
+  frameworks: []  # ["React", "FastAPI"]
+  databases: []  # ["PostgreSQL", "Redis"]
+  tools: []  # ["Docker", "GitHub Actions"]
+
+# Project structure reference
+project_structure:
+  root_directory: ""  # e.g., "/Users/name/project"
+  key_directories:
+    - path: ""
+      purpose: ""
+  # Example:
+  # - path: "src/api"
+  #   purpose: "Backend API implementation"
+  # - path: "src/components"
+  #   purpose: "React components"
+
+# Agent-specific instructions
+agent_instructions: |
+  Specific guidance for this particular sub-agent.
+
+  Example:
+  - Focus on error handling and input validation
+  - Follow the coding standards in CONTRIBUTING.md
+  - Write tests with >80% coverage

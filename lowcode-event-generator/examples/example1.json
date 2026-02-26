@@ -1,0 +1,113 @@
+{
+  "layoutType": "grid",
+  "name": "appoint-plan-time",
+  "label": "指定计划时间",
+  "autoIncrementId": 8516,
+  "gridLayout": [
+    {
+      "i": "DynamicForm-3",
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 16
+    },
+    {
+      "i": "DynamicToolStrip-6",
+      "x": 0,
+      "y": 16,
+      "w": 24,
+      "h": 3
+    }
+  ],
+  "componentList": [
+    {
+      "XXXId": "DynamicForm-3",
+      "name": "DynamicForm-3",
+      "label": "表单Form3",
+      "type": "DynamicForm",
+      "showLabel": false,
+      "description": "通过传入json，实现表单的动态渲染",
+      "componentProps": {
+        "responsive": false,
+        "columnCount": 1,
+        "size": "middle",
+        "layout": "horizontal",
+        "labelAlign": "left",
+        "labelWidth": 120,
+        "labelCol": {
+          "span": 4
+        },
+        "wrapperCol": {
+          "span": 14
+        },
+        "body": [
+          {
+            "label": "开始时间",
+            "name": "start_time",
+            "type": "KDatePicker",
+            "required": true,
+            "disabled": false,
+            "XXXId": "formItem-4",
+            "order": 1
+          },
+          {
+            "label": "结束时间",
+            "name": "end_time",
+            "type": "KDatePicker",
+            "required": true,
+            "disabled": false,
+            "XXXId": "formItem-5",
+            "order": 2
+          }
+        ]
+      }
+    },
+    {
+      "XXXId": "DynamicToolStrip-6",
+      "name": "DynamicToolStrip-6",
+      "label": "工具栏6",
+      "type": "DynamicToolStrip",
+      "showLabel": false,
+      "description": "通过配置工具栏内容，实现工具栏的快速渲染",
+      "componentProps": {
+        "body": [
+          {
+            "label": "确认",
+            "name": "confirm",
+            "buttonType": "primary",
+            "accessCode": "Uncontrolled",
+            "position": "right",
+            "XXXId": "btn-7",
+            "order": 1,
+            "componentProps": {
+              "type": "primary"
+            },
+            "type": "KPermissionButton"
+          }
+        ],
+        "firstItemPrimary": false,
+        "alignment": "flex-end"
+      }
+    }
+  ],
+  "eventList": [
+    {
+      "eventMode": "code",
+      "triggerId": "__MAIN_PAGE__",
+      "containerId": "__MAIN_PAGE__",
+      "eventLabel": "#挂载完成",
+      "eventName": "mounted",
+      "actions": [],
+      "script": "// 事件参数： 页面组件props object, 需要结合具体场景来确认对象的信息;\nconst props = '${props}';\n//获取组件参数\nconst selectRows = props.selectRows\nwindow.ChangePlanTimeProps={\n  selectRows\n}\n//设置表单项\nconst formValue={\n    start_time:selectRows[0].plannedStartTime,\n    end_time:selectRows[0].plannedEndTime\n}\nrenderEngine.getInstance('DynamicForm-3').setValue(formValue);\n"
+    },
+    {
+      "eventMode": "code",
+      "triggerId": "btn-7",
+      "containerId": "DynamicToolStrip-6",
+      "eventLabel": "工具栏6#确认点击",
+      "eventName": "click",
+      "actions": [],
+      "script": "//获取数据\r\nconst props = window.ChangePlanTimeProps\r\nconst selectRows = props.selectRows\r\nconst formValue = renderEngine.getInstance('DynamicForm-3').getValue();\r\nif (formValue.end_time < formValue.start_time) {\r\n    // 弹窗信息\r\n    showNotification({\r\n        type: 'warning',\r\n        title: '提示',\r\n        content: '结束时间必须大于开始时间',\r\n        detailContent: ''\r\n    })\r\n    return false\r\n}\r\n\r\nconst saveParams = selectRows.map(x => {\r\n    return {\r\n        id: x.id,\r\n        entityType: x.entityType,\r\n        plannedStartTime: formValue.start_time,\r\n        plannedEndTime: formValue.end_time,\r\n        specifiedStartTime: formValue.start_time,\r\n        specifiedEndTime: formValue.end_time\r\n    }\r\n})\r\n// API调用模板\r\nrequestHostApi({\r\n    url: '#{dev_runtime_api_host}/v1/dm/manage/batchUpdate',\r\n    method: 'POST',\r\n    data: {\r\n        object: saveParams\r\n    }\r\n}).then(res => {\r\n    if (res.code === 0) {\r\n        // 弹窗信息\r\n        showNotification({\r\n            type: 'success',\r\n            title: '修改成功',\r\n            content: '',\r\n            detailContent: ''\r\n        })\r\n        window.closeExpandModal()\r\n    } else {\r\n        // 弹窗信息\r\n        showNotification({\r\n            type: 'error',\r\n            title: '修改失败',\r\n            content: res.msg,\r\n            detailContent:  res.msg\r\n        })\r\n    }\r\n}).catch(err => {\r\n    // 处理错误\r\n    console.error('API调用失败:', err);\r\n});"
+    }
+  ]
+}
