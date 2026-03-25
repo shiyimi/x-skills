@@ -1,4 +1,4 @@
-### 模式 0：任务分诊 (TRIAGE)
+﻿### 模式 0：任务分诊 (TRIAGE)
 
 **主导专家:** [首席架构师](../../experts/chief_architect.md)
 

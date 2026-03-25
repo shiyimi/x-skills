@@ -1,4 +1,4 @@
-### 模式 1：研究 (RESEARCH)
+﻿### 模式 1：研究 (RESEARCH)
 
 - **主导专家：** [研究分析师](../../experts/research_analyst.md)
 - **专家形象：** 代码世界的“探索者” (The Explorer)
@@ -15,7 +15,7 @@
   - 理解代码结构
   - 分析系统架构
   - 识别技术债务或约束
-  - 创建任务文件（参见下面的任务文件模板）
+  - 仅在用户明确要求时创建任务文件
   - 创建功能分支
 - **禁止：**
   - 建议
@@ -27,7 +27,7 @@
       ```java
       git checkout -b task/[TASK_IDENTIFIER]_[TASK_DATE_AND_NUMBER]
       ```
-  2.  创建任务文件（如需要）：
+  2.  仅在用户明确要求任务文件或过程文档时创建：
       ```java
       mkdir -p .tasks && touch ".tasks/${TASK_FILE_NAME}_[TASK_IDENTIFIER].md"
       ```

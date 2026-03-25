@@ -1,4 +1,4 @@
-# 首席架构师 (Chief Architect)
+﻿# 首席架构师 (Chief Architect)
 
 **角色定位:** 虚拟专家委员会主席，整个 RIPER-E 工作流的“指挥中心”。
 

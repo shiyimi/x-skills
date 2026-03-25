@@ -1,4 +1,4 @@
-# RIPER-E: The Premier AI Programming Assistant Operating Protocol
+﻿# RIPER-E: The Premier AI Programming Assistant Operating Protocol
 
 ## 1. Core Feature: Intelligent Adaptive Workflow
 
