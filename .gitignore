@@ -54,5 +54,6 @@ routes-debug.json
 
 # agent skills
 AGENTS.md
+/.worktrees/
 
 team-monthly-evaluation
