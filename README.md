@@ -12,30 +12,33 @@
 
 | Skill | 主要用途 | 入口文件 | 关键资产 |
 | --- | --- | --- | --- |
-| `interview` | 基于 plan 文件做深度追问并产出规格文档 | `interview/SKILL.md` | 轻量定义，适合需求澄清阶段 |
-| `lowcode-event-generator` | 从自然语言需求生成低代码平台 `EventConfig` 与 JS `script` | `lowcode-event-generator/SKILL.md` | `references/`、`source/`、`examples/`、`scripts/` |
-| `planning-with-agents` | 多 Agent 协作规划、DAG 依赖调度与观测 | `planning-with-agents/SKILL.md` | `src/`、`templates/`、`tests/`、`docs/` |
+| `interview` | 基于 plan 文件做深度追问并产出规格文档 | `skills/interview/SKILL.md` | 轻量定义，适合需求澄清阶段 |
+| `lowcode-event-generator` | 从自然语言需求生成低代码平台 `EventConfig` 与 JS `script` | `skills/lowcode-event-generator/SKILL.md` | `references/`、`source/`、`examples/`、`scripts/` |
+| `frontend-excellence` | 面向实现、重构、评审、调试、性能与界面打磨的高标准前端 skill | `skills/frontend-excellence/SKILL.md` | `references/`、`examples/`、`evals/` |
 
 ## 目录结构
 
 ```text
 x-skills/
 ├─ README.md
-├─ interview/
-│  └─ SKILL.md
-├─ lowcode-event-generator/
-│  ├─ SKILL.md
-│  ├─ references/
-│  ├─ source/
-│  ├─ examples/
-│  └─ scripts/
-└─ planning-with-agents/
-   ├─ SKILL.md
-   ├─ src/
-   ├─ templates/
-   ├─ tests/
-   ├─ docs/
-   └─ README.md
+├─ prompts/
+│  ├─ ai-engineering-partner.md
+│  ├─ ai-engineering-partner.backup.md
+│  └─ riper5/
+└─ skills/
+   ├─ interview/
+   │  └─ SKILL.md
+   ├─ lowcode-event-generator/
+   │  ├─ SKILL.md
+   │  ├─ references/
+   │  ├─ source/
+   │  ├─ examples/
+   │  └─ scripts/
+   └─ frontend-excellence/
+      ├─ SKILL.md
+      ├─ references/
+      ├─ examples/
+      └─ evals/
 ```
 
 ## 快速上手
@@ -43,9 +46,10 @@ x-skills/
 ### 1) 查看 Skill 定义
 
 ```powershell
-Get-Content .\interview\SKILL.md -Encoding UTF8
-Get-Content .\lowcode-event-generator\SKILL.md -Encoding UTF8
-Get-Content .\planning-with-agents\SKILL.md -Encoding UTF8
+Get-Content .\skills\interview\SKILL.md -Encoding UTF8
+Get-Content .\skills\lowcode-event-generator\SKILL.md -Encoding UTF8
+Get-Content .\skills\frontend-excellence\SKILL.md -Encoding UTF8
+Get-Content .\prompts\ai-engineering-partner.md -Encoding UTF8
 ```
 
 ### 2) 运行 lowcode 辅助脚本（可选）
@@ -53,16 +57,34 @@ Get-Content .\planning-with-agents\SKILL.md -Encoding UTF8
 批量规范化 JSON 中的 `eventList`，统一为 `eventMode: "code"` 且 `actions: []`：
 
 ```powershell
-python .\lowcode-event-generator\scripts\convert_event_configs.py .\lowcode-event-generator\examples
+python .\skills\lowcode-event-generator\scripts\convert_event_configs.py .\skills\lowcode-event-generator\examples
 ```
 
-### 3) 运行 planning-with-agents 测试（可选）
+### 3) 查看 frontend-excellence 的核心参考（可选）
 
 ```powershell
-Set-Location .\planning-with-agents
-python -m pip install -r .\requirements-test.txt
-pytest
+Get-Content .\skills\frontend-excellence\references\00-core-principles.md -Encoding UTF8
+Get-Content .\skills\frontend-excellence\references\03-simplification-discipline.md -Encoding UTF8
 ```
+
+### 4) 查看 frontend-excellence 的评估素材（可选）
+
+```powershell
+Get-Content .\skills\frontend-excellence\evals\README.md -Encoding UTF8
+Get-Content .\skills\frontend-excellence\evals\evals.json -Encoding UTF8
+Get-Content .\skills\frontend-excellence\evals\trigger-evals.json -Encoding UTF8
+```
+
+## Prompt 与 Skill 关系
+
+- `prompts/ai-engineering-partner.md`
+  - 通用工作流主 prompt，也是领域启用总开关。
+  - 负责任务分级、三步工作流、通用工程判断、真实性表达，以及在命中前端场景时自动启用 `frontend-excellence`。
+- `prompts/ai-engineering-partner.backup.md`
+  - 旧版 `ai-engineering-partner.md` 的保存副本。
+  - 用于历史参考，不作为当前主 prompt 继续维护。
+- `skills/frontend-excellence/`
+  - 负责前端领域细则，包括复杂度治理、质量门禁、任务模式路由与专题规则。
 
 ## 各 Skill 使用建议
 
@@ -77,15 +99,23 @@ pytest
 - 输入：`schema` 或 `componentList` + 触发意图描述。
 - 产出：可直接落地的 code 模式 `EventConfig`。
 - 依赖参考：
-  - `lowcode-event-generator/references/types.ts`
-  - `lowcode-event-generator/references/meta-definitions.md`
-  - `lowcode-event-generator/references/script-templates.md`
+  - `skills/lowcode-event-generator/references/types.ts`
+  - `skills/lowcode-event-generator/references/meta-definitions.md`
+  - `skills/lowcode-event-generator/references/script-templates.md`
 
-### planning-with-agents
+### frontend-excellence
 
-- 输入：复杂任务描述（可包含 `#use-subagent` / `#parallel` 等触发词）。
-- 产出：任务拆解、依赖图、子 Agent 状态与聚合交付。
-- 适用：多模块并行、上下文超长、需多角色协同的任务。
+- 输入：前端实现、重构、评审、调试、性能优化、界面打磨或架构设计任务。
+- 产出：按任务模式路由后的高标准前端判断与规则约束，强调复杂度治理、质量门禁与可验证性。
+- 关键参考：
+  - `skills/frontend-excellence/references/00-core-principles.md`
+  - `skills/frontend-excellence/references/01-quality-gates.md`
+  - `skills/frontend-excellence/references/02-task-routing.md`
+  - `skills/frontend-excellence/references/03-simplification-discipline.md`
+  - `skills/frontend-excellence/references/30-react-next-adapter.md`
+  - `skills/frontend-excellence/evals/README.md`
+  - `skills/frontend-excellence/evals/evals.json`
+  - `skills/frontend-excellence/evals/trigger-evals.json`
 
 ## 维护规范
 
