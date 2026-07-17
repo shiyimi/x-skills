@@ -1,0 +1,23 @@
+{
+  "templateName": "team-ai-copilot-template",
+  "templateVersion": "0.1.0",
+  "templateSource": "<TEMPLATE_REPOSITORY_OR_PATH>",
+  "installedAt": "<YYYY-MM-DD>",
+  "installedBy": "<OWNER_OR_TEAM>",
+  "projectName": "<PROJECT_NAME>",
+  "localChanges": [
+    {
+      "file": ".agents/projects/profile.md",
+      "reason": "填写项目技术栈、目录结构、命令和编码约定。"
+    },
+    {
+      "file": ".agents/projects/overview.md",
+      "reason": "填写项目业务背景、模块边界和核心数据流。"
+    },
+    {
+      "file": ".agents/projects/notes.md",
+      "reason": "沉淀项目历史坑、禁改区和已知基线问题。"
+    }
+  ],
+  "upgradeNotes": "升级模板时，先对比 manifest.json 中 requiredFiles 和 recommendedFiles，再保留项目本地事实与沉淀内容。"
+}

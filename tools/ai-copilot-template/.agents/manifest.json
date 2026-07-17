@@ -1,0 +1,40 @@
+{
+  "templateName": "team-ai-copilot-template",
+  "templateVersion": "0.1.0",
+  "description": "团队级 AI Copilot 轻量协作模板。",
+  "requiredFiles": [
+    "AGENTS.md",
+    ".agents/README.md",
+    ".agents/index.md",
+    ".agents/projects/profile.md",
+    ".agents/projects/overview.md",
+    ".agents/projects/notes.md",
+    ".agents/core.md",
+    ".agents/validation.md"
+  ],
+  "recommendedFiles": [
+    ".agents/skills/README.md",
+    ".agents/skills/requirement-review/SKILL.md",
+    ".agents/skills/code-review/SKILL.md",
+    ".agents/mcp/README.md"
+  ],
+  "requiredPlaceholdersToReplace": [
+    "<PROJECT_NAME>",
+    "<BUSINESS_DOMAIN>",
+    "<LANGUAGE>",
+    "<FRAMEWORK>",
+    "<SOURCE_ROOTS>",
+    "<TYPECHECK_COMMAND>",
+    "<BUILD_COMMAND>"
+  ],
+  "forbiddenContentPatterns": [
+    "真实密钥",
+    "真实 Token",
+    "生产账号",
+    "私有证书"
+  ],
+  "notes": [
+    "复制到项目后优先填写 projects/profile.md、projects/overview.md、projects/notes.md 和 validation-policy.md。",
+    "MCP/tool 配置按项目用户填写内容维护，模板不强制环境变量写法。"
+  ]
+}
