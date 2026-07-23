@@ -18,7 +18,7 @@ description: Use when the user provides daily work records, stand-up notes, week
 
 ## 阶段一：信息处理
 
-1. 确认日志日期。日期必须来自用户输入或明确上下文，并统一为 `YYYY-MM-DD`；日期缺失或存在歧义时先询问，不得使用当前日期代替。
+1. 确认日志日期。日期优先取自用户输入或明确上下文，并统一为 `YYYY-MM-DD`；日期缺失或存在歧义时默认使用当前日期，不再额外询问。
 2. 读取并严格执行 `references/information-processing.md`，将原始记录处理为标准信息。
 3. 记录处理结果：
    - 能形成标准信息：`处理状态 = 已完成日志处理`。
