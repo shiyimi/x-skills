@@ -1,4 +1,0 @@
-interface:
-  display_name: "Agnes AI Media"
-  short_description: "Generate and download images and videos with Agnes AI"
-  default_prompt: "Use $agnes-ai to generate the requested image or video and save the result locally."
