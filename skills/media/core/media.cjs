@@ -114,6 +114,9 @@ async function selectAndCreate(request, context = {}) {
     }
 
     try {
+      if (typeof runtime.beforeCreate === 'function') {
+        await runtime.beforeCreate(entry);
+      }
       return {
         entry,
         outcome: normalizeOutcome(await entry.provider.create(request, runtime))
@@ -231,7 +234,24 @@ async function waitMedia(request, context = {}) {
   let latest = normalizeOutcome({ status: 'running', task: request.task });
 
   while (runtime.now() < deadline) {
-    const queried = await queryStatus(request, runtime);
+    const remainingBeforeStatus = Math.max(0, deadline - runtime.now());
+    const controller = new AbortController();
+    const abortFromParent = () => controller.abort();
+    if (runtime.signal?.aborted) controller.abort();
+    else runtime.signal?.addEventListener('abort', abortFromParent, { once: true });
+    const abortTimer = setTimeout(() => controller.abort(), remainingBeforeStatus);
+    let queried;
+    try {
+      queried = await queryStatus(request, { ...runtime, signal: controller.signal });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return timeoutResult(entry, request, latest, startedAt, runtime.now());
+      }
+      throw error;
+    } finally {
+      clearTimeout(abortTimer);
+      runtime.signal?.removeEventListener('abort', abortFromParent);
+    }
     latest = queried.outcome;
     const completedAt = runtime.now();
     const result = resultFromOutcome(entry, request.capability, latest, startedAt, completedAt);
@@ -253,7 +273,10 @@ async function generateMedia(request, context = {}) {
   validateRequest('generate', request);
   const runtime = runtimeContext(context);
   const preflightOutput = runtime.preflightOutput ?? require('./artifacts.cjs').preflightOutput;
-  await preflightOutput(request, runtime);
+  runtime.beforeCreate = async (entry) => preflightOutput(request, {
+    ...runtime,
+    provider: entry.id
+  });
 
   const startedAt = runtime.now();
   const { entry, outcome } = await selectAndCreate(request, runtime);
@@ -348,23 +371,39 @@ async function readRequest(command, io) {
   }
 }
 
-function errorResult(error) {
+function redactValue(value, secrets) {
+  if (typeof value === 'string') {
+    let redacted = value.replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]');
+    for (const secret of secrets.filter(Boolean)) {
+      redacted = redacted.split(secret).join('[REDACTED]');
+    }
+    return redacted;
+  }
+  if (Array.isArray(value)) return value.map((item) => redactValue(item, secrets));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, redactValue(item, secrets)])
+    );
+  }
+  return value;
+}
+
+function errorResult(error, secrets = []) {
   const normalized = error instanceof ProviderError
     ? error
     : new ProviderError('invalid_response', 'Unexpected media workflow failure.');
-  const message = String(normalized.message).replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]');
   const result = {
     ok: false,
     status: normalized.task?.provider_status ? 'failed' : 'failed',
     error: {
       kind: normalized.kind,
-      message,
+      message: redactValue(normalized.message, secrets),
       retryable: Boolean(normalized.retryable)
     }
   };
   if (normalized.provider !== undefined) result.provider = normalized.provider;
   if (normalized.task !== undefined) result.task = normalized.task;
-  if (normalized.details !== undefined) result.error.details = normalized.details;
+  if (normalized.details !== undefined) result.error.details = redactValue(normalized.details, secrets);
   return result;
 }
 
@@ -373,6 +412,7 @@ async function runCli(argv = process.argv.slice(2), io = {}) {
     stdout: io.stdout ?? process.stdout,
     stdin: io.stdin ?? process.stdin,
     fsApi: io.fsApi ?? fs,
+    env: io.env ?? process.env,
     ...io
   };
   try {
@@ -388,7 +428,10 @@ async function runCli(argv = process.argv.slice(2), io = {}) {
     runtime.stdout.write(`${JSON.stringify(result)}\n`);
     return result.ok === false && result.error ? exitCodeFor(result.error) : 0;
   } catch (error) {
-    const result = errorResult(error);
+    const result = errorResult(error, [
+      runtime.env?.AGNES_API_KEY,
+      ...(runtime.redactSecrets ?? [])
+    ]);
     runtime.stdout.write(`${JSON.stringify(result)}\n`);
     return exitCodeFor(result.error);
   }
