@@ -12,6 +12,18 @@ const IMAGE_MIME_TYPES = new Map([
   ['.webp', 'image/webp']
 ]);
 
+class ProviderError extends Error {
+  constructor(kind, message, { retryable = false, httpStatus, providerCode, details } = {}) {
+    super(message);
+    this.name = 'ProviderError';
+    this.kind = kind;
+    this.retryable = retryable;
+    if (httpStatus !== undefined) this.httpStatus = httpStatus;
+    if (providerCode !== undefined) this.providerCode = providerCode;
+    if (details !== undefined) this.details = details;
+  }
+}
+
 function resolveCredentials({
   env = process.env,
   homeDir = os.homedir(),
@@ -195,10 +207,136 @@ function normalizeStatus(status) {
   return normalized;
 }
 
+function providerMessage(body, fallback) {
+  if (typeof body?.error?.message === 'string' && body.error.message.trim()) {
+    return body.error.message.trim();
+  }
+  if (typeof body?.message === 'string' && body.message.trim()) {
+    return body.message.trim();
+  }
+  if (typeof body?.msg === 'string' && body.msg.trim()) {
+    return body.msg.trim();
+  }
+  return fallback;
+}
+
+function classifyHttpError(status, body = {}) {
+  const mappings = {
+    400: ['invalid_request', false],
+    401: ['authentication', false],
+    402: ['quota_exhausted', false],
+    403: ['permission', false],
+    404: ['invalid_request', false],
+    405: ['invalid_request', false],
+    408: ['network', true],
+    409: ['invalid_request', false],
+    413: ['invalid_request', false],
+    415: ['invalid_request', false],
+    422: ['invalid_request', false],
+    429: ['rate_limited', true]
+  };
+  const [kind, retryable] = mappings[status]
+    ?? (status >= 500
+      ? ['provider_unavailable', true]
+      : ['invalid_response', false]);
+  const providerCode = body?.error?.code ?? body?.code;
+  return new ProviderError(kind, providerMessage(body, `Agnes API request failed with HTTP ${status}.`), {
+    retryable,
+    httpStatus: status,
+    providerCode
+  });
+}
+
+async function requestJson({
+  method,
+  path: apiPath,
+  apiKey,
+  body,
+  fetchImpl = globalThis.fetch,
+  signal
+}) {
+  if (typeof fetchImpl !== 'function') {
+    throw new ProviderError('configuration', 'Node.js 18 or newer is required for fetch support.');
+  }
+  const url = new URL(apiPath, `${API_ROOT}/`);
+  if (url.origin !== API_ROOT) {
+    throw new ProviderError('invalid_request', 'Agnes API path must remain on api.agnes-ai.cn.');
+  }
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  };
+  const options = { method, headers };
+  if (body !== undefined) options.body = JSON.stringify(body);
+  if (signal !== undefined) options.signal = signal;
+
+  let response;
+  try {
+    response = await fetchImpl(url.toString(), options);
+  } catch {
+    throw new ProviderError(
+      'network',
+      'The Agnes API network request failed; a generation request may have been accepted.',
+      { retryable: true }
+    );
+  }
+
+  const text = await response.text();
+  let parsed;
+  if (text.trim()) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = undefined;
+    }
+  } else {
+    parsed = {};
+  }
+
+  if (!response.ok) {
+    const errorBody = parsed ?? { message: text.slice(0, 500) };
+    throw classifyHttpError(response.status, errorBody);
+  }
+  if (parsed === undefined || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new ProviderError('invalid_response', 'Agnes returned a non-JSON success response.');
+  }
+  return parsed;
+}
+
+async function defaultSleep(delayMs) {
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function withTransientRetry(operation, {
+  maxAttempts = 4,
+  baseDelayMs = 1_000,
+  maxDelayMs = 20_000,
+  random = Math.random,
+  sleep = defaultSleep
+} = {}) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!error.retryable || attempt === maxAttempts) {
+        throw error;
+      }
+      const exponential = Math.min(maxDelayMs, baseDelayMs * (2 ** (attempt - 1)));
+      const jitter = Math.floor(random() * Math.min(baseDelayMs, exponential));
+      await sleep(exponential + jitter);
+    }
+  }
+  throw new ProviderError('invalid_response', 'Retry loop ended unexpectedly.');
+}
+
 module.exports = {
   API_ROOT,
+  ProviderError,
   resolveCredentials,
   buildImageRequest,
   buildVideoRequest,
-  normalizeStatus
+  normalizeStatus,
+  classifyHttpError,
+  requestJson,
+  withTransientRetry
 };

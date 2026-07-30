@@ -171,3 +171,128 @@ test('Agnes task states normalize to provider states', () => {
   assert.equal(subject.normalizeStatus('failed'), 'failed');
   assert.throws(() => subject.normalizeStatus('mystery'), /Unknown Agnes video status/);
 });
+
+test('HTTP status codes map to stable provider error kinds', () => {
+  assert.equal(typeof subject.classifyHttpError, 'function');
+  const cases = [
+    [400, 'invalid_request', false],
+    [401, 'authentication', false],
+    [402, 'quota_exhausted', false],
+    [403, 'permission', false],
+    [422, 'invalid_request', false],
+    [429, 'rate_limited', true],
+    [503, 'provider_unavailable', true]
+  ];
+
+  for (const [status, kind, retryable] of cases) {
+    const error = subject.classifyHttpError(status, { error: { message: `status ${status}` } });
+    assert.equal(error.kind, kind);
+    assert.equal(error.retryable, retryable);
+    assert.equal(error.httpStatus, status);
+  }
+});
+
+test('HTTP JSON request uses the fixed Agnes host and bearer authentication', async () => {
+  assert.equal(typeof subject.requestJson, 'function');
+  let captured;
+  const fetchImpl = async (url, options) => {
+    captured = { url, options };
+    return new Response(JSON.stringify({ created: 1, data: [] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  };
+
+  const result = await subject.requestJson({
+    method: 'POST',
+    path: '/v1/images/generations',
+    apiKey: 'test-secret',
+    body: { model: 'agnes-image-2.1-flash' },
+    fetchImpl
+  });
+
+  assert.deepEqual(result, { created: 1, data: [] });
+  assert.equal(captured.url, 'https://api.agnes-ai.cn/v1/images/generations');
+  assert.equal(captured.options.method, 'POST');
+  assert.equal(captured.options.headers.Authorization, 'Bearer test-secret');
+  assert.equal(captured.options.headers['Content-Type'], 'application/json');
+  assert.equal(captured.options.body, '{"model":"agnes-image-2.1-flash"}');
+});
+
+test('generation POST is attempted once when the network response is lost', async () => {
+  assert.equal(typeof subject.requestJson, 'function');
+  let attempts = 0;
+
+  await assert.rejects(
+    subject.requestJson({
+      method: 'POST',
+      path: '/v1/videos',
+      apiKey: 'test-secret',
+      body: { model: 'agnes-video-v2.0' },
+      fetchImpl: async () => {
+        attempts += 1;
+        throw new TypeError('connection reset');
+      }
+    }),
+    (error) => error.kind === 'network' && error.retryable === true
+  );
+
+  assert.equal(attempts, 1);
+});
+
+test('malformed successful response becomes invalid_response', async () => {
+  assert.equal(typeof subject.requestJson, 'function');
+
+  await assert.rejects(
+    subject.requestJson({
+      method: 'GET',
+      path: '/agnesapi?video_id=video_1',
+      apiKey: 'test-secret',
+      fetchImpl: async () => new Response('<html>bad gateway</html>', {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
+    }),
+    (error) => error.kind === 'invalid_response' && error.retryable === false
+  );
+});
+
+test('transient retry stops after an idempotent operation succeeds', async () => {
+  assert.equal(typeof subject.withTransientRetry, 'function');
+  let attempts = 0;
+  const delays = [];
+
+  const result = await subject.withTransientRetry(async () => {
+    attempts += 1;
+    if (attempts < 3) {
+      const error = new Error('temporarily unavailable');
+      error.retryable = true;
+      throw error;
+    }
+    return 'done';
+  }, {
+    maxAttempts: 4,
+    baseDelayMs: 100,
+    maxDelayMs: 1_000,
+    random: () => 0,
+    sleep: async (delay) => delays.push(delay)
+  });
+
+  assert.equal(result, 'done');
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [100, 200]);
+});
+
+test('transient retry does not repeat a non-retryable error', async () => {
+  assert.equal(typeof subject.withTransientRetry, 'function');
+  let attempts = 0;
+
+  await assert.rejects(subject.withTransientRetry(async () => {
+    attempts += 1;
+    const error = new Error('invalid request');
+    error.retryable = false;
+    throw error;
+  }, { sleep: async () => {} }), /invalid request/);
+
+  assert.equal(attempts, 1);
+});
