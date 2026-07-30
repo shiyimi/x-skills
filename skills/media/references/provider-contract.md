@@ -86,6 +86,8 @@ module.exports = {
 
 `isConfigured(context)` returns a boolean without returning or logging secrets.
 
+Redact Provider credentials from every external error message, code, and detail before constructing a `ProviderError`. Core applies secondary CLI redaction but cannot know secrets loaded from Provider-owned files.
+
 `supports(request)` is synchronous and side-effect-free. Return:
 
 ```js
