@@ -932,18 +932,87 @@ test('video wait aborts a hanging status request at its deadline', async () => {
   assert.equal(result.error.kind, 'wait_timeout');
 });
 
-test('video wait maps a provider failed state to task_failed', async () => {
+test('video wait maps a provider failed state to a recoverable task envelope', async () => {
   assert.equal(typeof subject.waitForVideo, 'function');
 
-  await assert.rejects(subject.waitForVideo({
-    capability: 'text-to-video',
+  const result = await subject.waitForVideo({
+    capability: 'image-to-video',
     video_id: 'video_1'
   }, {
     apiKey: 'test-secret',
     fetchImpl: async () => new Response(JSON.stringify({
       task_id: 'task_1', video_id: 'video_1', status: 'failed', progress: 35
     }), { status: 200, headers: { 'Content-Type': 'application/json' } })
-  }), (error) => error.kind === 'task_failed');
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.capability, 'image-to-video');
+  assert.equal(result.status, 'failed');
+  assert.equal(result.task.id, 'video_1');
+  assert.equal(result.error.kind, 'task_failed');
+});
+
+test('video wait CLI preserves task state when the provider task failed', async (t) => {
+  const previousExitCode = process.exitCode;
+  t.after(() => { process.exitCode = previousExitCode; });
+  let stdout = '';
+
+  await subject.main(['video', 'wait'], {
+    stdout: { write(value) { stdout += value; } },
+    stdin: Readable.from(['{"capability":"image-to-video","video_id":"video_1"}']),
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1', video_id: 'video_1', status: 'failed', progress: 35
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(process.exitCode, 5);
+  const result = JSON.parse(stdout);
+  assert.equal(result.ok, false);
+  assert.equal(result.capability, 'image-to-video');
+  assert.equal(result.status, 'failed');
+  assert.equal(result.task.id, 'video_1');
+  assert.equal(result.error.kind, 'task_failed');
+});
+
+test('video wait CLI preserves completed task state when artifact download fails', async (t) => {
+  const previousExitCode = process.exitCode;
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-video-download-fail-'));
+  t.after(() => {
+    process.exitCode = previousExitCode;
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+  let stdout = '';
+
+  await subject.main(['video', 'wait'], {
+    stdout: { write(value) { stdout += value; } },
+    stdin: Readable.from([JSON.stringify({
+      capability: 'image-to-video',
+      video_id: 'video_1',
+      output: { directory: tempDir }
+    })]),
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async (url) => {
+      if (url.startsWith('https://api.agnes-ai.cn/agnesapi')) {
+        return new Response(JSON.stringify({
+          task_id: 'task_1',
+          video_id: 'video_1',
+          status: 'completed',
+          progress: 100,
+          metadata: { url: 'https://cdn.example.com/video.mp4' }
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return new Response('expired', { status: 404 });
+    }
+  });
+
+  assert.equal(process.exitCode, 6);
+  const result = JSON.parse(stdout);
+  assert.equal(result.ok, false);
+  assert.equal(result.capability, 'image-to-video');
+  assert.equal(result.status, 'succeeded');
+  assert.equal(result.task.id, 'video_1');
+  assert.equal(result.error.kind, 'download_failed');
 });
 
 test('CLI parser accepts only the documented command and request-file shape', () => {

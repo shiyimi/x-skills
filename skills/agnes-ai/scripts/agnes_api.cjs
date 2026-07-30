@@ -735,6 +735,20 @@ function videoEnvelope(
   return result;
 }
 
+function videoErrorEnvelope(response, capability, startedAt, completedAt, error) {
+  const result = videoEnvelope(response, capability, startedAt, completedAt);
+  result.ok = false;
+  result.error = {
+    kind: error.kind ?? 'invalid_response',
+    message: error.message,
+    retryable: Boolean(error.retryable)
+  };
+  if (error.httpStatus !== undefined) result.error.http_status = error.httpStatus;
+  if (error.providerCode !== undefined) result.error.provider_code = error.providerCode;
+  if (error.details !== undefined) result.error.details = error.details;
+  return result;
+}
+
 async function createVideo(request, {
   apiKey,
   fetchImpl = globalThis.fetch,
@@ -876,9 +890,7 @@ async function waitForVideo(request, {
     const normalized = taskFromVideoResponse(response, videoId);
     latestNormalized = normalized;
     if (normalized.status === 'failed') {
-      throw new ProviderError('task_failed', 'Agnes video generation failed.', {
-        details: { task: normalized.task }
-      });
+      return videoEnvelope(response, capability, startedAt, now());
     }
     if (normalized.status === 'succeeded') {
       const sourceUrl = response.metadata?.url;
@@ -891,11 +903,19 @@ async function waitForVideo(request, {
         startedAt,
         fsApi
       );
-      const artifact = await downloadArtifact(sourceUrl, path.join(directory, 'result-01'), {
-        fetchImpl,
-        fsApi,
-        retryOptions: { sleep, random, ...retryOptions }
-      });
+      let artifact;
+      try {
+        artifact = await downloadArtifact(sourceUrl, path.join(directory, 'result-01'), {
+          fetchImpl,
+          fsApi,
+          retryOptions: { sleep, random, ...retryOptions }
+        });
+      } catch (error) {
+        if (error.kind === 'download_failed') {
+          return videoErrorEnvelope(response, capability, startedAt, now(), error);
+        }
+        throw error;
+      }
       return videoEnvelope(response, capability, startedAt, now(), [artifact]);
     }
 
