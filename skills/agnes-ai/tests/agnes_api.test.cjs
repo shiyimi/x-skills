@@ -1,0 +1,173 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+function loadSubject() {
+  try {
+    return require('../scripts/agnes_api.cjs');
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND' && error.message.includes('agnes_api.cjs')) {
+      return {};
+    }
+    throw error;
+  }
+}
+
+const subject = loadSubject();
+
+function makeCredentialDeps({ envValue, fileValue, mode = 0o100600, platform = 'linux' }) {
+  let reads = 0;
+  return {
+    env: envValue === undefined ? {} : { AGNES_API_KEY: envValue },
+    homeDir: '/home/tester',
+    platform,
+    fsApi: {
+      readFileSync(filePath, encoding) {
+        reads += 1;
+        assert.equal(filePath, path.join('/home/tester', '.config', 'agnes', 'api_key'));
+        assert.equal(encoding, 'utf8');
+        if (fileValue === undefined) {
+          const error = new Error('missing');
+          error.code = 'ENOENT';
+          throw error;
+        }
+        return fileValue;
+      },
+      statSync() {
+        return { mode };
+      }
+    },
+    get reads() {
+      return reads;
+    }
+  };
+}
+
+test('environment credential wins without reading the credential file', () => {
+  assert.equal(typeof subject.resolveCredentials, 'function');
+  const deps = makeCredentialDeps({ envValue: ' env-key ', fileValue: 'file-key' });
+
+  assert.equal(subject.resolveCredentials(deps), 'env-key');
+  assert.equal(deps.reads, 0);
+});
+
+test('credential falls back to a private config file', () => {
+  assert.equal(typeof subject.resolveCredentials, 'function');
+  const deps = makeCredentialDeps({ envValue: undefined, fileValue: ' file-key\n' });
+
+  assert.equal(subject.resolveCredentials(deps), 'file-key');
+  assert.equal(deps.reads, 1);
+});
+
+test('credential rejects a config file readable by other POSIX users', () => {
+  assert.equal(typeof subject.resolveCredentials, 'function');
+  const deps = makeCredentialDeps({ envValue: undefined, fileValue: 'file-key', mode: 0o100644 });
+
+  assert.throws(() => subject.resolveCredentials(deps), /0600/);
+});
+
+test('text-to-image request uses current Agnes defaults and nested response format', async () => {
+  assert.equal(typeof subject.buildImageRequest, 'function');
+  const result = await subject.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A glass cube in a white studio'
+  });
+
+  assert.deepEqual(result, {
+    model: 'agnes-image-2.1-flash',
+    prompt: 'A glass cube in a white studio',
+    size: '1K',
+    ratio: '1:1',
+    extra_body: { response_format: 'url' }
+  });
+});
+
+test('image-to-image converts a local PNG to an Agnes Data URI', async (t) => {
+  assert.equal(typeof subject.buildImageRequest, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-image-map-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const inputPath = path.join(tempDir, 'input.png');
+  fs.writeFileSync(inputPath, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+
+  const result = await subject.buildImageRequest({
+    capability: 'image-to-image',
+    prompt: 'Make the object matte black',
+    inputs: [{ type: 'image', source: { kind: 'path', value: inputPath } }]
+  });
+
+  assert.deepEqual(result.extra_body.image, ['data:image/png;base64,iVBORw==']);
+  assert.equal(Object.hasOwn(result, 'image'), false);
+  assert.equal(Object.hasOwn(result, 'response_format'), false);
+});
+
+test('image-to-image rejects unsupported local image types', async (t) => {
+  assert.equal(typeof subject.buildImageRequest, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-image-type-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const inputPath = path.join(tempDir, 'input.gif');
+  fs.writeFileSync(inputPath, 'GIF89a');
+
+  await assert.rejects(
+    subject.buildImageRequest({
+      capability: 'image-to-image',
+      prompt: 'Edit this image',
+      inputs: [{ type: 'image', source: { kind: 'path', value: inputPath } }]
+    }),
+    /PNG, JPEG, or WEBP/
+  );
+});
+
+test('video request applies documented defaults', () => {
+  assert.equal(typeof subject.buildVideoRequest, 'function');
+  const result = subject.buildVideoRequest({
+    capability: 'text-to-video',
+    prompt: 'A camera glides through a neon city'
+  });
+
+  assert.deepEqual(result, {
+    model: 'agnes-video-v2.0',
+    prompt: 'A camera glides through a neon city',
+    width: 1152,
+    height: 768,
+    num_frames: 121,
+    frame_rate: 24
+  });
+});
+
+test('video request rejects a frame count that does not satisfy 8n + 1', () => {
+  assert.equal(typeof subject.buildVideoRequest, 'function');
+
+  assert.throws(
+    () => subject.buildVideoRequest({
+      capability: 'text-to-video',
+      prompt: 'A short product animation',
+      parameters: { num_frames: 120 }
+    }),
+    /8n \+ 1/
+  );
+});
+
+test('image-to-video rejects local paths because Agnes documents URL input only', () => {
+  assert.equal(typeof subject.buildVideoRequest, 'function');
+
+  assert.throws(
+    () => subject.buildVideoRequest({
+      capability: 'image-to-video',
+      prompt: 'Slowly orbit the subject',
+      inputs: [{ type: 'image', source: { kind: 'path', value: 'input.png' } }]
+    }),
+    /public HTTPS URL/
+  );
+});
+
+test('Agnes task states normalize to provider states', () => {
+  assert.equal(typeof subject.normalizeStatus, 'function');
+
+  assert.equal(subject.normalizeStatus('queued'), 'queued');
+  assert.equal(subject.normalizeStatus('in_progress'), 'running');
+  assert.equal(subject.normalizeStatus('completed'), 'succeeded');
+  assert.equal(subject.normalizeStatus('failed'), 'failed');
+  assert.throws(() => subject.normalizeStatus('mystery'), /Unknown Agnes video status/);
+});
