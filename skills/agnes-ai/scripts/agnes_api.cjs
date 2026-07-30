@@ -347,18 +347,37 @@ async function withTransientRetry(operation, {
   baseDelayMs = 1_000,
   maxDelayMs = 20_000,
   random = Math.random,
-  sleep = defaultSleep
+  sleep = defaultSleep,
+  deadlineMs = Number.POSITIVE_INFINITY,
+  nowMs = Date.now,
+  signal
 } = {}) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    if (attempt > 1 && (signal?.aborted || nowMs() >= deadlineMs)) {
+      throw new ProviderError('wait_timeout', 'The Agnes polling deadline was reached.', {
+        retryable: true
+      });
+    }
     try {
       return await operation();
     } catch (error) {
+      if (signal?.aborted || nowMs() >= deadlineMs) {
+        throw new ProviderError('wait_timeout', 'The Agnes polling deadline was reached.', {
+          retryable: true
+        });
+      }
       if (!error.retryable || attempt === maxAttempts) {
         throw error;
       }
       const exponential = Math.min(maxDelayMs, baseDelayMs * (2 ** (attempt - 1)));
       const jitter = Math.floor(random() * Math.min(baseDelayMs, exponential));
-      await sleep(exponential + jitter);
+      const remainingMs = deadlineMs - nowMs();
+      await sleep(Math.min(exponential + jitter, remainingMs));
+      if (signal?.aborted || nowMs() >= deadlineMs) {
+        throw new ProviderError('wait_timeout', 'The Agnes polling deadline was reached.', {
+          retryable: true
+        });
+      }
     }
   }
   throw new ProviderError('invalid_response', 'Retry loop ended unexpectedly.');
@@ -671,7 +690,8 @@ function assertVideoId(videoId) {
 async function fetchVideoStatus(videoId, {
   apiKey,
   fetchImpl = globalThis.fetch,
-  retryOptions = {}
+  retryOptions = {},
+  signal
 } = {}) {
   const normalizedId = assertVideoId(videoId);
   const query = new URLSearchParams({ video_id: normalizedId });
@@ -680,9 +700,10 @@ async function fetchVideoStatus(videoId, {
       method: 'GET',
       path: `/agnesapi?${query.toString()}`,
       apiKey,
-      fetchImpl
+      fetchImpl,
+      signal
     }),
-    retryOptions
+    { ...retryOptions, signal }
   );
 }
 
@@ -719,14 +740,69 @@ async function waitForVideo(request, {
 
   const startedAt = now();
   const deadline = startedAt.getTime() + timeoutSeconds * 1_000;
+  let latestResponse;
+  let latestNormalized;
   let intervalMs = 5_000;
+
+  const timeoutResult = () => {
+    const currentTime = now();
+    const completedAt = currentTime.getTime() >= deadline ? currentTime : new Date(deadline);
+    const normalized = latestNormalized ?? {
+      status: 'running',
+      task: {
+        id: videoId,
+        task_id: null,
+        provider_status: null,
+        progress: null
+      }
+    };
+    return {
+      ok: false,
+      provider: 'agnes',
+      capability,
+      status: normalized.status,
+      task: normalized.task,
+      artifacts: [],
+      effective_parameters: videoEffectiveParameters(latestResponse ?? {}),
+      warnings: videoWarnings(latestResponse ?? {}),
+      timing: timingResult(startedAt, completedAt),
+      error: {
+        kind: 'wait_timeout',
+        message: 'Waiting timed out while the Agnes task is still active; resume with video wait.',
+        retryable: true
+      }
+    };
+  };
+
   while (true) {
-    const response = await fetchVideoStatus(videoId, {
-      apiKey,
-      fetchImpl,
-      retryOptions: { sleep, random, ...retryOptions }
-    });
+    const remainingMs = Math.max(0, deadline - now().getTime());
+    const controller = new AbortController();
+    const abortTimer = setTimeout(() => controller.abort(), remainingMs);
+    let response;
+    try {
+      response = await fetchVideoStatus(videoId, {
+        apiKey,
+        fetchImpl,
+        signal: controller.signal,
+        retryOptions: {
+          sleep,
+          random,
+          ...retryOptions,
+          deadlineMs: deadline,
+          nowMs: () => now().getTime()
+        }
+      });
+    } catch (error) {
+      if (error.kind === 'wait_timeout' || controller.signal.aborted) {
+        return timeoutResult();
+      }
+      throw error;
+    } finally {
+      clearTimeout(abortTimer);
+    }
+    latestResponse = response;
     const normalized = taskFromVideoResponse(response, videoId);
+    latestNormalized = normalized;
     if (normalized.status === 'failed') {
       throw new ProviderError('task_failed', 'Agnes video generation failed.', {
         details: { task: normalized.task }
@@ -753,22 +829,7 @@ async function waitForVideo(request, {
 
     const currentTime = now();
     if (currentTime.getTime() >= deadline) {
-      return {
-        ok: false,
-        provider: 'agnes',
-        capability,
-        status: normalized.status,
-        task: normalized.task,
-        artifacts: [],
-        effective_parameters: videoEffectiveParameters(response),
-        warnings: videoWarnings(response),
-        timing: timingResult(startedAt, currentTime),
-        error: {
-          kind: 'wait_timeout',
-          message: 'Waiting timed out while the Agnes task is still active; resume with video wait.',
-          retryable: true
-        }
-      };
+      return timeoutResult();
     }
 
     const jitter = Math.floor(random() * 1_000);

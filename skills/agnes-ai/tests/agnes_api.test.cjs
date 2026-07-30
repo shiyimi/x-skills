@@ -697,6 +697,83 @@ test('video wait returns a resumable timeout result instead of failing the remot
   assert.equal(result.error.retryable, true);
 });
 
+test('video wait bounds transient status retries and preserves the latest task state', async (t) => {
+  const cases = [
+    ['HTTP 429', () => new Response('{"message":"slow down"}', {
+      status: 429,
+      headers: { 'Content-Type': 'application/json' }
+    })],
+    ['HTTP 503', () => new Response('{"message":"unavailable"}', {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    })],
+    ['network failure', () => { throw new TypeError('connection reset'); }]
+  ];
+
+  for (const [label, transientResponse] of cases) {
+    await t.test(label, async () => {
+      let clockMs = Date.parse('2026-07-30T07:30:12.000Z');
+      let calls = 0;
+      const result = await subject.waitForVideo({
+        capability: 'text-to-video',
+        video_id: 'video_1',
+        wait: { timeout_seconds: 6 }
+      }, {
+        apiKey: 'test-secret',
+        fetchImpl: async () => {
+          calls += 1;
+          if (calls === 1) {
+            return new Response(JSON.stringify({
+              task_id: 'task_1',
+              video_id: 'video_1',
+              status: 'in_progress',
+              progress: 42
+            }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+          }
+          return transientResponse();
+        },
+        now: () => new Date(clockMs),
+        sleep: async (delay) => { clockMs += delay; },
+        random: () => 0
+      });
+
+      assert.equal(calls, 2);
+      assert.equal(clockMs, Date.parse('2026-07-30T07:30:18.000Z'));
+      assert.equal(result.ok, false);
+      assert.equal(result.status, 'running');
+      assert.equal(result.task.id, 'video_1');
+      assert.equal(result.task.progress, 42);
+      assert.equal(result.error.kind, 'wait_timeout');
+    });
+  }
+});
+
+test('video wait aborts a hanging status request at its deadline', async () => {
+  let receivedSignal;
+  const startedAt = Date.now();
+  const result = await subject.waitForVideo({
+    capability: 'text-to-video',
+    video_id: 'video_hanging',
+    wait: { timeout_seconds: 0.02 }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async (url, options) => {
+      receivedSignal = options.signal;
+      await new Promise((resolve, reject) => {
+        options.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+      });
+    }
+  });
+
+  assert.equal(receivedSignal instanceof AbortSignal, true);
+  assert.equal(receivedSignal.aborted, true);
+  assert.equal(Date.now() - startedAt < 1_000, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'running');
+  assert.equal(result.task.id, 'video_hanging');
+  assert.equal(result.error.kind, 'wait_timeout');
+});
+
 test('video wait maps a provider failed state to task_failed', async () => {
   assert.equal(typeof subject.waitForVideo, 'function');
 
