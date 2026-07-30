@@ -444,3 +444,198 @@ test('image workflow preserves completed artifacts when a later download fails',
     return true;
   });
 });
+
+test('video creation returns a resumable video_id after one POST', async () => {
+  assert.equal(typeof subject.createVideo, 'function');
+  const calls = [];
+  const result = await subject.createVideo({
+    capability: 'text-to-video',
+    prompt: 'A cat walking on a beach at sunset'
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return new Response(JSON.stringify({
+        id: 'task_1',
+        task_id: 'task_1',
+        video_id: 'video_1',
+        object: 'video',
+        model: 'agnes-video-v2.0',
+        status: 'queued',
+        progress: 0,
+        created_at: 1780457477,
+        seconds: '5.0',
+        size: '1152x768'
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    },
+    now: () => new Date('2026-07-30T07:30:12.000Z')
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://api.agnes-ai.cn/v1/videos');
+  assert.equal(calls[0].options.method, 'POST');
+  assert.equal(result.ok, true);
+  assert.equal(result.status, 'queued');
+  assert.deepEqual(result.task, {
+    id: 'video_1',
+    task_id: 'task_1',
+    provider_status: 'queued',
+    progress: 0
+  });
+});
+
+test('video creation rejects a response without video_id', async () => {
+  assert.equal(typeof subject.createVideo, 'function');
+
+  await assert.rejects(subject.createVideo({
+    capability: 'text-to-video',
+    prompt: 'A short animation'
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1',
+      status: 'queued'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }), (error) => error.kind === 'invalid_response' && /video_id/.test(error.message));
+});
+
+test('video status uses video_id and retries only the idempotent GET', async () => {
+  assert.equal(typeof subject.getVideoStatus, 'function');
+  let attempts = 0;
+  const result = await subject.getVideoStatus('video id/1', {
+    apiKey: 'test-secret',
+    fetchImpl: async (url, options) => {
+      attempts += 1;
+      assert.equal(url, 'https://api.agnes-ai.cn/agnesapi?video_id=video+id%2F1');
+      assert.equal(options.method, 'GET');
+      if (attempts === 1) throw new TypeError('temporary reset');
+      return new Response(JSON.stringify({
+        id: 'task_1',
+        task_id: 'task_1',
+        video_id: 'video id/1',
+        status: 'completed',
+        progress: 100,
+        seconds: '5.0',
+        size: '1280x768',
+        metadata: {
+          size_mapping: { adjusted: true, width: 1280, height: 768 },
+          url: 'https://platform-outputs.agnes-ai.space/videos/task_1.mp4'
+        }
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    },
+    retryOptions: { sleep: async () => {}, random: () => 0 }
+  });
+
+  assert.equal(attempts, 2);
+  assert.equal(result.status, 'succeeded');
+  assert.equal(result.task.id, 'video id/1');
+});
+
+test('combined video workflow creates once, polls, and downloads the completed video', async (t) => {
+  assert.equal(typeof subject.runVideo, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-video-run-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  let postCount = 0;
+  let pollCount = 0;
+  let clockMs = Date.parse('2026-07-30T07:30:12.000Z');
+  const fetchImpl = async (url, options = {}) => {
+    if (url === 'https://api.agnes-ai.cn/v1/videos') {
+      postCount += 1;
+      return new Response(JSON.stringify({
+        task_id: 'task_1', video_id: 'video_1', status: 'queued', progress: 0
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url === 'https://api.agnes-ai.cn/agnesapi?video_id=video_1') {
+      pollCount += 1;
+      const states = [
+        { task_id: 'task_1', video_id: 'video_1', status: 'queued', progress: 0 },
+        { task_id: 'task_1', video_id: 'video_1', status: 'in_progress', progress: 60 },
+        {
+          task_id: 'task_1',
+          video_id: 'video_1',
+          status: 'completed',
+          progress: 100,
+          seconds: '5.0',
+          size: '1280x768',
+          metadata: {
+            size_mapping: { adjusted: true, requested_width: 1152, width: 1280 },
+            url: 'https://platform-outputs.agnes-ai.space/videos/task_1.mp4'
+          }
+        }
+      ];
+      return new Response(JSON.stringify(states[pollCount - 1]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    assert.equal(url, 'https://platform-outputs.agnes-ai.space/videos/task_1.mp4');
+    assert.equal(options.headers?.Authorization, undefined);
+    return new Response(Buffer.from([0, 0, 0, 24]), {
+      status: 200,
+      headers: { 'Content-Type': 'video/mp4' }
+    });
+  };
+
+  const result = await subject.runVideo({
+    capability: 'text-to-video',
+    prompt: 'A cinematic product reveal',
+    output: { directory: tempDir }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl,
+    now: () => new Date(clockMs),
+    sleep: async (delay) => { clockMs += delay; },
+    random: () => 0
+  });
+
+  assert.equal(postCount, 1);
+  assert.equal(pollCount, 3);
+  assert.equal(result.ok, true);
+  assert.equal(result.status, 'succeeded');
+  assert.equal(result.task.id, 'video_1');
+  assert.equal(result.artifacts.length, 1);
+  assert.equal(result.artifacts[0].mime_type, 'video/mp4');
+  assert.equal(fs.existsSync(result.artifacts[0].path), true);
+  assert.deepEqual(result.effective_parameters, {
+    size: '1280x768',
+    seconds: 5,
+    size_mapping: { adjusted: true, requested_width: 1152, width: 1280 }
+  });
+});
+
+test('video wait returns a resumable timeout result instead of failing the remote task', async () => {
+  assert.equal(typeof subject.waitForVideo, 'function');
+  const result = await subject.waitForVideo({
+    capability: 'text-to-video',
+    video_id: 'video_1',
+    wait: { timeout_seconds: 0 }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1', video_id: 'video_1', status: 'in_progress', progress: 63
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    now: () => new Date('2026-07-30T07:30:12.000Z'),
+    sleep: async () => { throw new Error('timeout must not sleep'); }
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'running');
+  assert.equal(result.task.id, 'video_1');
+  assert.equal(result.task.progress, 63);
+  assert.equal(result.error.kind, 'wait_timeout');
+  assert.equal(result.error.retryable, true);
+});
+
+test('video wait maps a provider failed state to task_failed', async () => {
+  assert.equal(typeof subject.waitForVideo, 'function');
+
+  await assert.rejects(subject.waitForVideo({
+    capability: 'text-to-video',
+    video_id: 'video_1'
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1', video_id: 'video_1', status: 'failed', progress: 35
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }), (error) => error.kind === 'task_failed');
+});

@@ -544,6 +544,219 @@ async function runImage(request, {
   };
 }
 
+function taskFromVideoResponse(response, fallbackVideoId) {
+  let status;
+  try {
+    status = normalizeStatus(response?.status);
+  } catch {
+    throw new ProviderError(
+      'invalid_response',
+      `Agnes returned an unknown video status: ${String(response?.status)}.`
+    );
+  }
+  const videoId = response.video_id ?? fallbackVideoId;
+  if (typeof videoId !== 'string' || videoId.trim() === '') {
+    throw new ProviderError('invalid_response', 'Agnes video response did not include video_id.');
+  }
+  return {
+    status,
+    task: {
+      id: videoId,
+      task_id: response.task_id ?? response.id ?? null,
+      provider_status: response.status,
+      progress: response.progress ?? null
+    }
+  };
+}
+
+function videoEffectiveParameters(response) {
+  const seconds = Number(response.seconds);
+  return {
+    size: response.size ?? null,
+    seconds: Number.isFinite(seconds) ? seconds : response.seconds ?? null,
+    size_mapping: response.metadata?.size_mapping ?? null
+  };
+}
+
+function videoWarnings(response) {
+  const mapping = response.metadata?.size_mapping;
+  if (!mapping?.adjusted) return [];
+  const size = response.size ?? (
+    mapping.width && mapping.height ? `${mapping.width}x${mapping.height}` : 'a supported size'
+  );
+  return [`Agnes normalized the requested dimensions to ${size}.`];
+}
+
+function videoEnvelope(response, capability, startedAt, completedAt, artifacts = []) {
+  const normalized = taskFromVideoResponse(response);
+  return {
+    ok: true,
+    provider: 'agnes',
+    capability,
+    status: normalized.status,
+    task: normalized.task,
+    artifacts,
+    effective_parameters: videoEffectiveParameters(response),
+    warnings: videoWarnings(response),
+    timing: timingResult(startedAt, completedAt)
+  };
+}
+
+async function createVideo(request, {
+  apiKey,
+  fetchImpl = globalThis.fetch,
+  now = () => new Date()
+} = {}) {
+  const startedAt = now();
+  const body = buildVideoRequest(request);
+  const response = await requestJson({
+    method: 'POST',
+    path: '/v1/videos',
+    apiKey,
+    body,
+    fetchImpl
+  });
+  return videoEnvelope(response, request.capability, startedAt, now());
+}
+
+function assertVideoId(videoId) {
+  if (typeof videoId !== 'string' || videoId.trim() === '') {
+    throw new ProviderError('invalid_request', 'A non-empty video_id is required.');
+  }
+  return videoId.trim();
+}
+
+async function fetchVideoStatus(videoId, {
+  apiKey,
+  fetchImpl = globalThis.fetch,
+  retryOptions = {}
+} = {}) {
+  const normalizedId = assertVideoId(videoId);
+  const query = new URLSearchParams({ video_id: normalizedId });
+  return withTransientRetry(
+    () => requestJson({
+      method: 'GET',
+      path: `/agnesapi?${query.toString()}`,
+      apiKey,
+      fetchImpl
+    }),
+    retryOptions
+  );
+}
+
+async function getVideoStatus(videoId, {
+  apiKey,
+  fetchImpl = globalThis.fetch,
+  retryOptions = {},
+  capability = 'text-to-video',
+  now = () => new Date()
+} = {}) {
+  const startedAt = now();
+  const response = await fetchVideoStatus(videoId, { apiKey, fetchImpl, retryOptions });
+  const normalized = taskFromVideoResponse(response, assertVideoId(videoId));
+  const completedAt = now();
+  return {
+    ok: normalized.status !== 'failed',
+    provider: 'agnes',
+    capability,
+    status: normalized.status,
+    task: normalized.task,
+    artifacts: [],
+    effective_parameters: videoEffectiveParameters(response),
+    warnings: videoWarnings(response),
+    timing: timingResult(startedAt, completedAt)
+  };
+}
+
+async function waitForVideo(request, {
+  apiKey,
+  fetchImpl = globalThis.fetch,
+  now = () => new Date(),
+  sleep = defaultSleep,
+  random = Math.random,
+  fsApi = fs,
+  retryOptions = {}
+} = {}) {
+  const capability = request?.capability;
+  if (!['text-to-video', 'image-to-video', 'keyframes-to-video'].includes(capability)) {
+    throw new ProviderError('invalid_request', `Unsupported video capability: ${String(capability)}.`);
+  }
+  const videoId = assertVideoId(request.video_id);
+  const timeoutSeconds = request.wait?.timeout_seconds ?? 1_200;
+  if (typeof timeoutSeconds !== 'number' || !Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
+    throw new ProviderError('invalid_request', 'wait.timeout_seconds must be a non-negative number.');
+  }
+
+  const startedAt = now();
+  const deadline = startedAt.getTime() + timeoutSeconds * 1_000;
+  let intervalMs = 5_000;
+  while (true) {
+    const response = await fetchVideoStatus(videoId, {
+      apiKey,
+      fetchImpl,
+      retryOptions: { sleep, random, ...retryOptions }
+    });
+    const normalized = taskFromVideoResponse(response, videoId);
+    if (normalized.status === 'failed') {
+      throw new ProviderError('task_failed', 'Agnes video generation failed.', {
+        details: { task: normalized.task }
+      });
+    }
+    if (normalized.status === 'succeeded') {
+      const sourceUrl = response.metadata?.url;
+      if (typeof sourceUrl !== 'string' || sourceUrl === '') {
+        throw new ProviderError('invalid_response', 'Completed Agnes video response has no metadata.url.');
+      }
+      const directory = await createArtifactDirectory(
+        request.output?.directory ?? path.resolve('outputs'),
+        videoId,
+        startedAt,
+        fsApi
+      );
+      const artifact = await downloadArtifact(sourceUrl, path.join(directory, 'result-01'), {
+        fetchImpl,
+        fsApi,
+        retryOptions: { sleep, random, ...retryOptions }
+      });
+      return videoEnvelope(response, capability, startedAt, now(), [artifact]);
+    }
+
+    const currentTime = now();
+    if (currentTime.getTime() >= deadline) {
+      return {
+        ok: false,
+        provider: 'agnes',
+        capability,
+        status: normalized.status,
+        task: normalized.task,
+        artifacts: [],
+        effective_parameters: videoEffectiveParameters(response),
+        warnings: videoWarnings(response),
+        timing: timingResult(startedAt, currentTime),
+        error: {
+          kind: 'wait_timeout',
+          message: 'Waiting timed out while the Agnes task is still active; resume with video wait.',
+          retryable: true
+        }
+      };
+    }
+
+    const jitter = Math.floor(random() * 1_000);
+    await sleep(Math.min(intervalMs + jitter, Math.max(0, deadline - currentTime.getTime())));
+    intervalMs = Math.min(20_000, intervalMs * 2);
+  }
+}
+
+async function runVideo(request, deps = {}) {
+  const created = await createVideo(request, deps);
+  return waitForVideo({
+    capability: request.capability,
+    video_id: created.task.id,
+    output: request.output,
+    wait: request.wait
+  }, deps);
+}
+
 module.exports = {
   API_ROOT,
   ProviderError,
@@ -556,5 +769,9 @@ module.exports = {
   withTransientRetry,
   downloadArtifact,
   saveBase64Artifact,
-  runImage
+  runImage,
+  createVideo,
+  getVideoStatus,
+  waitForVideo,
+  runVideo
 };
