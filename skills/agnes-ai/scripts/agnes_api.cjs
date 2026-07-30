@@ -76,13 +76,13 @@ function resolveCredentials({
 
 function assertRequest(request, capabilities) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) {
-    throw new Error('Request must be a JSON object.');
+    throw new ProviderError('invalid_request', 'Request must be a JSON object.');
   }
   if (!capabilities.includes(request.capability)) {
-    throw new Error(`Unsupported capability: ${String(request.capability)}`);
+    throw new ProviderError('invalid_request', `Unsupported capability: ${String(request.capability)}`);
   }
   if (typeof request.prompt !== 'string' || request.prompt.trim() === '') {
-    throw new Error('A non-empty prompt is required.');
+    throw new ProviderError('invalid_request', 'A non-empty prompt is required.');
   }
 }
 
@@ -91,33 +91,41 @@ function assertHttpsUrl(value, label) {
   try {
     url = new URL(value);
   } catch {
-    throw new Error(`${label} must be a public HTTPS URL.`);
+    throw new ProviderError('invalid_request', `${label} must be a public HTTPS URL.`);
   }
   if (url.protocol !== 'https:') {
-    throw new Error(`${label} must be a public HTTPS URL.`);
+    throw new ProviderError('invalid_request', `${label} must be a public HTTPS URL.`);
   }
   return url.toString();
 }
 
 async function mapImageInput(input, { readFile = fs.promises.readFile } = {}) {
   if (!input || input.type !== 'image' || !input.source) {
-    throw new Error('Each image input must contain an image source.');
+    throw new ProviderError('invalid_request', 'Each image input must contain an image source.');
   }
   if (input.source.kind === 'url') {
     return assertHttpsUrl(input.source.value, 'Image input');
   }
   if (input.source.kind !== 'path' || typeof input.source.value !== 'string') {
-    throw new Error('Image input source kind must be path or url.');
+    throw new ProviderError('invalid_request', 'Image input source kind must be path or url.');
   }
 
   const extension = path.extname(input.source.value).toLowerCase();
   const mimeType = IMAGE_MIME_TYPES.get(extension);
   if (!mimeType) {
-    throw new Error('Local image input must be PNG, JPEG, or WEBP.');
+    throw new ProviderError('invalid_request', 'Local image input must be PNG, JPEG, or WEBP.');
   }
-  const data = await readFile(input.source.value);
+  let data;
+  try {
+    data = await readFile(input.source.value);
+  } catch {
+    throw new ProviderError(
+      'invalid_request',
+      `Unable to read local image input: ${input.source.value}`
+    );
+  }
   if (data.length === 0) {
-    throw new Error('Local image input cannot be empty.');
+    throw new ProviderError('invalid_request', 'Local image input cannot be empty.');
   }
   return `data:${mimeType};base64,${data.toString('base64')}`;
 }
@@ -127,7 +135,7 @@ async function buildImageRequest(request, deps = {}) {
   const parameters = request.parameters ?? {};
   const model = parameters.model ?? 'agnes-image-2.1-flash';
   if (!IMAGE_MODELS.has(model)) {
-    throw new Error(`Unsupported Agnes image model: ${model}`);
+    throw new ProviderError('invalid_request', `Unsupported Agnes image model: ${model}`);
   }
 
   const result = {
@@ -144,7 +152,7 @@ async function buildImageRequest(request, deps = {}) {
   result.extra_body = { response_format: 'url' };
   if (request.capability === 'image-to-image') {
     if (!Array.isArray(request.inputs) || request.inputs.length === 0) {
-      throw new Error('image-to-image requires at least one image input.');
+      throw new ProviderError('invalid_request', 'image-to-image requires at least one image input.');
     }
     result.extra_body.image = await Promise.all(
       request.inputs.map((input) => mapImageInput(input, deps))
@@ -155,11 +163,17 @@ async function buildImageRequest(request, deps = {}) {
 
 function videoInputUrls(request, minimum) {
   if (!Array.isArray(request.inputs) || request.inputs.length < minimum) {
-    throw new Error(`This video capability requires at least ${minimum} image input(s).`);
+    throw new ProviderError(
+      'invalid_request',
+      `This video capability requires at least ${minimum} image input(s).`
+    );
   }
   return request.inputs.map((input) => {
     if (!input || input.type !== 'image' || input.source?.kind !== 'url') {
-      throw new Error('Agnes video image inputs must use a public HTTPS URL.');
+      throw new ProviderError(
+        'invalid_request',
+        'Agnes video image inputs must use a public HTTPS URL.'
+      );
     }
     return assertHttpsUrl(input.source.value, 'Agnes video image input');
   });
@@ -170,16 +184,19 @@ function buildVideoRequest(request) {
   const parameters = request.parameters ?? {};
   const model = parameters.model ?? VIDEO_MODEL;
   if (model !== VIDEO_MODEL) {
-    throw new Error(`Unsupported Agnes video model: ${model}`);
+    throw new ProviderError('invalid_request', `Unsupported Agnes video model: ${model}`);
   }
 
   const numFrames = parameters.num_frames ?? 121;
   const frameRate = parameters.frame_rate ?? 24;
   if (!Number.isInteger(numFrames) || numFrames < 1 || numFrames > 441 || (numFrames - 1) % 8 !== 0) {
-    throw new Error('num_frames must be an integer <= 441 that satisfies the 8n + 1 rule.');
+    throw new ProviderError(
+      'invalid_request',
+      'num_frames must be an integer <= 441 that satisfies the 8n + 1 rule.'
+    );
   }
   if (typeof frameRate !== 'number' || frameRate < 1 || frameRate > 60) {
-    throw new Error('frame_rate must be a number between 1 and 60.');
+    throw new ProviderError('invalid_request', 'frame_rate must be a number between 1 and 60.');
   }
 
   const result = {
@@ -217,7 +234,10 @@ function normalizeStatus(status) {
   };
   const normalized = states[String(status).toLowerCase()];
   if (!normalized) {
-    throw new Error(`Unknown Agnes video status: ${String(status)}`);
+    throw new ProviderError(
+      'invalid_response',
+      `Unknown Agnes video status: ${String(status)}`
+    );
   }
   return normalized;
 }

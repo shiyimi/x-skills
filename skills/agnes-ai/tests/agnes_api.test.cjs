@@ -746,3 +746,36 @@ test('CLI errors never echo the API key or invalid JSON input', () => {
   const result = JSON.parse(child.stdout);
   assert.equal(result.error.kind, 'invalid_request');
 });
+
+test('request boundary failures are invalid_request errors', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-invalid-input-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+
+  assert.throws(() => subject.buildVideoRequest({
+    capability: 'text-to-video',
+    prompt: 'A short clip',
+    parameters: { num_frames: 120 }
+  }), (error) => error.kind === 'invalid_request');
+
+  await assert.rejects(subject.buildImageRequest({
+    capability: 'image-to-image',
+    prompt: 'Edit this image',
+    inputs: [{
+      type: 'image',
+      source: { kind: 'path', value: path.join(tempDir, 'missing.png') }
+    }]
+  }), (error) => error.kind === 'invalid_request' && /Unable to read local image input/.test(error.message));
+});
+
+test('invalid generation request exits 2 instead of reporting a provider response failure', () => {
+  const scriptPath = path.resolve(__dirname, '../scripts/agnes_api.cjs');
+  const child = spawnSync(process.execPath, [scriptPath, 'image', 'generate'], {
+    encoding: 'utf8',
+    input: '{"capability":"text-to-image","prompt":""}',
+    env: { ...process.env, AGNES_API_KEY: 'test-secret' }
+  });
+
+  assert.equal(child.status, 2);
+  const result = JSON.parse(child.stdout);
+  assert.equal(result.error.kind, 'invalid_request');
+});
