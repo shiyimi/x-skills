@@ -1,85 +1,92 @@
 ---
 name: agnes-ai
-description: [TODO: Complete and informative explanation of what the skill does and when to use it. Include WHEN to use this skill - specific scenarios, file types, or tasks that trigger it.]
+description: Generate or edit images and generate, inspect, resume, and download videos through the Agnes AI API at agnes-ai.cn. Use whenever the user mentions Agnes or Agnes AI, names an Agnes image/video model, wants to use Agnes free media quota, provides an Agnes video_id, or explicitly asks for Agnes image or video generation. Do not trigger for a generic media request when the user has not selected Agnes.
 ---
 
-# Agnes Ai
+# Agnes AI Media
 
-## Overview
+Use the bundled Node.js CLI for every Agnes operation. Do not reconstruct requests with ad hoc `curl` commands. The CLI owns credential handling, current `.cn` endpoints, request mapping, polling, error normalization, and local artifact downloads.
 
-[TODO: 1-2 sentences explaining what this skill enables]
+## Requirements
 
-## Structuring This Skill
+- Require Node.js 18 or newer.
+- Locate `scripts/agnes_api.cjs` relative to this `SKILL.md`.
+- Read [references/api.md](references/api.md) when selecting model-specific parameters.
+- Read [references/provider-contract.md](references/provider-contract.md) when constructing request JSON or interpreting a result.
 
-[TODO: Choose the structure that best fits this skill's purpose. Common patterns:
+## Credentials
 
-**1. Workflow-Based** (best for sequential processes)
-- Works well when there are clear step-by-step procedures
-- Example: DOCX skill with "Workflow Decision Tree" -> "Reading" -> "Creating" -> "Editing"
-- Structure: ## Overview -> ## Workflow Decision Tree -> ## Step 1 -> ## Step 2...
+Let the CLI resolve credentials in this order:
 
-**2. Task-Based** (best for tool collections)
-- Works well when the skill offers different operations/capabilities
-- Example: PDF skill with "Quick Start" -> "Merge PDFs" -> "Split PDFs" -> "Extract Text"
-- Structure: ## Overview -> ## Quick Start -> ## Task Category 1 -> ## Task Category 2...
+1. `AGNES_API_KEY` environment variable.
+2. `~/.config/agnes/api_key`.
 
-**3. Reference/Guidelines** (best for standards or specifications)
-- Works well for brand guidelines, coding standards, or requirements
-- Example: Brand styling with "Brand Guidelines" -> "Colors" -> "Typography" -> "Features"
-- Structure: ## Overview -> ## Guidelines -> ## Specifications -> ## Usage...
+Never put an API key in command arguments, request JSON, logs, or chat output. Never create a project `.env` for this skill.
 
-**4. Capabilities-Based** (best for integrated systems)
-- Works well when the skill provides multiple interrelated features
-- Example: Product Management with "Core Capabilities" -> numbered capability list
-- Structure: ## Overview -> ## Core Capabilities -> ### 1. Feature -> ### 2. Feature...
+When credentials are missing, direct the user to obtain a key from the Agnes API platform and configure one of the supported sources. For a POSIX config file, require permissions `0600`:
 
-Patterns can be mixed and matched as needed. Most skills combine patterns (e.g., start with task-based, add workflow for complex operations).
+```bash
+umask 077
+mkdir -p ~/.config/agnes
+printf '%s' 'YOUR_API_KEY' > ~/.config/agnes/api_key
+chmod 600 ~/.config/agnes/api_key
+```
 
-Delete this entire "Structuring This Skill" section when done - it's just guidance.]
+Warn that placing a literal key in a shell command can leave it in shell history. Prefer an environment variable supplied by the user's secret manager or an interactive hidden-input setup.
 
-## [TODO: Replace with the first main section based on chosen structure]
+## Route The Request
 
-[TODO: Add content here. See examples in existing skills:
-- Code samples for technical skills
-- Decision trees for complex workflows
-- Concrete examples with realistic user requests
-- References to scripts/templates/references as needed]
+| User intent | Capability | Command |
+| --- | --- | --- |
+| Create an image from text | `text-to-image` | `image generate` |
+| Edit or compose local/remote images | `image-to-image` | `image generate` |
+| Create a video from text and wait for it | `text-to-video` | `video generate` |
+| Animate one public image URL | `image-to-video` | `video generate` |
+| Transition between public keyframe URLs | `keyframes-to-video` | `video generate` |
+| Submit video work without waiting | video capability | `video create` |
+| Inspect one known `video_id` | video capability | `video status` |
+| Resume waiting for one known `video_id` | video capability | `video wait` |
 
-## Resources (optional)
+Use `agnes-image-2.1-flash` by default for images and `agnes-video-v2.0` for videos. Use `agnes-image-2.0-flash` only when the user explicitly prefers the faster 2.0 image model.
 
-Create only the resource directories this skill actually needs. Delete this section if no resources are required.
+For image workflows, accept local PNG, JPEG, and WEBP files or public HTTPS URLs. For video workflows, accept only public HTTPS image URLs; the current Agnes video contract does not guarantee local files or Data URIs. Explain this boundary instead of uploading a local file to an unrelated host.
 
-### scripts/
-Executable code (Python/Bash/etc.) that can be run directly to perform specific operations.
+## Execute
 
-**Examples from other skills:**
-- PDF skill: `fill_fillable_fields.py`, `extract_form_field_info.py` - utilities for PDF manipulation
-- DOCX skill: `document.py`, `utilities.py` - Python modules for document processing
+Create one UTF-8 JSON request file or pipe one JSON object through stdin. Prefer a request file for long prompts and paths so PowerShell and POSIX quoting cannot corrupt JSON.
 
-**Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
+```text
+node <skill-dir>/scripts/agnes_api.cjs image generate --request <request.json>
+node <skill-dir>/scripts/agnes_api.cjs video create --request <request.json>
+node <skill-dir>/scripts/agnes_api.cjs video status --request <request.json>
+node <skill-dir>/scripts/agnes_api.cjs video wait --request <request.json>
+node <skill-dir>/scripts/agnes_api.cjs video generate --request <request.json>
+node <skill-dir>/scripts/agnes_api.cjs capabilities
+```
 
-**Note:** Scripts may be executed without loading into context, but can still be read by Codex for patching or environment adjustments.
+Do not pass prompts, image data, or keys as CLI arguments. The only supported option is `--request <path>`.
 
-### references/
-Documentation and reference material intended to be loaded into context to inform Codex's process and thinking.
+For a new image or video generation, include `capability` and `prompt`. For `video status` and `video wait`, include the existing `video_id`; do not submit another generation request.
 
-**Examples from other skills:**
-- Product management: `communication.md`, `context_building.md` - detailed workflow guides
-- BigQuery: API reference documentation and query examples
-- Finance: Schema documentation, company policies
+Default all downloaded outputs to `<current-directory>/outputs/agnes/...` unless the user names an output directory. Report the final local artifact paths from `artifacts[].path`, not only the temporary source URLs.
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that Codex should reference while working.
+## Handle Results
 
-### assets/
-Files not intended to be loaded into context, but rather used within the output Codex produces.
+Parse the single JSON object printed to stdout.
 
-**Examples from other skills:**
-- Brand styling: PowerPoint template files (.pptx), logo files
-- Frontend builder: HTML/React boilerplate project directories
-- Typography: Font files (.ttf, .woff2)
+- On `ok: true`, report the normalized status, task ID when present, effective dimensions/duration, warnings, and local artifact paths.
+- On `wait_timeout`, state that the remote task is still active and retain `task.id`. Resume with `video wait`; never call `video generate` again for the same work.
+- On `rate_limited` or a retryable provider error, explain the returned state. Do not wrap generation POSTs in another retry loop.
+- On `quota_exhausted`, report the authoritative Agnes error. Do not infer a remaining balance from local call counts.
+- On `download_failed`, preserve and report any completed artifacts found in `error.details.artifacts`.
+- On an ambiguous network failure during image generation or video creation, do not automatically resubmit; the service may have accepted the original request.
 
-**Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
+Treat exit codes as categories: `2` input/configuration, `3` authentication/permission, `4` quota/rate limit, `5` provider/task/response failure, and `6` network/wait/download failure.
 
----
+## Boundaries
 
-**Not every skill requires all three types of resources.**
+- Send the bearer credential only to `https://api.agnes-ai.cn`.
+- Do not claim that a task was cancelled when local waiting stops.
+- Do not claim live API verification unless a real quota-consuming request was explicitly run.
+- Do not add text chat, audio, provider routing, fallback, quota estimation, or shared runtime code to this skill.
+- When another real media provider is added, implement it independently against [references/provider-contract.md](references/provider-contract.md) before extracting shared code.
