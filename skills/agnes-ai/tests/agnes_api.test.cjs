@@ -580,6 +580,32 @@ test('image workflow preserves completed artifacts when a later download fails',
   });
 });
 
+test('image workflow rejects unusable output directories before generation POST', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-invalid-output-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const occupiedPath = path.join(tempDir, 'not-a-directory');
+  fs.writeFileSync(occupiedPath, 'file');
+
+  for (const directory of [{ invalid: true }, '', 'bad\0path', occupiedPath]) {
+    let calls = 0;
+    await assert.rejects(subject.runImage({
+      capability: 'text-to-image',
+      prompt: 'A studio product photo',
+      output: { directory }
+    }, {
+      apiKey: 'test-secret',
+      fetchImpl: async () => {
+        calls += 1;
+        return new Response(JSON.stringify({ data: [{ b64_json: 'AQIDBA==' }] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }), (error) => error.kind === 'invalid_request');
+    assert.equal(calls, 0);
+  }
+});
+
 test('video creation returns a resumable video_id after one POST', async () => {
   assert.equal(typeof subject.createVideo, 'function');
   const calls = [];
@@ -711,6 +737,19 @@ test('video status reports a provider failed state as task_failed', async () => 
   });
 });
 
+test('video status rejects an unknown capability before polling', async () => {
+  let calls = 0;
+  await assert.rejects(subject.getVideoStatus('video_1', {
+    apiKey: 'test-secret',
+    capability: 'bogus-video',
+    fetchImpl: async () => {
+      calls += 1;
+      return new Response('{}', { status: 200 });
+    }
+  }), (error) => error.kind === 'invalid_request');
+  assert.equal(calls, 0);
+});
+
 test('video status CLI exits 5 when the provider task failed', async (t) => {
   const previousExitCode = process.exitCode;
   t.after(() => { process.exitCode = previousExitCode; });
@@ -807,11 +846,14 @@ test('combined video workflow creates once, polls, and downloads the completed v
   });
 });
 
-test('combined video workflow stops when creation already reports failure', async () => {
+test('combined video workflow stops when creation already reports failure', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-video-create-fail-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   let calls = 0;
   const result = await subject.runVideo({
     capability: 'text-to-video',
-    prompt: 'A short animation'
+    prompt: 'A short animation',
+    output: { directory: tempDir }
   }, {
     apiKey: 'test-secret',
     fetchImpl: async (url) => {
@@ -830,6 +872,25 @@ test('combined video workflow stops when creation already reports failure', asyn
   assert.equal(result.ok, false);
   assert.equal(result.status, 'failed');
   assert.equal(result.error.kind, 'task_failed');
+});
+
+test('combined video workflow rejects invalid output before creation POST', async () => {
+  let calls = 0;
+  await assert.rejects(subject.runVideo({
+    capability: 'text-to-video',
+    prompt: 'A short animation',
+    output: { directory: { invalid: true } }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async () => {
+      calls += 1;
+      return new Response(JSON.stringify({
+        task_id: 'task_1', video_id: 'video_1', status: 'queued'
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  }), (error) => error.kind === 'invalid_request');
+
+  assert.equal(calls, 0);
 });
 
 test('video wait returns a resumable timeout result instead of failing the remote task', async () => {

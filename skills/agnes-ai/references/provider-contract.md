@@ -126,13 +126,15 @@ Stable error kinds:
 | `quota_exhausted` | HTTP 402 |
 | `rate_limited` | HTTP 429 |
 | `provider_unavailable` | Temporary Agnes 5xx failure |
-| `network` | API network/TLS/timeout failure; a POST failure is non-retryable and carries `details.acceptance_unknown: true` |
+| `network` | API network/TLS/timeout failure; a POST transport failure is non-retryable and carries `details.acceptance_unknown: true` |
 | `task_failed` | Remote video status is failed |
 | `wait_timeout` | Local waiting ended while remote task remains active |
 | `download_failed` | Generated output could not be saved locally |
 | `invalid_response` | Success response violates the documented contract |
 
 Do not add a fabricated quota balance. Do not automatically retry non-idempotent generation requests. A future router may fall back only after a provider definitively rejects work before accepting it.
+
+For generation POST responses, HTTP 408 and 5xx are also non-retryable and carry `details.acceptance_unknown: true`; HTTP 429 is non-retryable for the generation command even when it is a definitive rejection. If a completed task's artifact download fails, retain top-level `status: "succeeded"`, `task`, and `capability` while returning `ok: false` with `error.kind: "download_failed"`.
 
 A `wait_timeout` result is a bounded local stop, not remote cancellation. Run at most one bounded `video wait` call per user request, then return the reusable `task.id`. Run another call only after the user explicitly requests continued waiting. Running `video wait` again for an already completed task is also the supported way to retry a failed artifact download without recreating media.
 

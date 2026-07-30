@@ -8,6 +8,11 @@ const { pipeline } = require('node:stream/promises');
 const API_ROOT = 'https://api.agnes-ai.cn';
 const IMAGE_MODELS = new Set(['agnes-image-2.0-flash', 'agnes-image-2.1-flash']);
 const VIDEO_MODEL = 'agnes-video-v2.0';
+const VIDEO_CAPABILITIES = new Set([
+  'text-to-video',
+  'image-to-video',
+  'keyframes-to-video'
+]);
 const IMAGE_MIME_TYPES = new Map([
   ['.png', 'image/png'],
   ['.jpg', 'image/jpeg'],
@@ -85,6 +90,50 @@ function assertRequest(request, capabilities) {
   if (typeof request.prompt !== 'string' || request.prompt.trim() === '') {
     throw new ProviderError('invalid_request', 'A non-empty prompt is required.');
   }
+}
+
+function assertVideoCapability(capability) {
+  if (!VIDEO_CAPABILITIES.has(capability)) {
+    throw new ProviderError('invalid_request', `Unsupported video capability: ${String(capability)}.`);
+  }
+  return capability;
+}
+
+function resolveOutputRoot(request) {
+  const output = request?.output;
+  if (output !== undefined && (!output || typeof output !== 'object' || Array.isArray(output))) {
+    throw new ProviderError('invalid_request', 'output must be an object.');
+  }
+  const directory = output?.directory;
+  if (directory !== undefined && (
+    typeof directory !== 'string'
+    || directory.trim() === ''
+    || directory.includes('\0')
+  )) {
+    throw new ProviderError('invalid_request', 'output.directory must be a non-empty valid path string.');
+  }
+  try {
+    return path.resolve(directory ?? 'outputs');
+  } catch {
+    throw new ProviderError('invalid_request', 'output.directory must be a non-empty valid path string.');
+  }
+}
+
+async function prepareOutputRoot(request, fsApi = fs) {
+  const outputRoot = resolveOutputRoot(request);
+  const providerRoot = path.join(outputRoot, 'agnes');
+  try {
+    await fsApi.promises.mkdir(providerRoot, { recursive: true });
+    const stat = await fsApi.promises.stat(providerRoot);
+    if (!stat.isDirectory()) throw new Error('not a directory');
+    await fsApi.promises.access(providerRoot, fsApi.constants?.W_OK ?? fs.constants.W_OK);
+  } catch {
+    throw new ProviderError(
+      'invalid_request',
+      `Output directory is not writable: ${outputRoot}`
+    );
+  }
+  return outputRoot;
 }
 
 function isNonPublicIpAddress(hostname) {
@@ -170,6 +219,7 @@ async function mapImageInput(input, { readFile = fs.promises.readFile } = {}) {
 
 async function buildImageRequest(request, deps = {}) {
   assertRequest(request, ['text-to-image', 'image-to-image']);
+  resolveOutputRoot(request);
   const parameters = request.parameters ?? {};
   const model = parameters.model ?? 'agnes-image-2.1-flash';
   if (!IMAGE_MODELS.has(model)) {
@@ -218,7 +268,8 @@ function videoInputUrls(request, minimum) {
 }
 
 function buildVideoRequest(request) {
-  assertRequest(request, ['text-to-video', 'image-to-video', 'keyframes-to-video']);
+  assertRequest(request, [...VIDEO_CAPABILITIES]);
+  resolveOutputRoot(request);
   const parameters = request.parameters ?? {};
   const model = parameters.model ?? VIDEO_MODEL;
   if (model !== VIDEO_MODEL) {
@@ -612,6 +663,7 @@ async function runImage(request, {
 } = {}) {
   const startedAt = now();
   const requestBody = await buildImageRequest(request);
+  const outputRoot = await prepareOutputRoot(request, fsApi);
   const response = await requestJson({
     method: 'POST',
     path: '/v1/images/generations',
@@ -623,7 +675,6 @@ async function runImage(request, {
     throw new ProviderError('invalid_response', 'Agnes image response did not include any artifacts.');
   }
 
-  const outputRoot = request.output?.directory ?? path.resolve('outputs');
   const directory = await createArtifactDirectory(
     outputRoot,
     `image-${response.created ?? 'result'}`,
@@ -801,6 +852,7 @@ async function getVideoStatus(videoId, {
   now = () => new Date()
 } = {}) {
   const startedAt = now();
+  assertVideoCapability(capability);
   const response = await fetchVideoStatus(videoId, { apiKey, fetchImpl, retryOptions });
   return videoEnvelope(response, capability, startedAt, now(), [], assertVideoId(videoId));
 }
@@ -815,9 +867,7 @@ async function waitForVideo(request, {
   retryOptions = {}
 } = {}) {
   const capability = request?.capability;
-  if (!['text-to-video', 'image-to-video', 'keyframes-to-video'].includes(capability)) {
-    throw new ProviderError('invalid_request', `Unsupported video capability: ${String(capability)}.`);
-  }
+  assertVideoCapability(capability);
   const videoId = assertVideoId(request.video_id);
   const timeoutSeconds = request.wait?.timeout_seconds ?? 1_200;
   if (typeof timeoutSeconds !== 'number' || !Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
@@ -931,6 +981,8 @@ async function waitForVideo(request, {
 }
 
 async function runVideo(request, deps = {}) {
+  buildVideoRequest(request);
+  await prepareOutputRoot(request, deps.fsApi ?? fs);
   const created = await createVideo(request, deps);
   if (created.ok === false) return created;
   return waitForVideo({

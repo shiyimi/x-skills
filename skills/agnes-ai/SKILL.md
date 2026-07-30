@@ -79,7 +79,7 @@ Do not pass prompts, image data, or keys as CLI arguments. The only supported op
 
 For a new image or video generation, include `capability` and `prompt`. For `video status` and `video wait`, include the existing `video_id`; do not submit another generation request. Include the original video `capability` when known. If omitted, the CLI labels the resumed result as `text-to-video`; this label does not alter the remote task.
 
-Default all downloaded outputs to `<current-process-working-directory>/outputs/agnes/...` unless the user names an output directory. Resolve a relative `output.directory` against the directory from which the CLI process was started, not against the skill directory. Report the final local artifact paths from `artifacts[].path`, not only the temporary source URLs.
+Default all downloaded outputs to `<current-process-working-directory>/outputs/agnes/...` unless the user names an output directory. Resolve a relative `output.directory` against the directory from which the CLI process was started, not against the skill directory. Commands that generate and automatically download media preflight this output root before submitting a generation POST. Report the final local artifact paths from `artifacts[].path`, not only the temporary source URLs.
 
 ## Handle Results
 
@@ -91,7 +91,7 @@ Parse the single JSON object printed to stdout.
 - On `quota_exhausted`, report the authoritative Agnes error. Do not infer a remaining balance from local call counts.
 - On `download_failed`, preserve and report any completed artifacts found in `error.details.artifacts`.
 - When `video wait` reports `download_failed` for a completed task, retry the download by running `video wait` again with the same `video_id`; this rechecks status and does not recreate the video.
-- On an ambiguous network failure during image generation or video creation, do not automatically resubmit; the service may have accepted the original request.
+- On an ambiguous transport failure or HTTP 408/5xx during image generation or video creation, do not automatically resubmit; the service may have accepted the original request.
 
 Treat exit codes as categories: `2` input/configuration, `3` authentication/permission, `4` quota/rate limit, `5` provider/task/response failure, and `6` network/wait/download failure.
 
