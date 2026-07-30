@@ -260,10 +260,23 @@ test('generation POST is attempted once when the network response is lost', asyn
         throw new TypeError('connection reset');
       }
     }),
-    (error) => error.kind === 'network' && error.retryable === true
+    (error) => error.kind === 'network'
+      && error.retryable === false
+      && error.details.acceptance_unknown === true
   );
 
   assert.equal(attempts, 1);
+});
+
+test('GET network failures remain retryable without ambiguous acceptance details', async () => {
+  await assert.rejects(subject.requestJson({
+    method: 'GET',
+    path: '/agnesapi?video_id=video_1',
+    apiKey: 'test-secret',
+    fetchImpl: async () => { throw new TypeError('connection reset'); }
+  }), (error) => error.kind === 'network'
+    && error.retryable === true
+    && error.details === undefined);
 });
 
 test('malformed successful response becomes invalid_response', async () => {

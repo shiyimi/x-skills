@@ -347,10 +347,16 @@ async function requestJson({
   try {
     response = await fetchImpl(url.toString(), options);
   } catch {
+    const acceptanceUnknown = String(method).toUpperCase() === 'POST';
     throw new ProviderError(
       'network',
-      'The Agnes API network request failed; a generation request may have been accepted.',
-      { retryable: true }
+      acceptanceUnknown
+        ? 'The Agnes API network request failed; the generation request may have been accepted.'
+        : 'The Agnes API network request failed.',
+      {
+        retryable: !acceptanceUnknown,
+        details: acceptanceUnknown ? { acceptance_unknown: true } : undefined
+      }
     );
   }
 
