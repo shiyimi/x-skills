@@ -296,3 +296,151 @@ test('transient retry does not repeat a non-retryable error', async () => {
 
   assert.equal(attempts, 1);
 });
+
+test('artifact download is unauthenticated and atomically saves media', async (t) => {
+  assert.equal(typeof subject.downloadArtifact, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-download-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const destination = path.join(tempDir, 'result-01');
+  let capturedOptions;
+
+  const artifact = await subject.downloadArtifact(
+    'https://platform-outputs.agnes-ai.space/result.png',
+    destination,
+    {
+      fetchImpl: async (_url, options) => {
+        capturedOptions = options;
+        return new Response(Buffer.from([1, 2, 3, 4]), {
+          status: 200,
+          headers: { 'Content-Type': 'image/png' }
+        });
+      }
+    }
+  );
+
+  assert.equal(capturedOptions?.headers?.Authorization, undefined);
+  assert.equal(artifact.type, 'image');
+  assert.equal(artifact.path, `${destination}.png`);
+  assert.equal(artifact.source_url, 'https://platform-outputs.agnes-ai.space/result.png');
+  assert.equal(artifact.mime_type, 'image/png');
+  assert.equal(artifact.bytes, 4);
+  assert.deepEqual(fs.readFileSync(artifact.path), Buffer.from([1, 2, 3, 4]));
+  assert.equal(fs.existsSync(`${artifact.path}.part`), false);
+});
+
+test('artifact download rejects an HTML error page without leaving a partial file', async (t) => {
+  assert.equal(typeof subject.downloadArtifact, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-download-html-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const destination = path.join(tempDir, 'result-01');
+
+  await assert.rejects(subject.downloadArtifact(
+    'https://platform-outputs.agnes-ai.space/result.png',
+    destination,
+    {
+      fetchImpl: async () => new Response('<html>expired</html>', {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
+    }
+  ), (error) => error.kind === 'download_failed');
+
+  assert.deepEqual(fs.readdirSync(tempDir), []);
+});
+
+test('Base64 artifact is decoded and atomically saved', async (t) => {
+  assert.equal(typeof subject.saveBase64Artifact, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-base64-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const destination = path.join(tempDir, 'result-01');
+
+  const artifact = await subject.saveBase64Artifact('AQIDBA==', destination, 'image/png');
+
+  assert.equal(artifact.path, `${destination}.png`);
+  assert.equal(artifact.source_url, null);
+  assert.equal(artifact.bytes, 4);
+  assert.deepEqual(fs.readFileSync(artifact.path), Buffer.from([1, 2, 3, 4]));
+});
+
+test('image workflow maps the request and downloads every result', async (t) => {
+  assert.equal(typeof subject.runImage, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-image-run-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    calls.push({ url, options });
+    if (url === 'https://api.agnes-ai.cn/v1/images/generations') {
+      return new Response(JSON.stringify({
+        created: 1780000000,
+        data: [
+          { url: 'https://cdn.example.com/one.png', b64_json: null, revised_prompt: null },
+          { url: null, b64_json: 'BQYH', revised_prompt: null }
+        ]
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    return new Response(Buffer.from([1, 2, 3]), {
+      status: 200,
+      headers: { 'Content-Type': 'image/png' }
+    });
+  };
+
+  const result = await subject.runImage({
+    capability: 'text-to-image',
+    prompt: 'A luminous floating city',
+    output: { directory: tempDir }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl,
+    now: () => new Date('2026-07-30T07:30:12.000Z')
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.provider, 'agnes');
+  assert.equal(result.capability, 'text-to-image');
+  assert.equal(result.status, 'succeeded');
+  assert.equal(result.artifacts.length, 2);
+  assert.equal(result.artifacts.every((artifact) => fs.existsSync(artifact.path)), true);
+  assert.equal(calls.length, 2);
+  const apiBody = JSON.parse(calls[0].options.body);
+  assert.deepEqual(apiBody.extra_body, { response_format: 'url' });
+  assert.equal(calls[1].options.headers?.Authorization, undefined);
+});
+
+test('image workflow preserves completed artifacts when a later download fails', async (t) => {
+  assert.equal(typeof subject.runImage, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-image-partial-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const fetchImpl = async (url) => {
+    if (url === 'https://api.agnes-ai.cn/v1/images/generations') {
+      return new Response(JSON.stringify({
+        created: 1780000000,
+        data: [
+          { url: 'https://cdn.example.com/one.png', b64_json: null },
+          { url: 'https://cdn.example.com/two.png', b64_json: null }
+        ]
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.endsWith('/one.png')) {
+      return new Response(Buffer.from([1]), {
+        status: 200,
+        headers: { 'Content-Type': 'image/png' }
+      });
+    }
+    return new Response('expired', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+  };
+
+  await assert.rejects(subject.runImage({
+    capability: 'text-to-image',
+    prompt: 'Two product variants',
+    output: { directory: tempDir }
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl,
+    now: () => new Date('2026-07-30T07:30:12.000Z')
+  }), (error) => {
+    assert.equal(error.kind, 'download_failed');
+    assert.equal(error.details.artifacts.length, 1);
+    assert.equal(fs.existsSync(error.details.artifacts[0].path), true);
+    return true;
+  });
+});

@@ -1,6 +1,8 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { Readable } = require('node:stream');
+const { pipeline } = require('node:stream/promises');
 
 const API_ROOT = 'https://api.agnes-ai.cn';
 const IMAGE_MODELS = new Set(['agnes-image-2.0-flash', 'agnes-image-2.1-flash']);
@@ -10,6 +12,12 @@ const IMAGE_MIME_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
   ['.jpeg', 'image/jpeg'],
   ['.webp', 'image/webp']
+]);
+const ARTIFACT_TYPES = new Map([
+  ['image/png', { type: 'image', extension: '.png' }],
+  ['image/jpeg', { type: 'image', extension: '.jpg' }],
+  ['image/webp', { type: 'image', extension: '.webp' }],
+  ['video/mp4', { type: 'video', extension: '.mp4' }]
 ]);
 
 class ProviderError extends Error {
@@ -329,6 +337,213 @@ async function withTransientRetry(operation, {
   throw new ProviderError('invalid_response', 'Retry loop ended unexpectedly.');
 }
 
+function artifactType(contentType) {
+  const normalized = String(contentType ?? '').split(';', 1)[0].trim().toLowerCase();
+  const type = ARTIFACT_TYPES.get(normalized);
+  if (!type) {
+    throw new ProviderError('download_failed', `Unsupported artifact content type: ${normalized || 'missing'}.`);
+  }
+  return { ...type, mimeType: normalized };
+}
+
+async function uniqueArtifactPath(destinationBase, extension, fsPromises = fs.promises) {
+  for (let suffix = 1; suffix < 10_000; suffix += 1) {
+    const candidate = suffix === 1
+      ? `${destinationBase}${extension}`
+      : `${destinationBase}-${suffix}${extension}`;
+    try {
+      await fsPromises.access(candidate);
+    } catch (error) {
+      if (error.code === 'ENOENT') return candidate;
+      throw error;
+    }
+  }
+  throw new ProviderError('download_failed', 'Unable to allocate a unique artifact filename.');
+}
+
+async function downloadArtifact(sourceUrl, destinationBase, {
+  fetchImpl = globalThis.fetch,
+  fsApi = fs,
+  retryOptions = {}
+} = {}) {
+  const normalizedSource = assertHttpsUrl(sourceUrl, 'Artifact URL');
+  const response = await withTransientRetry(async () => {
+    let candidate;
+    try {
+      candidate = await fetchImpl(normalizedSource, { method: 'GET', redirect: 'follow' });
+    } catch {
+      throw new ProviderError('download_failed', 'Artifact download failed because of a network error.', {
+        retryable: true
+      });
+    }
+    if (!candidate.ok) {
+      throw new ProviderError('download_failed', `Artifact download failed with HTTP ${candidate.status}.`, {
+        retryable: candidate.status === 429 || candidate.status >= 500,
+        httpStatus: candidate.status
+      });
+    }
+    if (candidate.url) assertHttpsUrl(candidate.url, 'Final artifact URL');
+    return candidate;
+  }, retryOptions);
+
+  const media = artifactType(response.headers.get('content-type'));
+  if (!response.body) {
+    throw new ProviderError('download_failed', 'Artifact response body is empty.');
+  }
+  await fsApi.promises.mkdir(path.dirname(destinationBase), { recursive: true });
+  const finalPath = await uniqueArtifactPath(destinationBase, media.extension, fsApi.promises);
+  const partPath = `${finalPath}.part`;
+  try {
+    await pipeline(
+      Readable.fromWeb(response.body),
+      fsApi.createWriteStream(partPath, { flags: 'wx' })
+    );
+    const stat = await fsApi.promises.stat(partPath);
+    if (stat.size === 0) {
+      throw new ProviderError('download_failed', 'Downloaded artifact is empty.');
+    }
+    await fsApi.promises.rename(partPath, finalPath);
+    return {
+      type: media.type,
+      path: finalPath,
+      source_url: normalizedSource,
+      mime_type: media.mimeType,
+      bytes: stat.size
+    };
+  } catch (error) {
+    await fsApi.promises.rm(partPath, { force: true }).catch(() => {});
+    if (error instanceof ProviderError) throw error;
+    throw new ProviderError('download_failed', `Unable to save artifact: ${error.message}`, {
+      retryable: true
+    });
+  }
+}
+
+async function saveBase64Artifact(base64, destinationBase, mimeType = 'image/png', {
+  fsApi = fs
+} = {}) {
+  const media = artifactType(mimeType);
+  const normalized = String(base64 ?? '').replace(/\s/g, '');
+  if (!normalized || !/^[A-Za-z0-9+/]+={0,2}$/.test(normalized) || normalized.length % 4 !== 0) {
+    throw new ProviderError('download_failed', 'Agnes returned invalid Base64 artifact data.');
+  }
+  const data = Buffer.from(normalized, 'base64');
+  if (data.length === 0) {
+    throw new ProviderError('download_failed', 'Agnes returned empty Base64 artifact data.');
+  }
+
+  await fsApi.promises.mkdir(path.dirname(destinationBase), { recursive: true });
+  const finalPath = await uniqueArtifactPath(destinationBase, media.extension, fsApi.promises);
+  const partPath = `${finalPath}.part`;
+  try {
+    await fsApi.promises.writeFile(partPath, data, { flag: 'wx' });
+    await fsApi.promises.rename(partPath, finalPath);
+  } catch (error) {
+    await fsApi.promises.rm(partPath, { force: true }).catch(() => {});
+    throw new ProviderError('download_failed', `Unable to save Base64 artifact: ${error.message}`, {
+      retryable: true
+    });
+  }
+  return {
+    type: media.type,
+    path: finalPath,
+    source_url: null,
+    mime_type: media.mimeType,
+    bytes: data.length
+  };
+}
+
+function timestampForPath(date) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function safeIdentifier(value) {
+  const safe = String(value).replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^\.+/, '');
+  return safe || 'result';
+}
+
+async function createArtifactDirectory(outputRoot, identifier, now, fsApi = fs) {
+  const providerRoot = path.resolve(outputRoot, 'agnes');
+  await fsApi.promises.mkdir(providerRoot, { recursive: true });
+  const base = `${timestampForPath(now)}-${safeIdentifier(identifier)}`;
+  for (let suffix = 1; suffix < 10_000; suffix += 1) {
+    const directory = path.join(providerRoot, suffix === 1 ? base : `${base}-${suffix}`);
+    try {
+      await fsApi.promises.mkdir(directory);
+      return directory;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+  }
+  throw new ProviderError('download_failed', 'Unable to allocate an artifact output directory.');
+}
+
+function timingResult(startedAt, completedAt) {
+  return {
+    started_at: startedAt.toISOString(),
+    completed_at: completedAt.toISOString(),
+    duration_ms: Math.max(0, completedAt.getTime() - startedAt.getTime())
+  };
+}
+
+async function runImage(request, {
+  apiKey,
+  fetchImpl = globalThis.fetch,
+  now = () => new Date(),
+  fsApi = fs
+} = {}) {
+  const startedAt = now();
+  const requestBody = await buildImageRequest(request);
+  const response = await requestJson({
+    method: 'POST',
+    path: '/v1/images/generations',
+    apiKey,
+    body: requestBody,
+    fetchImpl
+  });
+  if (!Array.isArray(response.data) || response.data.length === 0) {
+    throw new ProviderError('invalid_response', 'Agnes image response did not include any artifacts.');
+  }
+
+  const outputRoot = request.output?.directory ?? path.resolve('outputs');
+  const directory = await createArtifactDirectory(
+    outputRoot,
+    `image-${response.created ?? 'result'}`,
+    startedAt,
+    fsApi
+  );
+  const artifacts = [];
+  try {
+    for (let index = 0; index < response.data.length; index += 1) {
+      const item = response.data[index];
+      const destination = path.join(directory, `result-${String(index + 1).padStart(2, '0')}`);
+      if (typeof item?.url === 'string' && item.url) {
+        artifacts.push(await downloadArtifact(item.url, destination, { fetchImpl, fsApi }));
+      } else if (typeof item?.b64_json === 'string' && item.b64_json) {
+        artifacts.push(await saveBase64Artifact(item.b64_json, destination, 'image/png', { fsApi }));
+      } else {
+        throw new ProviderError('invalid_response', `Agnes image result ${index + 1} has no URL or Base64 data.`);
+      }
+    }
+  } catch (error) {
+    if (error.kind === 'download_failed') {
+      error.details = { ...(error.details ?? {}), artifacts };
+    }
+    throw error;
+  }
+  const completedAt = now();
+  return {
+    ok: true,
+    provider: 'agnes',
+    capability: request.capability,
+    status: 'succeeded',
+    artifacts,
+    effective_parameters: {},
+    warnings: [],
+    timing: timingResult(startedAt, completedAt)
+  };
+}
+
 module.exports = {
   API_ROOT,
   ProviderError,
@@ -338,5 +553,8 @@ module.exports = {
   normalizeStatus,
   classifyHttpError,
   requestJson,
-  withTransientRetry
+  withTransientRetry,
+  downloadArtifact,
+  saveBase64Artifact,
+  runImage
 };
