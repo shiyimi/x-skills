@@ -164,6 +164,30 @@ test('image-to-video rejects local paths because Agnes documents URL input only'
   );
 });
 
+test('provider inputs reject credentials and non-public HTTPS hosts', async () => {
+  const blockedUrls = [
+    'https://user:pass@example.com/input.png',
+    'https://localhost/input.png',
+    'https://media.localhost/input.png',
+    'https://127.0.0.1/input.png',
+    'https://10.0.0.1/input.png',
+    'https://172.16.0.1/input.png',
+    'https://192.168.1.1/input.png',
+    'https://169.254.1.1/input.png',
+    'https://[::1]/input.png',
+    'https://[fc00::1]/input.png',
+    'https://[fe80::1]/input.png'
+  ];
+
+  for (const value of blockedUrls) {
+    await assert.rejects(subject.buildImageRequest({
+      capability: 'image-to-image',
+      prompt: 'Edit this image',
+      inputs: [{ type: 'image', source: { kind: 'url', value } }]
+    }), (error) => error.kind === 'invalid_request' && /public HTTPS URL/.test(error.message), value);
+  }
+});
+
 test('Agnes task states normalize to provider states', () => {
   assert.equal(typeof subject.normalizeStatus, 'function');
 
@@ -348,6 +372,73 @@ test('artifact download rejects an HTML error page without leaving a partial fil
   ), (error) => error.kind === 'download_failed');
 
   assert.deepEqual(fs.readdirSync(tempDir), []);
+});
+
+test('artifact download rejects private URLs and embedded credentials before requesting', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-private-artifact-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  let calls = 0;
+
+  for (const value of [
+    'https://127.0.0.1/result.png',
+    'https://user:pass@cdn.example.com/result.png'
+  ]) {
+    await assert.rejects(subject.downloadArtifact(
+      value,
+      path.join(tempDir, 'result'),
+      { fetchImpl: async () => { calls += 1; } }
+    ), (error) => error.kind === 'download_failed' && /public HTTPS URL/.test(error.message));
+  }
+
+  assert.equal(calls, 0);
+});
+
+test('artifact download validates every redirect before following it', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-artifact-redirect-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const calls = [];
+
+  await assert.rejects(subject.downloadArtifact(
+    'https://cdn.example.com/result.png',
+    path.join(tempDir, 'result'),
+    {
+      fetchImpl: async (url, options) => {
+        calls.push({ url, options });
+        return new Response(null, {
+          status: 302,
+          headers: { Location: 'https://192.168.1.20/internal.png' }
+        });
+      }
+    }
+  ), (error) => error.kind === 'download_failed' && /public HTTPS URL/.test(error.message));
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.redirect, 'manual');
+});
+
+test('artifact download retries HTTP 408', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-artifact-408-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  let calls = 0;
+
+  const artifact = await subject.downloadArtifact(
+    'https://cdn.example.com/result.png',
+    path.join(tempDir, 'result'),
+    {
+      fetchImpl: async () => {
+        calls += 1;
+        if (calls === 1) return new Response('timeout', { status: 408 });
+        return new Response(Buffer.from([1, 2, 3]), {
+          status: 200,
+          headers: { 'Content-Type': 'image/png' }
+        });
+      },
+      retryOptions: { sleep: async () => {}, random: () => 0 }
+    }
+  );
+
+  assert.equal(calls, 2);
+  assert.equal(artifact.bytes, 3);
 });
 
 test('Base64 artifact is decoded and atomically saved', async (t) => {

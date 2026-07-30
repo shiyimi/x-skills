@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const net = require('node:net');
 const { Readable } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
 
@@ -86,15 +87,52 @@ function assertRequest(request, capabilities) {
   }
 }
 
-function assertHttpsUrl(value, label) {
+function isNonPublicIpAddress(hostname) {
+  const host = hostname.startsWith('[') && hostname.endsWith(']')
+    ? hostname.slice(1, -1)
+    : hostname;
+  const ipVersion = net.isIP(host);
+  if (ipVersion === 4) {
+    const [first, second] = host.split('.').map(Number);
+    return first === 0
+      || first === 10
+      || first === 127
+      || (first === 100 && second >= 64 && second <= 127)
+      || (first === 169 && second === 254)
+      || (first === 172 && second >= 16 && second <= 31)
+      || (first === 192 && second === 168)
+      || first >= 224;
+  }
+  if (ipVersion === 6) {
+    const normalized = host.toLowerCase();
+    const firstGroup = Number.parseInt(normalized.split(':', 1)[0] || '0', 16);
+    return normalized === '::'
+      || normalized === '::1'
+      || normalized.startsWith('::ffff:')
+      || (firstGroup & 0xfe00) === 0xfc00
+      || (firstGroup & 0xffc0) === 0xfe80
+      || (firstGroup & 0xff00) === 0xff00;
+  }
+  return false;
+}
+
+function assertHttpsUrl(value, label, { kind = 'invalid_request' } = {}) {
   let url;
   try {
     url = new URL(value);
   } catch {
-    throw new ProviderError('invalid_request', `${label} must be a public HTTPS URL.`);
+    throw new ProviderError(kind, `${label} must be a public HTTPS URL.`);
   }
-  if (url.protocol !== 'https:') {
-    throw new ProviderError('invalid_request', `${label} must be a public HTTPS URL.`);
+  const hostname = url.hostname.toLowerCase().replace(/\.$/, '');
+  if (
+    url.protocol !== 'https:'
+    || url.username !== ''
+    || url.password !== ''
+    || hostname === 'localhost'
+    || hostname.endsWith('.localhost')
+    || isNonPublicIpAddress(hostname)
+  ) {
+    throw new ProviderError(kind, `${label} must be a public HTTPS URL without embedded credentials.`);
   }
   return url.toString();
 }
@@ -412,24 +450,45 @@ async function downloadArtifact(sourceUrl, destinationBase, {
   fsApi = fs,
   retryOptions = {}
 } = {}) {
-  const normalizedSource = assertHttpsUrl(sourceUrl, 'Artifact URL');
+  const normalizedSource = assertHttpsUrl(sourceUrl, 'Artifact URL', { kind: 'download_failed' });
   const response = await withTransientRetry(async () => {
-    let candidate;
-    try {
-      candidate = await fetchImpl(normalizedSource, { method: 'GET', redirect: 'follow' });
-    } catch {
-      throw new ProviderError('download_failed', 'Artifact download failed because of a network error.', {
-        retryable: true
-      });
+    let currentUrl = normalizedSource;
+    for (let redirectCount = 0; redirectCount <= 5; redirectCount += 1) {
+      let candidate;
+      try {
+        candidate = await fetchImpl(currentUrl, { method: 'GET', redirect: 'manual' });
+      } catch {
+        throw new ProviderError('download_failed', 'Artifact download failed because of a network error.', {
+          retryable: true
+        });
+      }
+      if ([301, 302, 303, 307, 308].includes(candidate.status)) {
+        const location = candidate.headers.get('location');
+        if (!location) {
+          throw new ProviderError('download_failed', 'Artifact redirect did not include a Location header.');
+        }
+        if (redirectCount === 5) {
+          throw new ProviderError('download_failed', 'Artifact download exceeded 5 redirects.');
+        }
+        currentUrl = assertHttpsUrl(
+          new URL(location, currentUrl).toString(),
+          'Artifact redirect URL',
+          { kind: 'download_failed' }
+        );
+        continue;
+      }
+      if (!candidate.ok) {
+        throw new ProviderError('download_failed', `Artifact download failed with HTTP ${candidate.status}.`, {
+          retryable: candidate.status === 408 || candidate.status === 429 || candidate.status >= 500,
+          httpStatus: candidate.status
+        });
+      }
+      if (candidate.url) {
+        assertHttpsUrl(candidate.url, 'Final artifact URL', { kind: 'download_failed' });
+      }
+      return candidate;
     }
-    if (!candidate.ok) {
-      throw new ProviderError('download_failed', `Artifact download failed with HTTP ${candidate.status}.`, {
-        retryable: candidate.status === 429 || candidate.status >= 500,
-        httpStatus: candidate.status
-      });
-    }
-    if (candidate.url) assertHttpsUrl(candidate.url, 'Final artifact URL');
-    return candidate;
+    throw new ProviderError('download_failed', 'Artifact redirect handling ended unexpectedly.');
   }, retryOptions);
 
   const media = artifactType(response.headers.get('content-type'));
