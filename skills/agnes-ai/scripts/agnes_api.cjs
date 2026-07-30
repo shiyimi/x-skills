@@ -47,7 +47,10 @@ function resolveCredentials({
   try {
     const stat = fsApi.statSync(credentialPath);
     if (platform !== 'win32' && (stat.mode & 0o077) !== 0) {
-      throw new Error(`Agnes credential file must use permissions 0600: ${credentialPath}`);
+      throw new ProviderError(
+        'configuration',
+        `Agnes credential file must use permissions 0600: ${credentialPath}`
+      );
     }
     const fileValue = fsApi.readFileSync(credentialPath, 'utf8').trim();
     if (fileValue) {
@@ -58,11 +61,15 @@ function resolveCredentials({
       throw error;
     }
     if (error.code !== 'ENOENT') {
-      throw new Error(`Unable to read the Agnes credential file: ${error.message}`);
+      throw new ProviderError(
+        'configuration',
+        `Unable to read the Agnes credential file: ${error.message}`
+      );
     }
   }
 
-  throw new Error(
+  throw new ProviderError(
+    'configuration',
     'Agnes API key is missing. Set AGNES_API_KEY or create ~/.config/agnes/api_key.'
   );
 }
@@ -757,6 +764,220 @@ async function runVideo(request, deps = {}) {
   }, deps);
 }
 
+function parseCli(argv) {
+  if (!Array.isArray(argv)) {
+    throw new ProviderError('invalid_request', 'CLI arguments must be an array.');
+  }
+  if (argv[0] === 'capabilities') {
+    if (argv.length !== 1) {
+      throw new ProviderError('invalid_request', 'The capabilities command does not accept options.');
+    }
+    return { domain: 'capabilities', action: null, requestPath: null };
+  }
+
+  const domain = argv[0];
+  const action = argv[1];
+  const allowed = {
+    image: new Set(['generate']),
+    video: new Set(['create', 'status', 'wait', 'generate'])
+  };
+  if (!allowed[domain]?.has(action)) {
+    throw new ProviderError(
+      'invalid_request',
+      `Unsupported command: ${[domain, action].filter(Boolean).join(' ') || '(empty)'}.`
+    );
+  }
+
+  const rest = argv.slice(2);
+  if (rest.length === 0) {
+    return { domain, action, requestPath: null };
+  }
+  if (rest.length === 2 && rest[0] === '--request' && rest[1]) {
+    return { domain, action, requestPath: rest[1] };
+  }
+  const option = rest.find((value) => value.startsWith('--'));
+  if (option) {
+    throw new ProviderError('invalid_request', `Unsupported option: ${option}.`);
+  }
+  throw new ProviderError('invalid_request', 'Unexpected CLI arguments.');
+}
+
+async function readStdin(stdin, maxBytes) {
+  const chunks = [];
+  let total = 0;
+  for await (const chunk of stdin) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > maxBytes) {
+      throw new ProviderError('invalid_request', `Request JSON exceeds ${maxBytes} bytes.`);
+    }
+    chunks.push(buffer);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+async function readRequest({
+  requestPath,
+  stdin = process.stdin,
+  fsApi = fs,
+  maxBytes = 10 * 1024 * 1024
+} = {}) {
+  let text;
+  try {
+    if (requestPath) {
+      const stat = await fsApi.promises.stat(requestPath);
+      if (stat.size > maxBytes) {
+        throw new ProviderError('invalid_request', `Request JSON exceeds ${maxBytes} bytes.`);
+      }
+      text = await fsApi.promises.readFile(requestPath, 'utf8');
+    } else {
+      text = await readStdin(stdin, maxBytes);
+    }
+  } catch (error) {
+    if (error instanceof ProviderError) throw error;
+    throw new ProviderError('invalid_request', `Unable to read request JSON: ${error.message}`);
+  }
+
+  if (!text.trim()) {
+    throw new ProviderError('invalid_request', 'Request JSON is empty.');
+  }
+  let request;
+  try {
+    request = JSON.parse(text);
+  } catch {
+    throw new ProviderError('invalid_request', 'Request input is not valid JSON.');
+  }
+  if (!request || typeof request !== 'object' || Array.isArray(request)) {
+    throw new ProviderError('invalid_request', 'Request JSON must contain one object.');
+  }
+  return request;
+}
+
+function exitCodeForError(error) {
+  const mappings = {
+    configuration: 2,
+    invalid_request: 2,
+    authentication: 3,
+    permission: 3,
+    quota_exhausted: 4,
+    rate_limited: 4,
+    provider_unavailable: 5,
+    task_failed: 5,
+    invalid_response: 5,
+    network: 6,
+    wait_timeout: 6,
+    download_failed: 6
+  };
+  return mappings[error?.kind] ?? 5;
+}
+
+function redactString(value, secrets) {
+  let result = String(value);
+  for (const secret of secrets.filter(Boolean)) {
+    result = result.split(secret).join('[REDACTED]');
+  }
+  return result.replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi, 'Bearer [REDACTED]');
+}
+
+function redactValue(value, secrets) {
+  if (typeof value === 'string') return redactString(value, secrets);
+  if (Array.isArray(value)) return value.map((item) => redactValue(item, secrets));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, redactValue(item, secrets)])
+    );
+  }
+  return value;
+}
+
+function errorEnvelope(error, secrets = []) {
+  const kind = error?.kind ?? 'invalid_response';
+  const normalized = {
+    ok: false,
+    provider: 'agnes',
+    status: error?.details?.task?.provider_status
+      ? (() => {
+        try { return normalizeStatus(error.details.task.provider_status); } catch { return 'failed'; }
+      })()
+      : 'failed',
+    error: {
+      kind,
+      message: redactString(error?.message ?? 'Unexpected Agnes skill failure.', secrets),
+      retryable: Boolean(error?.retryable)
+    }
+  };
+  if (error?.httpStatus !== undefined) normalized.error.http_status = error.httpStatus;
+  if (error?.providerCode !== undefined) normalized.error.provider_code = error.providerCode;
+  if (error?.details !== undefined) normalized.error.details = redactValue(error.details, secrets);
+  return normalized;
+}
+
+function capabilitiesResult() {
+  return {
+    ok: true,
+    provider: 'agnes',
+    capabilities: [
+      'text-to-image',
+      'image-to-image',
+      'text-to-video',
+      'image-to-video',
+      'keyframes-to-video'
+    ]
+  };
+}
+
+async function main(argv = process.argv.slice(2), {
+  stdout = process.stdout,
+  stdin = process.stdin,
+  env = process.env,
+  homeDir = os.homedir(),
+  platform = process.platform,
+  fsApi = fs,
+  fetchImpl = globalThis.fetch
+} = {}) {
+  let apiKey;
+  try {
+    const command = parseCli(argv);
+    if (command.domain === 'capabilities') {
+      stdout.write(`${JSON.stringify(capabilitiesResult())}\n`);
+      process.exitCode = 0;
+      return;
+    }
+
+    const request = await readRequest({
+      requestPath: command.requestPath,
+      stdin,
+      fsApi
+    });
+    apiKey = resolveCredentials({ env, homeDir, platform, fsApi });
+    const deps = { apiKey, fetchImpl, fsApi };
+    let result;
+    if (command.domain === 'image') {
+      result = await runImage(request, deps);
+    } else if (command.action === 'create') {
+      result = await createVideo(request, deps);
+    } else if (command.action === 'status') {
+      result = await getVideoStatus(request.video_id, {
+        ...deps,
+        capability: request.capability ?? 'text-to-video'
+      });
+    } else if (command.action === 'wait') {
+      result = await waitForVideo({ capability: 'text-to-video', ...request }, deps);
+    } else {
+      result = await runVideo(request, deps);
+    }
+
+    stdout.write(`${JSON.stringify(redactValue(result, [apiKey]))}\n`);
+    process.exitCode = result.ok === false && result.error
+      ? exitCodeForError(result.error)
+      : 0;
+  } catch (error) {
+    const result = errorEnvelope(error, [apiKey]);
+    stdout.write(`${JSON.stringify(result)}\n`);
+    process.exitCode = exitCodeForError(result.error);
+  }
+}
+
 module.exports = {
   API_ROOT,
   ProviderError,
@@ -773,5 +994,15 @@ module.exports = {
   createVideo,
   getVideoStatus,
   waitForVideo,
-  runVideo
+  runVideo,
+  parseCli,
+  readRequest,
+  exitCodeForError,
+  errorEnvelope,
+  capabilitiesResult,
+  main
 };
+
+if (require.main === module) {
+  main();
+}

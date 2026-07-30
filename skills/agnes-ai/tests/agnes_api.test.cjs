@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { Readable } = require('node:stream');
+const { spawnSync } = require('node:child_process');
 
 function loadSubject() {
   try {
@@ -638,4 +640,109 @@ test('video wait maps a provider failed state to task_failed', async () => {
       task_id: 'task_1', video_id: 'video_1', status: 'failed', progress: 35
     }), { status: 200, headers: { 'Content-Type': 'application/json' } })
   }), (error) => error.kind === 'task_failed');
+});
+
+test('CLI parser accepts only the documented command and request-file shape', () => {
+  assert.equal(typeof subject.parseCli, 'function');
+
+  assert.deepEqual(subject.parseCli(['image', 'generate', '--request', 'request.json']), {
+    domain: 'image', action: 'generate', requestPath: 'request.json'
+  });
+  assert.deepEqual(subject.parseCli(['video', 'wait']), {
+    domain: 'video', action: 'wait', requestPath: null
+  });
+  assert.deepEqual(subject.parseCli(['capabilities']), {
+    domain: 'capabilities', action: null, requestPath: null
+  });
+  assert.throws(() => subject.parseCli(['image', 'generate', '--api-key', 'secret']), /Unsupported option/);
+  assert.throws(() => subject.parseCli(['video', 'delete']), /Unsupported command/);
+});
+
+test('request reader parses a JSON file or stdin without shell JSON arguments', async (t) => {
+  assert.equal(typeof subject.readRequest, 'function');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agnes-cli-request-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const requestPath = path.join(tempDir, 'request.json');
+  fs.writeFileSync(requestPath, '{"video_id":"video_file"}', 'utf8');
+
+  assert.deepEqual(await subject.readRequest({ requestPath }), { video_id: 'video_file' });
+  assert.deepEqual(await subject.readRequest({
+    requestPath: null,
+    stdin: Readable.from(['{"video_id":', '"video_stdin"}'])
+  }), { video_id: 'video_stdin' });
+});
+
+test('error kinds map to the documented CLI exit codes', () => {
+  assert.equal(typeof subject.exitCodeForError, 'function');
+  const cases = [
+    ['configuration', 2],
+    ['invalid_request', 2],
+    ['authentication', 3],
+    ['permission', 3],
+    ['quota_exhausted', 4],
+    ['rate_limited', 4],
+    ['provider_unavailable', 5],
+    ['task_failed', 5],
+    ['invalid_response', 5],
+    ['network', 6],
+    ['wait_timeout', 6],
+    ['download_failed', 6]
+  ];
+
+  for (const [kind, code] of cases) {
+    assert.equal(subject.exitCodeForError({ kind }), code);
+  }
+});
+
+test('capabilities CLI prints one JSON object without requiring credentials', () => {
+  const scriptPath = path.resolve(__dirname, '../scripts/agnes_api.cjs');
+  const child = spawnSync(process.execPath, [scriptPath, 'capabilities'], {
+    encoding: 'utf8',
+    env: { ...process.env, AGNES_API_KEY: '' }
+  });
+
+  assert.equal(child.status, 0);
+  assert.equal(child.stderr, '');
+  const lines = child.stdout.trim().split(/\r?\n/);
+  assert.equal(lines.length, 1);
+  const result = JSON.parse(lines[0]);
+  assert.equal(result.ok, true);
+  assert.equal(result.provider, 'agnes');
+  assert.deepEqual(result.capabilities, [
+    'text-to-image',
+    'image-to-image',
+    'text-to-video',
+    'image-to-video',
+    'keyframes-to-video'
+  ]);
+});
+
+test('invalid CLI command returns normalized JSON and exit code 2', () => {
+  const scriptPath = path.resolve(__dirname, '../scripts/agnes_api.cjs');
+  const child = spawnSync(process.execPath, [scriptPath, 'video', 'delete'], {
+    encoding: 'utf8'
+  });
+
+  assert.equal(child.status, 2);
+  assert.equal(child.stderr, '');
+  const result = JSON.parse(child.stdout);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.kind, 'invalid_request');
+});
+
+test('CLI errors never echo the API key or invalid JSON input', () => {
+  const scriptPath = path.resolve(__dirname, '../scripts/agnes_api.cjs');
+  const secret = 'super-secret-agnes-key';
+  const invalidInput = `{not-json-${secret}}`;
+  const child = spawnSync(process.execPath, [scriptPath, 'image', 'generate'], {
+    encoding: 'utf8',
+    input: invalidInput,
+    env: { ...process.env, AGNES_API_KEY: secret }
+  });
+
+  assert.equal(child.status, 2);
+  assert.doesNotMatch(child.stdout, /super-secret-agnes-key/);
+  assert.doesNotMatch(child.stderr, /super-secret-agnes-key/);
+  const result = JSON.parse(child.stdout);
+  assert.equal(result.error.kind, 'invalid_request');
 });
