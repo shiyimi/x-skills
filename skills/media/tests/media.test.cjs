@@ -711,6 +711,97 @@ test('Agnes video create and status normalize one opaque task without resubmissi
   assert.deepEqual(calls.map(({ options }) => options.method), ['POST', 'GET']);
 });
 
+test('Agnes status keeps the created task identity when result identifiers drift', async () => {
+  const result = await statusMedia({
+    provider: 'agnes',
+    capability: 'text-to-video',
+    task: { id: 'video-created', task_id: 'task-created' }
+  }, {
+    manifest: require('../providers/manifest.cjs'),
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async () => new Response(JSON.stringify({
+      id: 'task-result',
+      task_id: 'task-result',
+      video_id: 'task-result',
+      status: 'completed',
+      progress: 100,
+      metadata: { url: 'https://cdn.example.com/video.mp4' }
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(result.status, 'succeeded');
+  assert.deepEqual(result.task, {
+    id: 'video-created',
+    task_id: 'task-created',
+    provider_id: 'task-result',
+    provider_task_id: 'task-result',
+    provider_video_id: 'task-result',
+    provider_status: 'completed',
+    progress: 100
+  });
+});
+
+test('Agnes accepts only evidence-backed completed video URL fields', async (t) => {
+  const fixtures = [
+    ['metadata.url', { metadata: { url: 'https://cdn.example.com/metadata.mp4' } }, 'metadata.url'],
+    ['video_url', { video_url: 'https://cdn.example.com/video-url.mp4' }, 'video_url'],
+    ['url', { url: 'https://cdn.example.com/url.mp4' }, 'url'],
+    ['output_url', { output_url: 'https://cdn.example.com/output.mp4' }, 'output_url'],
+    ['data[].url', { data: [{ url: 'https://cdn.example.com/data.mp4' }] }, 'data[0].url']
+  ];
+
+  for (const [name, shape, sourceField] of fixtures) {
+    await t.test(name, async () => {
+      const outcome = await agnes.status({ id: 'video-created', task_id: 'task-created' }, {
+        capability: 'text-to-video',
+        env: { AGNES_API_KEY: 'test-secret' },
+        fetchImpl: async () => new Response(JSON.stringify({
+          video_id: 'task-result',
+          task_id: 'task-result',
+          status: 'completed',
+          ...shape
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+      });
+
+      assert.equal(outcome.task.id, 'video-created');
+      assert.match(outcome.artifact_sources[0].value, /^https:\/\/cdn\.example\.com\//);
+      if (sourceField === 'metadata.url') assert.deepEqual(outcome.warnings, []);
+      else assert.deepEqual(outcome.warnings, [`Agnes used legacy video artifact field ${sourceField}.`]);
+    });
+  }
+});
+
+test('Agnes summarizes a completed response that has no artifact URL', async () => {
+  await assert.rejects(agnes.status({ id: 'video-created', task_id: 'task-created' }, {
+    capability: 'text-to-video',
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async () => new Response(JSON.stringify({
+      id: 'task-result',
+      task_id: 'task-result',
+      video_id: 'task-result',
+      status: 'completed',
+      progress: 100,
+      size: '1280x768',
+      metadata: { size_mapping: { adjusted: true } }
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }), (error) => {
+    assert.equal(error.kind, 'invalid_response');
+    assert.deepEqual(error.details, {
+      response_keys: ['id', 'metadata', 'progress', 'size', 'status', 'task_id', 'video_id'],
+      metadata_keys: ['size_mapping'],
+      requested_task: { id: 'video-created', task_id: 'task-created' },
+      returned_identifiers: {
+        id: 'task-result',
+        task_id: 'task-result',
+        video_id: 'task-result'
+      },
+      identifier_changes: { task_id: true, video_id: true },
+      artifact_url_fields: []
+    });
+    return true;
+  });
+});
+
 test('Agnes POST transport ambiguity never claims accepted false', async () => {
   let calls = 0;
   await assert.rejects(agnes.create({

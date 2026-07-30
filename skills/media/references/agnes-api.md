@@ -88,7 +88,16 @@ GET https://api.agnes-ai.cn/agnesapi?video_id=<VIDEO_ID>
 | `completed` | `succeeded` |
 | `failed` | `failed` |
 
-Read the completed artifact from `metadata.url`. Use returned `size`, `seconds`, and `metadata.size_mapping` as effective parameters.
+Read the completed artifact from the current official `metadata.url` field. For responses from
+legacy Agnes routes, also accept `video_url`, `url`, `output_url`, and `data[].url`, in that order
+after `metadata.url`; validate every candidate as a public HTTPS URL. Report a warning when a
+legacy field is used.
+
+Keep the `video_id` returned at creation as the normalized task ID. A later status response may
+return a different `video_id`, `task_id`, or `id`; retain those values as Provider diagnostics but
+never let them replace the pinned task ID. If a completed response contains no supported artifact
+URL, return `invalid_response` with a credential-redacted summary of response keys, metadata keys,
+and identifier changes rather than the raw response.
 
 ## Error Boundaries
 

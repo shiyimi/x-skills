@@ -318,17 +318,73 @@ function normalizeStatus(status) {
   return normalized;
 }
 
-function videoOutcome(response, fallbackId) {
+function videoUrlCandidates(response) {
+  const candidates = [
+    ['metadata.url', response?.metadata?.url],
+    ['video_url', response?.video_url],
+    ['url', response?.url],
+    ['output_url', response?.output_url]
+  ];
+  if (Array.isArray(response?.data)) {
+    response.data.forEach((item, index) => candidates.push([`data[${index}].url`, item?.url]));
+  }
+  return candidates;
+}
+
+function extractVideoArtifact(response) {
+  for (const [field, value] of videoUrlCandidates(response)) {
+    if (typeof value === 'string' && value.trim()) return { field, value };
+  }
+  return undefined;
+}
+
+function summarizeVideoResponse(response, requestedTask) {
+  const returnedTaskId = response?.task_id ?? response?.id ?? null;
+  return {
+    response_keys: Object.keys(response ?? {}).sort(),
+    metadata_keys: Object.keys(
+      response?.metadata && typeof response.metadata === 'object' && !Array.isArray(response.metadata)
+        ? response.metadata
+        : {}
+    ).sort(),
+    requested_task: {
+      id: requestedTask?.id ?? null,
+      task_id: requestedTask?.task_id ?? null
+    },
+    returned_identifiers: {
+      id: response?.id ?? null,
+      task_id: returnedTaskId,
+      video_id: response?.video_id ?? null
+    },
+    identifier_changes: {
+      task_id: requestedTask?.task_id != null
+        && returnedTaskId != null
+        && requestedTask.task_id !== returnedTaskId,
+      video_id: requestedTask?.id != null
+        && response?.video_id != null
+        && requestedTask.id !== response.video_id
+    },
+    artifact_url_fields: videoUrlCandidates(response)
+      .filter(([, value]) => typeof value === 'string' && value.trim())
+      .map(([field]) => field)
+  };
+}
+
+function videoOutcome(response, requestedTask) {
   const status = normalizeStatus(response?.status);
-  const id = response?.video_id ?? fallbackId;
+  const id = requestedTask?.id ?? response?.video_id;
   if (typeof id !== 'string' || !id.trim()) {
     throw new ProviderError('invalid_response', 'Agnes video response did not include video_id.');
   }
+  const returnedTaskId = response.task_id ?? response.id ?? null;
   const outcome = {
     status,
     task: {
       id,
-      task_id: response.task_id ?? response.id ?? null,
+      task_id: requestedTask?.task_id ?? returnedTaskId,
+      provider_id: response.id ?? null,
+      provider_task_id: returnedTaskId,
+      provider_video_id: response.video_id ?? null,
       provider_status: response.status,
       progress: response.progress ?? null
     },
@@ -345,14 +401,20 @@ function videoOutcome(response, fallbackId) {
     outcome.warnings.push(`Agnes normalized the requested dimensions to ${response.size ?? 'a supported size'}.`);
   }
   if (status === 'succeeded') {
-    if (typeof response.metadata?.url !== 'string' || !response.metadata.url) {
-      throw new ProviderError('invalid_response', 'Completed Agnes video response has no metadata.url.');
+    const artifact = extractVideoArtifact(response);
+    if (!artifact) {
+      throw new ProviderError('invalid_response', 'Completed Agnes video response has no artifact URL.', {
+        details: summarizeVideoResponse(response, requestedTask)
+      });
     }
     outcome.artifact_sources.push({
       kind: 'url',
       mime_type: 'video/mp4',
-      value: assertPublicHttpsUrl(response.metadata.url, 'Agnes video artifact', 'invalid_response')
+      value: assertPublicHttpsUrl(artifact.value, 'Agnes video artifact', 'invalid_response')
     });
+    if (artifact.field !== 'metadata.url') {
+      outcome.warnings.push(`Agnes used legacy video artifact field ${artifact.field}.`);
+    }
   }
   return outcome;
 }
@@ -418,7 +480,7 @@ async function statusAuthenticated(task, context, apiKey) {
     fetchImpl: context.fetchImpl,
     signal: context.signal
   }), { ...(context.retryOptions ?? {}), signal: context.signal });
-  return videoOutcome(response, task.id.trim());
+  return videoOutcome(response, task);
 }
 
 async function status(task, context = {}) {
