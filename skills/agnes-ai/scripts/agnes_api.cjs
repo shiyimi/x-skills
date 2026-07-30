@@ -614,10 +614,17 @@ function videoWarnings(response) {
   return [`Agnes normalized the requested dimensions to ${size}.`];
 }
 
-function videoEnvelope(response, capability, startedAt, completedAt, artifacts = []) {
-  const normalized = taskFromVideoResponse(response);
-  return {
-    ok: true,
+function videoEnvelope(
+  response,
+  capability,
+  startedAt,
+  completedAt,
+  artifacts = [],
+  fallbackVideoId
+) {
+  const normalized = taskFromVideoResponse(response, fallbackVideoId);
+  const result = {
+    ok: normalized.status !== 'failed',
     provider: 'agnes',
     capability,
     status: normalized.status,
@@ -627,6 +634,14 @@ function videoEnvelope(response, capability, startedAt, completedAt, artifacts =
     warnings: videoWarnings(response),
     timing: timingResult(startedAt, completedAt)
   };
+  if (normalized.status === 'failed') {
+    result.error = {
+      kind: 'task_failed',
+      message: 'Agnes video generation failed.',
+      retryable: false
+    };
+  }
+  return result;
 }
 
 async function createVideo(request, {
@@ -680,19 +695,7 @@ async function getVideoStatus(videoId, {
 } = {}) {
   const startedAt = now();
   const response = await fetchVideoStatus(videoId, { apiKey, fetchImpl, retryOptions });
-  const normalized = taskFromVideoResponse(response, assertVideoId(videoId));
-  const completedAt = now();
-  return {
-    ok: normalized.status !== 'failed',
-    provider: 'agnes',
-    capability,
-    status: normalized.status,
-    task: normalized.task,
-    artifacts: [],
-    effective_parameters: videoEffectiveParameters(response),
-    warnings: videoWarnings(response),
-    timing: timingResult(startedAt, completedAt)
-  };
+  return videoEnvelope(response, capability, startedAt, now(), [], assertVideoId(videoId));
 }
 
 async function waitForVideo(request, {

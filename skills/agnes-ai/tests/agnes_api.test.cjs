@@ -501,6 +501,30 @@ test('video creation rejects a response without video_id', async () => {
   }), (error) => error.kind === 'invalid_response' && /video_id/.test(error.message));
 });
 
+test('video creation reports a provider failed state as task_failed', async () => {
+  const result = await subject.createVideo({
+    capability: 'text-to-video',
+    prompt: 'A short animation'
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1',
+      video_id: 'video_1',
+      status: 'failed',
+      progress: 12
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.task.id, 'video_1');
+  assert.deepEqual(result.error, {
+    kind: 'task_failed',
+    message: 'Agnes video generation failed.',
+    retryable: false
+  });
+});
+
 test('video status uses video_id and retries only the idempotent GET', async () => {
   assert.equal(typeof subject.getVideoStatus, 'function');
   let attempts = 0;
@@ -531,6 +555,51 @@ test('video status uses video_id and retries only the idempotent GET', async () 
   assert.equal(attempts, 2);
   assert.equal(result.status, 'succeeded');
   assert.equal(result.task.id, 'video id/1');
+});
+
+test('video status reports a provider failed state as task_failed', async () => {
+  const result = await subject.getVideoStatus('video_1', {
+    apiKey: 'test-secret',
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1',
+      video_id: 'video_1',
+      status: 'failed',
+      progress: 35
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.task.id, 'video_1');
+  assert.deepEqual(result.error, {
+    kind: 'task_failed',
+    message: 'Agnes video generation failed.',
+    retryable: false
+  });
+});
+
+test('video status CLI exits 5 when the provider task failed', async (t) => {
+  const previousExitCode = process.exitCode;
+  t.after(() => { process.exitCode = previousExitCode; });
+  let stdout = '';
+
+  await subject.main(['video', 'status'], {
+    stdout: { write(value) { stdout += value; } },
+    stdin: Readable.from(['{"video_id":"video_1"}']),
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async () => new Response(JSON.stringify({
+      task_id: 'task_1',
+      video_id: 'video_1',
+      status: 'failed',
+      progress: 35
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(process.exitCode, 5);
+  const result = JSON.parse(stdout);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.kind, 'task_failed');
+  assert.equal(result.task.id, 'video_1');
 });
 
 test('combined video workflow creates once, polls, and downloads the completed video', async (t) => {
