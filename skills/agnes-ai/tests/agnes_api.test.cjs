@@ -279,6 +279,35 @@ test('GET network failures remain retryable without ambiguous acceptance details
     && error.details === undefined);
 });
 
+test('generation POST HTTP failures never advertise a safe retry', async (t) => {
+  const cases = [
+    [408, true],
+    [429, false],
+    [503, true]
+  ];
+
+  for (const [status, acceptanceUnknown] of cases) {
+    await t.test(`HTTP ${status}`, async () => {
+      let calls = 0;
+      await assert.rejects(subject.requestJson({
+        method: 'POST',
+        path: '/v1/videos',
+        apiKey: 'test-secret',
+        body: { model: 'agnes-video-v2.0' },
+        fetchImpl: async () => {
+          calls += 1;
+          return new Response(JSON.stringify({ message: `HTTP ${status}` }), {
+            status,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }), (error) => error.retryable === false
+        && Boolean(error.details?.acceptance_unknown) === acceptanceUnknown);
+      assert.equal(calls, 1);
+    });
+  }
+});
+
 test('malformed successful response becomes invalid_response', async () => {
   assert.equal(typeof subject.requestJson, 'function');
 

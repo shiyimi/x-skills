@@ -374,7 +374,14 @@ async function requestJson({
 
   if (!response.ok) {
     const errorBody = parsed ?? { message: text.slice(0, 500) };
-    throw classifyHttpError(response.status, errorBody);
+    const error = classifyHttpError(response.status, errorBody);
+    if (String(method).toUpperCase() === 'POST') {
+      error.retryable = false;
+      if (response.status === 408 || response.status >= 500) {
+        error.details = { ...(error.details ?? {}), acceptance_unknown: true };
+      }
+    }
+    throw error;
   }
   if (parsed === undefined || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new ProviderError('invalid_response', 'Agnes returned a non-JSON success response.');
