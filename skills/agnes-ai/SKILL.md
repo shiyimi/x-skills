@@ -34,6 +34,17 @@ chmod 600 ~/.config/agnes/api_key
 
 Warn that placing a literal key in a shell command can leave it in shell history. Prefer an environment variable supplied by the user's secret manager or an interactive hidden-input setup.
 
+On Windows PowerShell, set a session-scoped environment variable without putting the key in command history:
+
+```powershell
+$secureAgnesKey = Read-Host 'Agnes API key' -AsSecureString
+$agnesKeyPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureAgnesKey)
+try { $env:AGNES_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($agnesKeyPtr) }
+finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($agnesKeyPtr) }
+```
+
+This value lasts only for the current PowerShell process. Prefer the user's Windows secret manager for persistent storage. If using `$env:USERPROFILE\.config\agnes\api_key`, restrict its ACL to the current user; the CLI cannot prove Windows ACL privacy and does not enforce the POSIX `0600` check on Windows.
+
 ## Route The Request
 
 | User intent | Capability | Command |
@@ -66,19 +77,20 @@ node <skill-dir>/scripts/agnes_api.cjs capabilities
 
 Do not pass prompts, image data, or keys as CLI arguments. The only supported option is `--request <path>`.
 
-For a new image or video generation, include `capability` and `prompt`. For `video status` and `video wait`, include the existing `video_id`; do not submit another generation request.
+For a new image or video generation, include `capability` and `prompt`. For `video status` and `video wait`, include the existing `video_id`; do not submit another generation request. Include the original video `capability` when known. If omitted, the CLI labels the resumed result as `text-to-video`; this label does not alter the remote task.
 
-Default all downloaded outputs to `<current-directory>/outputs/agnes/...` unless the user names an output directory. Report the final local artifact paths from `artifacts[].path`, not only the temporary source URLs.
+Default all downloaded outputs to `<current-process-working-directory>/outputs/agnes/...` unless the user names an output directory. Resolve a relative `output.directory` against the directory from which the CLI process was started, not against the skill directory. Report the final local artifact paths from `artifacts[].path`, not only the temporary source URLs.
 
 ## Handle Results
 
 Parse the single JSON object printed to stdout.
 
 - On `ok: true`, report the normalized status, task ID when present, effective dimensions/duration, warnings, and local artifact paths.
-- On `wait_timeout`, state that the remote task is still active and retain `task.id`. Resume with `video wait`; never call `video generate` again for the same work.
+- On `wait_timeout`, state that the remote task is still active and retain `task.id`. Resume only with `video wait`; never call `video generate` again for the same work. If the user asked to wait continuously, repeat bounded `video wait` calls while the interaction remains active. Otherwise return control after one timeout and provide the resumable ID.
 - On `rate_limited` or a retryable provider error, explain the returned state. Do not wrap generation POSTs in another retry loop.
 - On `quota_exhausted`, report the authoritative Agnes error. Do not infer a remaining balance from local call counts.
 - On `download_failed`, preserve and report any completed artifacts found in `error.details.artifacts`.
+- When `video wait` reports `download_failed` for a completed task, retry the download by running `video wait` again with the same `video_id`; this rechecks status and does not recreate the video.
 - On an ambiguous network failure during image generation or video creation, do not automatically resubmit; the service may have accepted the original request.
 
 Treat exit codes as categories: `2` input/configuration, `3` authentication/permission, `4` quota/rate limit, `5` provider/task/response failure, and `6` network/wait/download failure.
@@ -86,6 +98,7 @@ Treat exit codes as categories: `2` input/configuration, `3` authentication/perm
 ## Boundaries
 
 - Send the bearer credential only to `https://api.agnes-ai.cn`.
+- Accept only credential-free public HTTPS input and artifact URL literals. The CLI rejects local/private IP literals and validates each download redirect, but does not resolve DNS names before fetching; use trusted hosts because DNS rebinding remains a residual risk.
 - Do not claim that a task was cancelled when local waiting stops.
 - Do not claim live API verification unless a real quota-consuming request was explicitly run.
 - Do not add text chat, audio, provider routing, fallback, quota estimation, or shared runtime code to this skill.

@@ -32,9 +32,11 @@ Stable fields:
 | `inputs[]` | Typed input artifacts; Agnes currently accepts images |
 | `inputs[].source.kind` | `path` or `url` for image workflows; `url` only for video workflows |
 | `parameters` | Provider-owned model controls |
-| `output.directory` | Optional output root; defaults to `outputs` |
+| `output.directory` | Optional output root; defaults to `outputs`; relative paths resolve from the CLI process working directory |
 | `video_id` | Required for `video status` and `video wait` |
 | `wait.timeout_seconds` | Optional non-negative video wait timeout; defaults to 1200 |
+
+For status or wait requests, preserve the original video capability when it is known. A missing capability defaults to `text-to-video` only for normalized result labeling and does not change the remote Agnes task.
 
 Examples:
 
@@ -124,10 +126,14 @@ Stable error kinds:
 | `quota_exhausted` | HTTP 402 |
 | `rate_limited` | HTTP 429 |
 | `provider_unavailable` | Temporary Agnes 5xx failure |
-| `network` | API network/TLS/timeout failure |
+| `network` | API network/TLS/timeout failure; a POST failure is non-retryable and carries `details.acceptance_unknown: true` |
 | `task_failed` | Remote video status is failed |
 | `wait_timeout` | Local waiting ended while remote task remains active |
 | `download_failed` | Generated output could not be saved locally |
 | `invalid_response` | Success response violates the documented contract |
 
 Do not add a fabricated quota balance. Do not automatically retry non-idempotent generation requests. A future router may fall back only after a provider definitively rejects work before accepting it.
+
+A `wait_timeout` result is a bounded local stop, not remote cancellation. Repeat `video wait` only when continued waiting is requested; otherwise return the reusable `task.id`. Running `video wait` again for an already completed task is also the supported way to retry a failed artifact download without recreating media.
+
+Artifact paths are absolute in CLI results. URL validation rejects embedded credentials, localhost names, and loopback/private/link-local IP literals and validates every redirect. DNS names are not resolved before fetch, so callers must still trust the hostname against DNS rebinding.

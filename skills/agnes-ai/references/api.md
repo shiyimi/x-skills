@@ -180,7 +180,10 @@ Use returned `size`, `seconds`, and `metadata.size_mapping` as the effective out
 | `401` | Invalid/missing key | no |
 | `402` | Quota or balance exhausted | no |
 | `403` | Access denied | no |
+| `408` | Request timeout | never repeat an ambiguous generation POST; status/download GET may back off |
 | `429` | Rate limited | never repeat an ambiguous generation POST; status/download GET may back off |
 | `5xx` | Temporary provider failure | never repeat an ambiguous generation POST; status/download GET may back off |
 
 Image generation may take seconds to minutes. Video generation is asynchronous. A local wait timeout does not imply cancellation; preserve the `video_id` and resume polling.
+
+The bundled CLI bounds each status request and retry sequence by the local wait deadline. Re-run `video wait` with the same `video_id` to continue waiting or to retry downloading a video whose completed status was already returned.
