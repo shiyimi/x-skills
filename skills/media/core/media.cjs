@@ -163,7 +163,10 @@ async function queryStatus(request, context = {}) {
       request
     }));
   } catch (error) {
-    throw annotateError(error, entry.id);
+    const normalized = annotateError(error, entry.id);
+    if (normalized.task === undefined) normalized.task = request.task;
+    if (normalized.capability === undefined) normalized.capability = request.capability;
+    throw normalized;
   }
   return { entry, outcome, runtime };
 }
@@ -242,7 +245,15 @@ async function waitMedia(request, context = {}) {
     const abortTimer = setTimeout(() => controller.abort(), remainingBeforeStatus);
     let queried;
     try {
-      queried = await queryStatus(request, { ...runtime, signal: controller.signal });
+      queried = await queryStatus(request, {
+        ...runtime,
+        signal: controller.signal,
+        retryOptions: {
+          ...(runtime.retryOptions ?? {}),
+          deadlineMs: deadline,
+          nowMs: runtime.now
+        }
+      });
     } catch (error) {
       if (controller.signal.aborted) {
         return timeoutResult(entry, request, latest, startedAt, runtime.now());
@@ -402,6 +413,7 @@ function errorResult(error, secrets = []) {
     }
   };
   if (normalized.provider !== undefined) result.provider = normalized.provider;
+  if (normalized.capability !== undefined) result.capability = normalized.capability;
   if (normalized.task !== undefined) result.task = normalized.task;
   if (normalized.details !== undefined) result.error.details = redactValue(normalized.details, secrets);
   return result;

@@ -198,6 +198,10 @@ test('provider outcomes normalize optional collections and reject unknown states
     () => normalizeOutcome({ status: 'finished' }),
     (error) => error.kind === 'invalid_response'
   );
+  assert.throws(
+    () => normalizeOutcome({ status: 'queued', task: [] }),
+    (error) => error.kind === 'invalid_response'
+  );
 });
 
 test('stable error categories map to CLI exit codes', () => {
@@ -385,6 +389,28 @@ test('status and wait stay pinned to the named provider', async () => {
   assert.equal((await statusMedia(request, context)).provider, 'pinned');
   assert.equal((await waitMedia(request, context)).provider, 'pinned');
   assert.deepEqual(calls, ['pinned:opaque-id', 'pinned:opaque-id']);
+});
+
+test('existing task errors retain the pinned provider and task id', async () => {
+  const failing = provider({
+    status: async () => {
+      throw new ProviderError('network', 'status unavailable', { retryable: true });
+    }
+  });
+  const request = {
+    provider: 'failing',
+    capability: 'text-to-video',
+    task: { id: 'opaque-failure' }
+  };
+
+  await assert.rejects(statusMedia(request, {
+    manifest: [entry('failing', 10, {
+      provider: failing,
+      capabilities: ['text-to-video']
+    })]
+  }), (error) => error.provider === 'failing'
+    && error.task.id === 'opaque-failure'
+    && error.kind === 'network');
 });
 
 test('wait timeout preserves the pinned task without resubmitting work', async () => {

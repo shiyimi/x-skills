@@ -21,7 +21,8 @@ class ProviderError extends Error {
       'providerCode',
       'details',
       'provider',
-      'task'
+      'task',
+      'capability'
     ]) {
       if (options[key] !== undefined) this[key] = options[key];
     }
@@ -88,10 +89,10 @@ function validateManifest(manifest) {
   return [...manifest].sort((left, right) => left.priority - right.priority);
 }
 
-function assertPlainObject(value, label, { optional = false } = {}) {
+function assertPlainObject(value, label, { optional = false, kind = 'invalid_request' } = {}) {
   if (value === undefined && optional) return;
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new ProviderError('invalid_request', `${label} must be an object.`);
+    throw new ProviderError(kind, `${label} must be an object.`);
   }
 }
 
@@ -155,12 +156,16 @@ function normalizeOutcome(outcome) {
   if (!OUTCOME_STATUSES.has(outcome.status)) {
     throw new ProviderError('invalid_response', `Unknown Provider outcome status: ${String(outcome.status)}.`);
   }
-  if (outcome.task !== undefined) assertPlainObject(outcome.task, 'Provider outcome task');
+  if (outcome.task !== undefined) {
+    assertPlainObject(outcome.task, 'Provider outcome task', { kind: 'invalid_response' });
+  }
   if (outcome.artifact_sources !== undefined && !Array.isArray(outcome.artifact_sources)) {
     throw new ProviderError('invalid_response', 'Provider artifact_sources must be an array.');
   }
   if (outcome.effective_parameters !== undefined) {
-    assertPlainObject(outcome.effective_parameters, 'Provider effective_parameters');
+    assertPlainObject(outcome.effective_parameters, 'Provider effective_parameters', {
+      kind: 'invalid_response'
+    });
   }
   if (outcome.warnings !== undefined && !Array.isArray(outcome.warnings)) {
     throw new ProviderError('invalid_response', 'Provider warnings must be an array.');

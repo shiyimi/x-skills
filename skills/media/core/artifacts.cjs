@@ -10,9 +10,7 @@ const ARTIFACT_TYPES = new Map([
   ['image/png', { type: 'image', extension: '.png' }],
   ['image/jpeg', { type: 'image', extension: '.jpg' }],
   ['image/webp', { type: 'image', extension: '.webp' }],
-  ['video/mp4', { type: 'video', extension: '.mp4' }],
-  ['audio/mpeg', { type: 'audio', extension: '.mp3' }],
-  ['audio/wav', { type: 'audio', extension: '.wav' }]
+  ['video/mp4', { type: 'video', extension: '.mp4' }]
 ]);
 
 function isNonPublicIpAddress(hostname) {
