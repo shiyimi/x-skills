@@ -141,6 +141,11 @@ async function selectAndCreate(request, context = {}) {
 async function createMedia(request, context = {}) {
   validateRequest('create', request);
   const runtime = runtimeContext(context);
+  const preflightOutput = runtime.preflightOutput ?? require('./artifacts.cjs').preflightOutput;
+  runtime.beforeCreate = async (entry) => preflightOutput(request, {
+    ...runtime,
+    provider: entry.id
+  });
   const startedAt = runtime.now();
   const { entry, outcome } = await selectAndCreate(request, runtime);
   return resultFromOutcome(entry, request.capability, outcome, startedAt, runtime.now());
@@ -167,6 +172,19 @@ async function queryStatus(request, context = {}) {
     if (normalized.task === undefined) normalized.task = request.task;
     if (normalized.capability === undefined) normalized.capability = request.capability;
     throw normalized;
+  }
+  if (outcome.task === undefined || outcome.task.id === undefined) {
+    outcome.task = { ...(outcome.task ?? {}), id: request.task.id };
+  } else if (outcome.task.id !== request.task.id) {
+    throw new ProviderError(
+      'invalid_response',
+      `Provider ${entry.id} returned a different task.id for pinned work.`,
+      {
+        provider: entry.id,
+        capability: request.capability,
+        task: request.task
+      }
+    );
   }
   return { entry, outcome, runtime };
 }
@@ -251,11 +269,12 @@ async function waitMedia(request, context = {}) {
         retryOptions: {
           ...(runtime.retryOptions ?? {}),
           deadlineMs: deadline,
-          nowMs: runtime.now
+          nowMs: runtime.now,
+          sleep: runtime.sleep
         }
       });
     } catch (error) {
-      if (controller.signal.aborted) {
+      if (controller.signal.aborted || error.kind === 'wait_timeout') {
         return timeoutResult(entry, request, latest, startedAt, runtime.now());
       }
       throw error;

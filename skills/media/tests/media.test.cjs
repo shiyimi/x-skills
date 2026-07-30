@@ -232,7 +232,8 @@ test('automatic creation uses ascending priority instead of manifest order', asy
     capability: 'text-to-image',
     prompt: 'studio product'
   }, {
-    manifest: [entry('second', 20, { provider: second }), entry('first', 10, { provider: first })]
+    manifest: [entry('second', 20, { provider: second }), entry('first', 10, { provider: first })],
+    preflightOutput: async () => {}
   });
 
   assert.equal(result.provider, 'first');
@@ -264,7 +265,8 @@ test('automatic creation skips unconfigured and unsupported providers', async ()
       entry('unconfigured', 10, { provider: unconfigured }),
       entry('unsupported', 20, { provider: unsupported }),
       entry('eligible', 30, { provider: eligible })
-    ]
+    ],
+    preflightOutput: async () => {}
   });
 
   assert.equal(result.provider, 'eligible');
@@ -295,7 +297,8 @@ test('automatic creation falls back only after authoritative pre-acceptance reje
     manifest: [
       entry('rejected', 10, { provider: rejected }),
       entry('fallback', 20, { provider: fallback })
-    ]
+    ],
+    preflightOutput: async () => {}
   });
 
   assert.equal(result.provider, 'fallback');
@@ -322,7 +325,8 @@ test('automatic creation blocks fallback when acceptance is unknown', async () =
       manifest: [
         entry('ambiguous', 10, { provider: ambiguous }),
         entry('fallback', 20, { provider: fallback })
-      ]
+      ],
+      preflightOutput: async () => {}
     }),
     (error) => error.kind === 'network' && error.provider === 'ambiguous'
   );
@@ -353,7 +357,8 @@ test('explicit provider selection never calls a fallback provider', async () => 
       manifest: [
         entry('other', 10, { provider: other }),
         entry('selected', 20, { provider: selected })
-      ]
+      ],
+      preflightOutput: async () => {}
     }),
     (error) => error.provider === 'selected'
   );
@@ -411,6 +416,48 @@ test('existing task errors retain the pinned provider and task id', async () => 
   }), (error) => error.provider === 'failing'
     && error.task.id === 'opaque-failure'
     && error.kind === 'network');
+});
+
+test('existing task outcome cannot replace its pinned task id', async () => {
+  const replacing = provider({
+    status: async () => ({ status: 'running', task: { id: 'different' } })
+  });
+  const context = {
+    manifest: [entry('replacing', 10, {
+      provider: replacing,
+      capabilities: ['text-to-video']
+    })]
+  };
+  const request = {
+    provider: 'replacing',
+    capability: 'text-to-video',
+    task: { id: 'original' }
+  };
+
+  await assert.rejects(
+    statusMedia(request, context),
+    (error) => error.kind === 'invalid_response'
+      && error.task.id === 'original'
+      && error.provider === 'replacing'
+  );
+});
+
+test('existing task outcome fills a missing task with the pinned task id', async () => {
+  const omitting = provider({
+    status: async () => ({ status: 'succeeded', artifact_sources: [] })
+  });
+  const result = await statusMedia({
+    provider: 'omitting',
+    capability: 'text-to-video',
+    task: { id: 'original' }
+  }, {
+    manifest: [entry('omitting', 10, {
+      provider: omitting,
+      capabilities: ['text-to-video']
+    })]
+  });
+
+  assert.equal(result.task.id, 'original');
 });
 
 test('wait timeout preserves the pinned task without resubmitting work', async () => {
@@ -802,6 +849,32 @@ test('automatic generate preflights the selected Provider directory before creat
   assert.equal(createCalls, 0);
 });
 
+test('create preflights the selected Provider directory before remote submission', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-create-preflight-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(tempDir, 'selected'), 'occupied');
+  let createCalls = 0;
+  const selected = provider({
+    create: async () => {
+      createCalls += 1;
+      return { status: 'queued', task: { id: 'remote-task' } };
+    }
+  });
+
+  await assert.rejects(createMedia({
+    provider: 'selected',
+    capability: 'text-to-video',
+    prompt: 'A product animation',
+    output: { directory: tempDir }
+  }, {
+    manifest: [entry('selected', 10, {
+      provider: selected,
+      capabilities: ['text-to-video']
+    })]
+  }), (error) => error.kind === 'invalid_request');
+  assert.equal(createCalls, 0);
+});
+
 test('wait aborts a hanging Provider status call at the local deadline', async () => {
   const hanging = provider({
     status: async (_task, context) => new Promise((_resolve, reject) => {
@@ -869,13 +942,70 @@ test('CLI recursively redacts the configured API key from Provider errors', asyn
     manifest: [entry('leaking', 10, { provider: leaking })],
     stdin: Readable.from([request]),
     stdout: { write: (chunk) => { output += chunk; } },
-    env: { AGNES_API_KEY: 'top-secret' }
+    env: { AGNES_API_KEY: 'top-secret' },
+    preflightOutput: async () => {}
   });
 
   assert.equal(exitCode, 5);
   assert.doesNotMatch(output, /top-secret/);
   assert.match(output, /\[REDACTED\]/);
   assert.equal(JSON.parse(output).error.details.raw, '[REDACTED]');
+});
+
+test('Agnes redacts a file credential echoed by an external error response', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const credentialDir = path.join(tempDir, '.config', 'agnes');
+  fs.mkdirSync(credentialDir, { recursive: true });
+  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-top-secret', { mode: 0o600 });
+  let output = '';
+
+  const exitCode = await runCli(['create'], {
+    stdin: Readable.from([JSON.stringify({
+      provider: 'agnes',
+      capability: 'text-to-image',
+      prompt: 'A product photo',
+      output: { directory: path.join(tempDir, 'output') }
+    })]),
+    stdout: { write: (chunk) => { output += chunk; } },
+    env: {},
+    homeDir: tempDir,
+    platform: 'win32',
+    fsApi: fs,
+    fetchImpl: async () => new Response(JSON.stringify({
+      error: { message: 'remote echoed file-top-secret', code: 'file-top-secret' }
+    }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(exitCode, 2);
+  assert.doesNotMatch(output, /file-top-secret/);
+  assert.match(output, /\[REDACTED\]/);
+});
+
+test('Agnes transient status retry cannot cross the core wait deadline', async () => {
+  let currentMs = 0;
+  let attempts = 0;
+  const result = await waitMedia({
+    provider: 'agnes',
+    capability: 'text-to-video',
+    task: { id: 'video-deadline' },
+    wait: { timeout_seconds: 1 }
+  }, {
+    manifest: require('../providers/manifest.cjs'),
+    env: { AGNES_API_KEY: 'test-secret' },
+    fetchImpl: async () => {
+      attempts += 1;
+      return new Response(JSON.stringify({ message: 'temporary' }), { status: 503 });
+    },
+    now: () => currentMs,
+    sleep: async (delayMs) => { currentMs += delayMs; },
+    retryOptions: { random: () => 0 }
+  });
+
+  assert.equal(result.error.kind, 'wait_timeout');
+  assert.equal(result.task.id, 'video-deadline');
+  assert.equal(currentMs, 1_000);
+  assert.equal(attempts, 1);
 });
 
 test('Agnes HTTP responses preserve stable kinds and POST acceptance certainty', async (t) => {

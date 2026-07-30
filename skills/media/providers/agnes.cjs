@@ -191,6 +191,21 @@ function providerMessage(body, fallback) {
   return fallback;
 }
 
+function redactExternalValue(value, secret) {
+  if (typeof value === 'string') {
+    return value
+      .split(secret).join('[REDACTED]')
+      .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]');
+  }
+  if (Array.isArray(value)) return value.map((item) => redactExternalValue(item, secret));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, redactExternalValue(item, secret)])
+    );
+  }
+  return value;
+}
+
 function classifyHttpError(status, body = {}) {
   const mappings = {
     400: ['invalid_request', false],
@@ -248,7 +263,8 @@ async function requestJson({ method, apiPath, apiKey, body, fetchImpl = globalTh
     try { parsed = JSON.parse(text); } catch { parsed = undefined; }
   }
   if (!response.ok) {
-    const error = classifyHttpError(response.status, parsed ?? { message: text.slice(0, 500) });
+    const externalBody = parsed ?? { message: text.slice(0, 500) };
+    const error = classifyHttpError(response.status, redactExternalValue(externalBody, apiKey));
     if (String(method).toUpperCase() === 'POST') {
       error.retryable = false;
       if (response.status === 408 || response.status >= 500) {
