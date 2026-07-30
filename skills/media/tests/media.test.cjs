@@ -982,6 +982,67 @@ test('Agnes redacts a file credential echoed by an external error response', asy
   assert.match(output, /\[REDACTED\]/);
 });
 
+test('Agnes redacts a file credential echoed by a malformed success response', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-success-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const credentialDir = path.join(tempDir, '.config', 'agnes');
+  fs.mkdirSync(credentialDir, { recursive: true });
+  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-only-secret');
+  let output = '';
+
+  const exitCode = await runCli(['create'], {
+    stdin: Readable.from([JSON.stringify({
+      provider: 'agnes',
+      capability: 'text-to-video',
+      prompt: 'A product animation',
+      output: { directory: path.join(tempDir, 'output') }
+    })]),
+    stdout: { write: (chunk) => { output += chunk; } },
+    env: {},
+    homeDir: tempDir,
+    platform: 'win32',
+    fsApi: fs,
+    fetchImpl: async () => new Response(JSON.stringify({
+      video_id: 'video-1',
+      status: 'file-only-secret'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(exitCode, 5);
+  assert.doesNotMatch(output, /file-only-secret/);
+  assert.match(output, /\[REDACTED\]/);
+});
+
+test('Agnes redacts a file credential echoed in a successful outcome', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-outcome-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const credentialDir = path.join(tempDir, '.config', 'agnes');
+  fs.mkdirSync(credentialDir, { recursive: true });
+  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-result-secret');
+  let output = '';
+
+  const exitCode = await runCli(['create'], {
+    stdin: Readable.from([JSON.stringify({
+      provider: 'agnes',
+      capability: 'text-to-image',
+      prompt: 'A product photo',
+      output: { directory: path.join(tempDir, 'output') }
+    })]),
+    stdout: { write: (chunk) => { output += chunk; } },
+    env: {},
+    homeDir: tempDir,
+    platform: 'win32',
+    fsApi: fs,
+    fetchImpl: async () => new Response(JSON.stringify({
+      data: [{ b64_json: 'AQIDBA==', mime_type: 'file-result-secret' }]
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+
+  assert.equal(exitCode, 0);
+  assert.doesNotMatch(output, /file-result-secret/);
+  assert.match(output, /\[REDACTED\]/);
+});
+
 test('Agnes transient status retry cannot cross the core wait deadline', async () => {
   let currentMs = 0;
   let attempts = 0;

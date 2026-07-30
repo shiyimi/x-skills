@@ -197,6 +197,9 @@ function redactExternalValue(value, secret) {
       .split(secret).join('[REDACTED]')
       .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]');
   }
+  if (Buffer.isBuffer(value) || ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
+    return value;
+  }
   if (Array.isArray(value)) return value.map((item) => redactExternalValue(item, secret));
   if (value && typeof value === 'object') {
     return Object.fromEntries(
@@ -204,6 +207,29 @@ function redactExternalValue(value, secret) {
     );
   }
   return value;
+}
+
+function sanitizeProviderError(error, secret) {
+  if (!(error instanceof ProviderError)) {
+    return new ProviderError(
+      'invalid_response',
+      redactExternalValue(error?.message ?? 'Unexpected Agnes Provider failure.', secret)
+    );
+  }
+
+  error.message = redactExternalValue(error.message, secret);
+  for (const key of ['providerCode', 'details', 'task']) {
+    if (error[key] !== undefined) error[key] = redactExternalValue(error[key], secret);
+  }
+  return error;
+}
+
+async function withSecretBoundary(secret, operation) {
+  try {
+    return redactExternalValue(await operation(), secret);
+  } catch (error) {
+    throw sanitizeProviderError(error, secret);
+  }
 }
 
 function classifyHttpError(status, body = {}) {
@@ -331,8 +357,7 @@ function videoOutcome(response, fallbackId) {
   return outcome;
 }
 
-async function create(request, context = {}) {
-  const apiKey = resolveCredentials(context);
+async function createAuthenticated(request, context, apiKey) {
   if (request.capability === 'text-to-image' || request.capability === 'image-to-image') {
     const body = await buildImageRequest(request, {
       readFile: context.fsApi?.promises?.readFile ?? fs.promises.readFile
@@ -379,14 +404,12 @@ async function create(request, context = {}) {
   return videoOutcome(response);
 }
 
-async function status(task, context = {}) {
-  if (!task || typeof task.id !== 'string' || !task.id.trim()) {
-    throw new ProviderError('invalid_request', 'Agnes status requires task.id.');
-  }
-  if (!['text-to-video', 'image-to-video', 'keyframes-to-video'].includes(context.capability)) {
-    throw new ProviderError('invalid_request', 'Agnes status is available only for video capabilities.');
-  }
+async function create(request, context = {}) {
   const apiKey = resolveCredentials(context);
+  return withSecretBoundary(apiKey, () => createAuthenticated(request, context, apiKey));
+}
+
+async function statusAuthenticated(task, context, apiKey) {
   const query = new URLSearchParams({ video_id: task.id.trim() });
   const response = await withTransientRetry(() => requestJson({
     method: 'GET',
@@ -396,6 +419,17 @@ async function status(task, context = {}) {
     signal: context.signal
   }), { ...(context.retryOptions ?? {}), signal: context.signal });
   return videoOutcome(response, task.id.trim());
+}
+
+async function status(task, context = {}) {
+  if (!task || typeof task.id !== 'string' || !task.id.trim()) {
+    throw new ProviderError('invalid_request', 'Agnes status requires task.id.');
+  }
+  if (!['text-to-video', 'image-to-video', 'keyframes-to-video'].includes(context.capability)) {
+    throw new ProviderError('invalid_request', 'Agnes status is available only for video capabilities.');
+  }
+  const apiKey = resolveCredentials(context);
+  return withSecretBoundary(apiKey, () => statusAuthenticated(task, context, apiKey));
 }
 
 module.exports = {
