@@ -134,6 +134,6 @@ Stable error kinds:
 
 Do not add a fabricated quota balance. Do not automatically retry non-idempotent generation requests. A future router may fall back only after a provider definitively rejects work before accepting it.
 
-A `wait_timeout` result is a bounded local stop, not remote cancellation. Repeat `video wait` only when continued waiting is requested; otherwise return the reusable `task.id`. Running `video wait` again for an already completed task is also the supported way to retry a failed artifact download without recreating media.
+A `wait_timeout` result is a bounded local stop, not remote cancellation. Run at most one bounded `video wait` call per user request, then return the reusable `task.id`. Run another call only after the user explicitly requests continued waiting. Running `video wait` again for an already completed task is also the supported way to retry a failed artifact download without recreating media.
 
 Artifact paths are absolute in CLI results. URL validation rejects embedded credentials, localhost names, and loopback/private/link-local IP literals and validates every redirect. DNS names are not resolved before fetch, so callers must still trust the hostname against DNS rebinding.

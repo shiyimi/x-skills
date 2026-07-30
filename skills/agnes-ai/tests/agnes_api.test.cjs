@@ -778,6 +778,31 @@ test('combined video workflow creates once, polls, and downloads the completed v
   });
 });
 
+test('combined video workflow stops when creation already reports failure', async () => {
+  let calls = 0;
+  const result = await subject.runVideo({
+    capability: 'text-to-video',
+    prompt: 'A short animation'
+  }, {
+    apiKey: 'test-secret',
+    fetchImpl: async (url) => {
+      calls += 1;
+      assert.equal(url, 'https://api.agnes-ai.cn/v1/videos');
+      return new Response(JSON.stringify({
+        task_id: 'task_1',
+        video_id: 'video_1',
+        status: 'failed',
+        progress: 10
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.error.kind, 'task_failed');
+});
+
 test('video wait returns a resumable timeout result instead of failing the remote task', async () => {
   assert.equal(typeof subject.waitForVideo, 'function');
   const result = await subject.waitForVideo({

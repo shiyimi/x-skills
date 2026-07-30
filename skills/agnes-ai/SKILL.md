@@ -86,7 +86,7 @@ Default all downloaded outputs to `<current-process-working-directory>/outputs/a
 Parse the single JSON object printed to stdout.
 
 - On `ok: true`, report the normalized status, task ID when present, effective dimensions/duration, warnings, and local artifact paths.
-- On `wait_timeout`, state that the remote task is still active and retain `task.id`. Resume only with `video wait`; never call `video generate` again for the same work. If the user asked to wait continuously, repeat bounded `video wait` calls while the interaction remains active. Otherwise return control after one timeout and provide the resumable ID.
+- On `wait_timeout`, state that the remote task is still active and retain `task.id`. Resume only with `video wait`; never call `video generate` again for the same work. Execute at most one bounded `video wait` call per user request. After a timeout, return control with the resumable ID; run another bounded call only after the user explicitly asks to continue.
 - On `rate_limited` or a retryable provider error, explain the returned state. Do not wrap generation POSTs in another retry loop.
 - On `quota_exhausted`, report the authoritative Agnes error. Do not infer a remaining balance from local call counts.
 - On `download_failed`, preserve and report any completed artifacts found in `error.details.artifacts`.

@@ -905,6 +905,7 @@ async function waitForVideo(request, {
 
 async function runVideo(request, deps = {}) {
   const created = await createVideo(request, deps);
+  if (created.ok === false) return created;
   return waitForVideo({
     capability: request.capability,
     video_id: created.task.id,
