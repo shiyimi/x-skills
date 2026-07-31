@@ -10,6 +10,6 @@ module.exports = [
       'image-to-video',
       'keyframes-to-video'
     ],
-    provider: require('./agnes.cjs')
+    provider: require('./agnes/provider.cjs')
   }
 ];

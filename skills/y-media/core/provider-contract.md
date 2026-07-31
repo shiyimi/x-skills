@@ -16,7 +16,10 @@ New `generate` and `create` requests require `capability` and `prompt`. `provide
     }
   ],
   "parameters": { "model": "agnes-image-2.1-flash" },
-  "output": { "directory": "outputs" },
+  "output": {
+    "directory": "outputs",
+    "filename": "matte-black-product.png"
+  },
   "wait": { "timeout_seconds": 1200 }
 }
 ```
@@ -29,7 +32,7 @@ Capabilities are:
 - `image-to-video`
 - `keyframes-to-video`
 
-Keep Provider-owned controls inside `parameters`. Resolve relative output directories from the CLI process working directory.
+Keep Provider-owned controls inside `parameters`. Resolve relative output directories from the CLI process working directory. Optional `output.filename` is one safe file name of at most 120 characters, not a path. Core keeps task IDs out of local paths, adds sequence numbers for multiple artifacts, and replaces the requested extension with the actual media extension.
 
 Existing `status` and `wait` requests require the original `provider`, `capability`, and `task.id`:
 
@@ -62,7 +65,7 @@ module.exports = [
       'image-to-video',
       'keyframes-to-video'
     ],
-    provider: require('./agnes.cjs')
+    provider: require('./agnes/provider.cjs')
   }
 ];
 ```

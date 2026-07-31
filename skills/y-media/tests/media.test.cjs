@@ -17,11 +17,13 @@ const {
   createMedia,
   generateMedia,
   listCapabilities,
-  parseCli,
-  readRequest,
-  runCli,
   statusMedia,
   waitMedia
+} = require('../core/orchestrator.cjs');
+const {
+  parseCli,
+  readRequest,
+  runCli
 } = require('../core/media.cjs');
 const {
   downloadArtifact,
@@ -29,7 +31,7 @@ const {
   saveArtifacts,
   withTransientRetry
 } = require('../core/artifacts.cjs');
-const agnes = require('../providers/agnes.cjs');
+const agnes = require('../providers/agnes/provider.cjs');
 
 function provider(overrides = {}) {
   return {
@@ -158,6 +160,36 @@ test('new work accepts an optional provider but requires capability and prompt',
     () => validateRequest('generate', { capability: 'text-to-image', prompt: ' ' }),
     (error) => error.kind === 'invalid_request' && /prompt/i.test(error.message)
   );
+});
+
+test('output filename accepts one safe file name and rejects unsafe Windows names', async (t) => {
+  const valid = validateRequest('generate', {
+    capability: 'text-to-video',
+    prompt: 'A short film',
+    output: { filename: '打工人治愈电影感_15秒.mp4' }
+  });
+  assert.equal(valid.output.filename, '打工人治愈电影感_15秒.mp4');
+
+  for (const filename of [
+    '../escape.mp4',
+    'nested/video.mp4',
+    'nested\\video.mp4',
+    'CON.mp4',
+    'CON.backup.mp4',
+    'trailing. ',
+    `${'x'.repeat(121)}.mp4`
+  ]) {
+    await t.test(filename, () => {
+      assert.throws(
+        () => validateRequest('generate', {
+          capability: 'text-to-video',
+          prompt: 'A short film',
+          output: { filename }
+        }),
+        (error) => error.kind === 'invalid_request' && /output\.filename/.test(error.message)
+      );
+    });
+  }
 });
 
 test('status and wait require the original provider and opaque task id', async (t) => {
@@ -903,6 +935,47 @@ test('artifact saver materializes Base64 and bytes without overwriting files', a
   assert.deepEqual(first.map(({ bytes }) => bytes), [4, 3]);
   assert.equal(first.every(({ path: filePath }) => fs.existsSync(filePath)), true);
   assert.equal(second.every(({ path: filePath }) => !first.some((item) => item.path === filePath)), true);
+});
+
+test('artifact saver keeps task ids out of paths and numbers readable multi-artifact names', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-artifact-short-path-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const taskId = `video_${'x'.repeat(180)}`;
+  const artifacts = await saveArtifacts([
+    { kind: 'bytes', mime_type: 'video/mp4', value: Buffer.from([1, 2, 3]) },
+    { kind: 'bytes', mime_type: 'video/mp4', value: Buffer.from([4, 5, 6]) }
+  ], {
+    provider: 'agnes',
+    capability: 'text-to-video',
+    task: { id: taskId },
+    output: {
+      directory: tempDir,
+      filename: '打工人治愈电影感_15秒.mp4'
+    },
+    startedAt: Date.parse('2026-07-30T07:30:12Z')
+  });
+
+  assert.deepEqual(
+    artifacts.map(({ path: filePath }) => path.basename(filePath)),
+    ['打工人治愈电影感_15秒-01.mp4', '打工人治愈电影感_15秒-02.mp4']
+  );
+  assert.equal(artifacts.every(({ path: filePath }) => !filePath.includes(taskId)), true);
+  assert.equal(path.basename(path.dirname(artifacts[0].path)), '20260730T073012Z');
+});
+
+test('artifact saver replaces a requested extension with the actual media extension', async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-artifact-extension-'));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+  const [artifact] = await saveArtifacts([
+    { kind: 'bytes', mime_type: 'video/mp4', value: Buffer.from([1, 2, 3]) }
+  ], {
+    provider: 'agnes',
+    capability: 'text-to-video',
+    output: { directory: tempDir, filename: '可读成片.avi' },
+    startedAt: Date.parse('2026-07-30T07:30:12Z')
+  });
+
+  assert.equal(path.basename(artifact.path), '可读成片.mp4');
 });
 
 test('output preflight rejects an occupied Provider directory before remote creation', async (t) => {

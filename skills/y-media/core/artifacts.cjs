@@ -273,12 +273,16 @@ async function saveArtifacts(sources, options = {}, context = {}) {
     { ...context, provider: options.provider }
   );
   const providerRoot = path.join(root, safeIdentifier(options.provider));
-  const identifier = options.task?.id ?? options.capability ?? 'result';
   const directory = await uniqueDirectory(
     providerRoot,
-    `${timestamp(options.startedAt)}-${safeIdentifier(identifier)}`,
+    timestamp(options.startedAt),
     fsApi
   );
+  const requestedFilename = options.output?.filename;
+  const requestedExtension = requestedFilename ? path.extname(requestedFilename) : '';
+  const requestedStem = requestedFilename
+    ? requestedFilename.slice(0, requestedFilename.length - requestedExtension.length)
+    : undefined;
   const artifacts = [];
   try {
     for (let index = 0; index < sources.length; index += 1) {
@@ -286,7 +290,11 @@ async function saveArtifacts(sources, options = {}, context = {}) {
       if (!source || typeof source !== 'object') {
         throw new ProviderError('invalid_response', 'Every Artifact Source must be an object.');
       }
-      const destination = path.join(directory, `result-${String(index + 1).padStart(2, '0')}`);
+      const sequence = String(index + 1).padStart(2, '0');
+      const destinationName = requestedStem
+        ? `${requestedStem}${sources.length > 1 ? `-${sequence}` : ''}`
+        : `result-${sequence}`;
+      const destination = path.join(directory, destinationName);
       if (source.kind === 'url') {
         artifacts.push(await downloadArtifact(source.value, destination, {
           fetchImpl: context.fetchImpl,

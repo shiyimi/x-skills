@@ -102,6 +102,27 @@ function assertOptionalString(value, label) {
   }
 }
 
+function validateOutputFilename(filename) {
+  assertOptionalString(filename, 'output.filename');
+  if (filename === undefined) return;
+  const stem = filename.replace(/\.[^.]+$/, '');
+  const deviceName = filename.split('.', 1)[0];
+  if (
+    filename.length > 120
+    || /[<>:"/\\|?*\x00-\x1F]/.test(filename)
+    || /[. ]$/.test(filename)
+    || stem === ''
+    || stem === '.'
+    || stem === '..'
+    || /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(deviceName)
+  ) {
+    throw new ProviderError(
+      'invalid_request',
+      'output.filename must be a safe file name of at most 120 characters.'
+    );
+  }
+}
+
 function validateRequest(command, request) {
   assertPlainObject(request, 'Request');
   if (!CAPABILITY_SET.has(request.capability)) {
@@ -117,6 +138,7 @@ function validateRequest(command, request) {
       throw new ProviderError('invalid_request', 'output.directory must be a valid path string.');
     }
   }
+  validateOutputFilename(request.output?.filename);
   if (request.wait?.timeout_seconds !== undefined && (
     !Number.isFinite(request.wait.timeout_seconds)
     || request.wait.timeout_seconds <= 0

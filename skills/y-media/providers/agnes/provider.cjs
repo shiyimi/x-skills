@@ -2,8 +2,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { ProviderError } = require('../core/contract.cjs');
-const { assertPublicHttpsUrl, withTransientRetry } = require('../core/artifacts.cjs');
+const { ProviderError } = require('../../core/contract.cjs');
+const { assertPublicHttpsUrl, withTransientRetry } = require('../../core/artifacts.cjs');
 
 const API_ROOT = 'https://api.agnes-ai.cn';
 const IMAGE_MODELS = new Set(['agnes-image-2.0-flash', 'agnes-image-2.1-flash']);
