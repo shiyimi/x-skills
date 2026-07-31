@@ -73,6 +73,44 @@ The CLI exposes `capabilities`, `generate`, `create`, `status`, and `wait` throu
 
 Their exact request and result shapes are defined in [core/provider-contract.md](core/provider-contract.md). `core/media.cjs` intentionally exports only CLI-facing helpers.
 
+## Video Deliverables
+
+A successful video workflow produces two adjacent files with the same basename:
+
+```text
+<name>.mp4
+<name>.storyboard.md
+```
+
+The Skill owns the Markdown sidecar because brief collection, storyboards, and prompts are creative planning concerns. Core owns only the media artifact. The sidecar records the brief, shot table, final and negative prompts, inputs, Provider, model, pinned task ID, effective parameters, and warnings without secrets or raw external responses.
+
+Recovered tasks reuse their original planning data. When it is unavailable, the sidecar marks the relevant sections as unavailable rather than reconstructing unsupported facts. A sidecar write failure never triggers another generation request.
+
+## Free-Tier Provider Candidates
+
+Free quotas are commercial terms, not routing data. They vary by account, region, model, and date, so only register a Provider after confirming its current API terms and using its authoritative responses for quota decisions.
+
+| Provider | Suitable capability | Free-tier position | Registration decision |
+| --- | --- | --- | --- |
+| Agnes | Image and video | Existing configured Provider; use only its returned quota information | Keep registered at its fixed priority |
+| Hugging Face Inference Providers | Primarily image; video availability depends on the selected routed model | Small account credits and provider availability can change | Good next API-oriented image candidate after current terms and model support are verified |
+| Cloudflare Workers AI | Primarily image and image-processing models | Includes a limited free allocation governed by account plan | Candidate for image workloads when a Workers account is already available |
+| Google AI Studio / Gemini API | Image generation where the selected model exposes a free tier | Model-specific free tiers; do not assume video access is free | Candidate for image only after confirming the exact model and regional eligibility |
+| fal.ai or Replicate | Image and video models | Trial or promotional credits may be offered, but are not a stable free quota contract | Add only when the target account has verified credits and a suitable model |
+| Pollinations | Primarily image | Public access may be available, but capacity, terms, and production guarantees can change | Use only as an explicitly selected, non-critical image Provider after terms review |
+
+Browser products with free credits but no stable documented API contract should not enter the manifest. In particular, verify official API availability separately for products such as Kling, Pika, Runway, and Luma before treating them as Providers.
+
+## Final Report Data
+
+The final Skill conclusion reports evidence-backed generation and artifact information rather than only local paths:
+
+- Generation: Provider, capability, normalized status, pinned task ID, selected or returned model, effective parameters, warnings, and timing.
+- Every image/video artifact: absolute path, media kind, detected format or MIME type, byte size, and dimensions when available.
+- Video-specific fields: duration, aspect ratio, and frame rate when available.
+
+Unknown values remain `unknown` or are omitted; the Skill must not infer them from filenames, defaults, or incomplete Provider responses.
+
 ## Routing Rules
 
 - `providers/manifest.cjs` is the only Provider registry.

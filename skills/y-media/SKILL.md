@@ -33,7 +33,7 @@ For all new work collect purpose, subject, style, required/forbidden content, in
 
 For images, produce one final prompt and select `text-to-image` or `image-to-image`.
 
-For videos, prepare a concise storyboard. Each shot contains a time range, subject/action, scene, camera, continuity notes, and prompt. The storyboard is Skill planning data, not a core contract. Convert it into the form supported by the capability:
+For videos, prepare and retain a concise storyboard until delivery. Each shot contains a time range, subject/action, scene, camera, continuity notes, and prompt. The storyboard is Skill planning data, not a core contract. Convert it into the form supported by the capability:
 
 | Input plan | Capability |
 | --- | --- |
@@ -71,11 +71,27 @@ Never use `generate` or `create` to resume work. On `wait_timeout`, retain the P
 
 Successful `generate` and `wait` operations save Artifact Sources through core. Use one readable `output.filename` of at most 120 characters. Core keeps task IDs out of local paths, applies the actual media extension, numbers multiple artifacts, avoids overwrites, and returns absolute paths.
 
+For every successful video, write a UTF-8 Markdown sidecar beside it using the same basename:
+
+```text
+<name>.mp4
+<name>.storyboard.md
+```
+
+The sidecar contains `Brief`, `Storyboard`, `Final Prompt`, `Negative Prompt`, `Inputs`, and `Generation` sections. The storyboard table records each shot's time range, visual/action, camera, continuity, and shot prompt. `Generation` records the Provider, model, pinned task ID, effective parameters, and warnings. Never include credentials, authorization headers, or raw external responses.
+
+For a resumed task, reuse the original storyboard and prompts. If they are unavailable, do not invent them; write `Unavailable from recovered task` in those sections and preserve the available task and generation metadata. If sidecar writing fails after video success, report the video path and sidecar failure without regenerating the video.
+
 Do not claim media integrity checks that core does not perform.
 
 ## 8. Report
 
-Parse the single stdout JSON object. Report `provider`, normalized `status`, pinned `task.id`, diagnostic Provider IDs, warnings, effective parameters, timing, and absolute `artifacts[].path` values when present.
+Parse the single stdout JSON object. In every final conclusion report only evidence-backed facts:
+
+- Generation: `provider`, `capability`, normalized `status`, pinned `task.id`, model when returned or selected, effective parameters, warnings, and timing.
+- Every artifact: absolute path, media kind (`image` or `video`), detected format or MIME type, byte size, and available dimensions. For video also report available duration, aspect ratio, and frame rate.
+
+Do not infer missing dimensions, duration, aspect ratio, frame rate, model, or MIME type from a filename or Provider default. Mark an unavailable field as `unknown` or omit it. For successful video work, report both absolute deliverable paths: the video and its `.storyboard.md` sidecar.
 
 | Result | Action |
 | --- | --- |
