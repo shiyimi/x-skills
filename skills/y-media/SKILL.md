@@ -1,5 +1,5 @@
 ---
-name: media
+name: y-media
 description: Use when generating or editing images, generating videos, using Agnes AI or another registered media Provider, spending a Provider's free media quota, checking an existing media task, resuming a task, or downloading generated media.
 ---
 

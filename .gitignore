@@ -21,7 +21,7 @@ yarn-error.log
 /coverage
 .idea
 yarn.lock
-# pnpm-lock.yaml
+pnpm-lock.yaml
 package-lock.json
 *bak
 .vscode
@@ -33,27 +33,7 @@ package-lock.json
 functions/*
 .temp/**
 
-# umi
-.umi
-.umi-production
-.umi-test
-
-.kiro
-
-# screenshot
-screenshot
-.firebase
-.eslintcache
-
-build
-.env.local
-runtime-config.local.js
-
-routes-debug.json
-.specstory
 
 # agent skills
-AGENTS.md
 /.worktrees/
 
-team-monthly-evaluation
