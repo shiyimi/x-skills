@@ -1,0 +1,14 @@
+{
+  "capability": "text-to-image",
+  "prompt": "Premium pet stroller product photography on a clean white studio background, high-end e-commerce Amazon main image style, 8K ultra realistic, sharp details.\n\nCOMPOSITION: Single hero shot of a modern luxury pet stroller centered in frame, three-quarter angle view slightly above eye level to reveal all key features. The stroller is positioned as the only subject, large and well-proportioned within the square frame, with generous negative space around it on the seamless white backdrop.\n\nPRODUCT DETAILS: Lightweight polished silver aluminum frame with sleek tubular construction; breathable dark mesh windows on the front, both sides, and the top ventilation panel of the enclosed pet cabin; comfortable padded pet cabin interior in soft cream fabric, partially visible through the mesh; large rubber wheels with a visible shock absorption spring system (front smaller swivel wheels, rear larger wheels with suspension detail); adjustable ergonomic handlebar with a soft padded grip at parent height; spacious mesh storage basket underneath the cabin; modern streamlined silhouette, elegant proportions, premium metallic and fabric finish.\n\nLIGHTING: Soft studio lighting with a gentle key light from upper left, subtle fill light on the right, soft natural contact shadow directly beneath the wheels on the seamless white background, no harsh reflections, even exposure across the entire product.\n\nSTYLE: Realistic high-end product photography, ultra sharp focus across the whole product, true-to-life color accuracy, premium commercial look reminiscent of luxury brand e-commerce.\n\nMOOD: Clean, elegant, aspirational, trustworthy.\n\nNO: people, hands, models, animals inside the stroller, text, watermarks, logos, brand names, price tags, packaging, props, harsh shadows, neon colors, cartoon style, blurry elements, cluttered background.",
+  "parameters": {
+    "model": "agnes-image-2.1-flash",
+    "size": "1K",
+    "ratio": "1:1"
+  },
+  "output": {
+    "directory": "/workspace/outputs",
+    "filename": "premium-pet-stroller-amazon-main.png"
+  },
+  "wait": { "timeout_seconds": 1200 }
+}
