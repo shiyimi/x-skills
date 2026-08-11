@@ -3,6 +3,8 @@
 > 本文件是 [image-methodology.md](image-methodology.md) 的完整示例。每条示例都按"image-brief.md"结构填写:1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
 >
 > 写新 image-brief 前必读,作为颗粒度校准锚。
+>
+> **Negative Prompt 字段**: 图像路径不独立维护 `negative_prompt`,所有负面约束以正向写法 `no X, no Y, no Z` 焊死在 §3 Final Prompt 的 Hard Constraints 块内。详见 [image-methodology.md §A](image-methodology.md) 与 [providers/agnes/api.md](../../providers/agnes/api.md)。视频路径的方法论见 [../video/negative-prompt-methodology.md](../video/negative-prompt-methodology.md),**不要照搬**。
 
 ---
 
@@ -295,3 +297,4 @@ Centered, 1:1 square, mark in upper 50%, name in lower 50% with comfortable marg
 | i2i 漂移:"基于照片改背景" | 元素级绑定:"Use the uploaded photo as the exact source for the cup, straw, table, street, and sunlight. Do not replace the cup." |
 | 商业类缺 R5:品牌名错字/数字错 | R5 铁律 + 合规清单(广告法)逐条查 |
 | 比例异常:9:16 但构图横 | 显式说明"主体居左,右侧留白"或换画幅 |
+| 图像路径误填独立 `negative_prompt` 字段 | 删除独立字段,所有负面词用 `no X, no Y` 焊死在 Hard Constraints 块(详见 image-methodology.md §A) |

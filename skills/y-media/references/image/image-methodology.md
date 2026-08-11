@@ -440,3 +440,21 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 2. **视觉规范表 11 列都填了?** 至少 1 行;分区图多行(§3.0)
 3. **R5 铁律查了?** 品牌名/型号/成分/数字是否引号 + verbatim?(§4.2)
 4. **首屏 1 秒钩子有吗?** 缩到 200x200 眯眼扫 1s,能不能立刻看到主体?(§2.3)
+
+## A. Negative Prompt 字段说明(图像路径不独立维护)
+
+`SKILL.md` §7 描述的 sidecar 结构里包含 `Negative Prompt` 字段,但**该字段仅视频路径使用**。图像路径不独立维护 `negative_prompt`,所有负面约束统一用 §5 约束块里的 `no X, no Y, no Z` 正向写法焊死在主 prompt 末尾。
+
+**为什么图像不独立维护**:
+- 当前 Provider(Agnes `agnes-image-2.0-flash` / `agnes-image-2.1-flash`)的 `/v1/images/generations` 接口不接受 `negative_prompt` 参数,即使填了也不会生效
+- 现代 t2i 模型(DALL·E、GPT-image、Agnes flash 系列)对独立 `negative_prompt` 遵从度低,`no X` 写在主 prompt 末尾比独立字段更可靠
+- 独立字段会增加侧车维护成本,但不会带来实际质量收益
+
+**侧车字段处理**:即便不填,image-brief.md 也要保留 `## Negative Prompt` section,内容写一行占位:
+
+```text
+## Negative Prompt
+— (图像路径不独立维护 negative_prompt,所有负面约束在 §3 Final Prompt 的 Hard Constraints 块内。详见 image-methodology.md §A 与 providers/agnes/api.md)
+```
+
+**与视频方法的差异**:视频路径有独立 `negative_prompt` 字段方法论,见 [../video/negative-prompt-methodology.md](../video/negative-prompt-methodology.md)。**不要把视频的负面词表照搬到 image-brief**。

@@ -38,6 +38,7 @@ This methodology defines the rules; companion references supply concrete paramet
 | [prompt-structure-formula.md](prompt-structure-formula.md) | prompt 写作骨架:八要素+五定法+角色四层+场景三层+拼接顺序模板 | 拼接 prompt 时按此结构 |
 | [cinematic-shot-library.md](cinematic-shot-library.md) | 14 镜头库(6 运镜组合+4 高级术语+4 构图技法)+ 镜头选择决策表 | 选运镜时查 |
 | [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) | 避坑三陷阱(物理互斥/静止动词/光影缺失)+ 5 铁律 | 写完后自检 |
+| [negative-prompt-methodology.md](negative-prompt-methodology.md) | `negative_prompt` 字段方法论:与 Hard Constraints 的分工、何时必填、内容来源、提交前自检 | 视频侧车有 `## Negative Prompt` 字段时查 |
 | [storyboard-reality-calculator.md](storyboard-reality-calculator.md) | 镜头现实性决策 + Python 帧数校验 + Provider 能力速查 | 提交前用 |
 | [storyboard-example.md](storyboard-example.md) | 完整填好示例(晨雾森林雄鹿与幼鹿) | 颗粒度校准锚,写新分镜前必读 |
 
