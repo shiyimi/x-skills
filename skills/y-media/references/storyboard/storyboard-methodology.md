@@ -354,9 +354,14 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 
 ## 7. Duration And Segment Strategy
 
-- Prefer one top-cap segment. Reference: 15s @ 24fps. If the target is 16-22s, first compress to 15s; if it cannot compress, split into `15 + (X-15)`.
-- When splitting (>22s or Provider cap), every segment satisfies §2-§5 independently. Segment consistency comes from: 美学母体照抄, 后段以前段末帧作首帧 (§6.1), and one locked subtitle/audio style set across all segments.
-- Frame mapping: `num_frames = round(duration_seconds * frame_rate)`. Frames must be at most 441 and satisfy `8n + 1`. Reference values: 15s @ 24fps → 361; 10s @ 24fps → 241; 18s @ 24fps → 433 → exceeds the cap, split or reduce. `frame_rate` 1-60.
+- **Single-segment default**: prefer one segment. Two reference points on the planning scale:
+  - **15s @ 24fps → 361 帧** (8×45+1):默认规划刻度,留 3.4s 安全裕量到硬上限。
+  - **18s @ 24fps → 433 帧** (8×54+1):Agnes video v2.0 硬上限 441 帧以下的封顶档,需要在 storyboard 阶段就承诺"每段 ≥4s、3 镜以内",否则 M1 塌缩。
+  - If the target is 19-22s, **split into `15 + (X-15)`**; for >22s, split into `18 + (X-18)` to keep each segment under the hard cap.
+- **Multi-segment (>15s, or Provider cap)**: every segment satisfies §2-§5 independently. Segment consistency comes from: 美学母体照抄, 后段以前段末帧作首帧 (§6.1), and one locked subtitle/audio style set across all segments.
+- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must be at most **441** and satisfy `8n + 1`. Reference values: 5s @ 24fps → 121; 10s @ 24fps → 241; **15s → 361**; **18s → 433 (封顶档,接近 441 上限)**; 18.375s → 441 (理论极限,实际取 18s). `frame_rate` 1-60.
+- **Multi-segment submission (no ffmpeg dependency)**: when the video must exceed 15s, prefer `keyframes-to-video` with the previous segment's last frame as the new segment's first frame — the Provider stitches internally, the skill delivers N adjacent files. See §6.1 binding syntax and [t2v-model-capability.md](../t2v-model-capability.md) §5.
+- **When you need hard cuts / crossfade / dissolve between segments**: the skill does **not** ship a video merger (the runtime is not guaranteed to have ffmpeg). Deliver N segment files and document the merge recipe in the storyboard's `Generation` section (e.g. `CapCut 时间线对齐` / `iMovie 拖拽` / `ffmpeg -f concat -i list.txt -c copy`), then let the user pick their own tool.
 - Default to **vertical 9:16** unless the user asks otherwise. Express it through `parameters.width/height` (e.g. 720x1280) when the Provider supports it.
 - Keep duration, frame count, and the shot-table total consistent with each other.
 
