@@ -29,6 +29,8 @@ Reuse supplied information; ask **at most one round** of clarifying questions an
 
 Items that materially change the result: 主体 / 产物类型 / 硬约束 / 输入资产. Items that do NOT justify a follow-up: 美学形容词偏好、次要运镜/色调、字幕文案微调 — these go to the stated defaults in §1 and §3, not another round of questions.
 
+**Multi-segment gate**: when the target duration exceeds 18s, the user must explicitly choose between compressing to 18s, multi-segment `keyframes-to-video`, or multi-segment + user-side merge. **Never auto-split or auto-submit** before the user picks. See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7.1 for the three-option template.
+
 For all new work collect purpose, subject, style, required/forbidden content, input assets, output directory, and readable filename. For images also determine dimensions and whether an input image is required. For videos also determine duration, aspect ratio, pacing, shot count, camera language, continuity, reference images, and keyframes.
 
 ## 3. Plan — Creative Layer
