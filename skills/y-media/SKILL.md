@@ -59,7 +59,7 @@ Convert the plan into the form supported by the capability:
 | One reference image | `image-to-video` |
 | Start and end frames | `keyframes-to-video` |
 
-Default to vertical 9:16 and map duration to Provider frames: `num_frames = round(duration_seconds * frame_rate)`, at most 441 and satisfying `8n + 1` (15s @ 24fps = 361). Express aspect ratio through `parameters.width/height`.
+Default to vertical 9:16 and map duration to Provider frames: `num_frames = round(duration_seconds * frame_rate)`, at most 441 and satisfying `8n + 1`. Two reference points: **15s @ 24fps = 361** (default planning scale, 3.4s safety margin to the hard cap) and **18s @ 24fps = 433** (封顶档, near the 441 cap — only use when the content truly needs it). For >18s, prefer `keyframes-to-video` and let the Provider stitch segments internally rather than depending on local ffmpeg. Express aspect ratio through `parameters.width/height`.
 
 Before submitting, verify the storyboard: all 11 columns filled, shot durations sum to the target, `★` ≥ 5 per 15s, subtitle copy free of typos with brand names verbatim, and the frame count satisfies the `8n + 1` rule.
 
