@@ -115,9 +115,9 @@
 | --- | --- | --- |
 | ≤ 5s | 1-2 镜 | 动作流连接词 |
 | 5-10s | 2-3 镜 | 画面编号 |
-| 10-15s(默认) | 3-4 镜 | 精确时间锚点 |
-| 15-18s(封顶档) | 3 镜 | 精确时间锚点 |
-| > 18s | 拆分多段,keyframes-to-video 接续 | 各段独立 |
+| 10-15s(常用规划刻度) | 3-4 镜 | 精确时间锚点 |
+| 15s - provider.maxSingleSegmentDuration(动态封顶) | 3 镜 | 精确时间锚点 |
+| > provider.maxSingleSegmentDuration | 拆分多段;先生成 N 段独立交付,再问用户合并策略(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 各段独立 |
 
 ---
 

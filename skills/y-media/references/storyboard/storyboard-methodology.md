@@ -354,43 +354,53 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 
 ## 7. Duration And Segment Strategy
 
-- **Single-segment default**: prefer one segment. Two reference points on the planning scale:
-  - **15s @ 24fps → 361 帧** (8×45+1):默认规划刻度,留 3.4s 安全裕量到硬上限。
-  - **18s @ 24fps → 433 帧** (8×54+1):Agnes video v2.0 硬上限 441 帧以下的封顶档,需要在 storyboard 阶段就承诺"每段 ≥4s、3 镜以内",否则 M1 塌缩。
-  - If the target is 19-22s, **split into `15 + (X-15)`**; for >22s, split into `18 + (X-18)` to keep each segment under the hard cap.
-- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must be at most **441** and satisfy `8n + 1`. Reference values: 5s @ 24fps → 121; 10s @ 24fps → 241; **15s → 361**; **18s → 433 (封顶档,接近 441 上限)**; 18.375s → 441 (理论极限,实际取 18s). `frame_rate` 1-60.
+- **Single-segment default**: prefer one segment. The hard cap is **dynamic**, not fixed — see §7.1.
+- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must satisfy the selected Provider's `maxFrames` rule and the 8n+1 rule. Run `node <skill-dir>/core/media.cjs capabilities` to read the current Provider's `maxFrames` and `maxSingleSegmentDuration`; **do not hardcode 18s/441** in any prompt or storyboard.
 
-### 7.1 Multi-segment confirmation gate (用户必确认,自动不拼接)
+### 7.1 Dynamic cap + Generate-first segment delivery (用户决定是否合并)
 
-**触发条件**: 目标时长 > 18s,或用户明确要求拆段(>15s)。**禁止自动拆段自动提交**;必须先在 §2 Collect 阶段向用户问 1 轮,让用户选拼接策略,再进入 §3 Plan。
+**Cap 是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出:
 
-**三选一选项**(默认推荐 ②):
-
-| 选项 | 含义 | 适用 | skill 后续动作 |
+| Provider | maxSingleSegmentDuration | maxFrames | 备注 |
 | --- | --- | --- | --- |
-| ① 压缩到 15s / 18s 单段 | 砍时长,保留所有镜 | 短叙事/演示,内容能压缩 | storyboard 表删除多余镜;单段提交 |
-| ② 多段 keyframes-to-video(Provider 内部接续) | 拆 N 段,后段首帧=前段末帧,Provider 自动接续 | 自然过渡、无硬切/转场 | 多段提交,每段独立 storyboard,生成 N 个相邻文件 |
-| ③ 多段独立生成 + 用户自拼 | skill 只交 N 段,用户在外部工具(CapCut / iMovie / ffmpeg)拼接 | 需硬切/转场/混音/调色 | skill 交付 N 段 + 在 `Generation` 段附拼接菜谱;**不**在 skill 内部合并 |
+| Agnes video v2.0 | ~18s | 441 | y-media 默认注册 |
+| Seedance 2.0 | ~15s | 361 | 强 i2v |
+| Sora 1.0 | ~20s | 481 | 长段支持好 |
+| Veo 2.0 | ~8s | 193 | 短段细节好 |
 
-**确认模板**(向用户提问时直接用):
+**触发条件**: `target_duration > provider.maxSingleSegmentDuration`。规划阶段就按 `ceil(target / maxSingleSegmentDuration)` 拆段,每段 ≤ 上限,单段 ≥ 4s,单段 ≤ 3 镜(M1 防塌缩)。
+
+**流程:先生成独立的 N 段,再问用户是否合并**
+
+1. **规划** N 段分镜表(每段独立的 `.storyboard.md` 或一份大表分 N 段)
+2. **提交** N 段,每段独立走 §4-§7 Provider 路由与生成。**不预先问用户**
+3. **交付** N 段视频文件 + 共享的 `.storyboard.md` sidecar,记录:
+   - 段列表(每段文件路径、时长、帧数、Provider 任务 ID)
+   - 美学母体 + 一致的字幕/音频风格锚(保证段间可合并)
+4. **事后问用户是否合并**(N 段已交付,任一段都是有效产物):
+   - ① 保持独立(无操作)
+   - ② 外部工具自拼(附 CapCut 时间线对齐 / iMovie 拖拽 / ffmpeg `-f concat -i list.txt -c copy` 三选一菜谱,放在 sidecar 的 `Generation` 段)
+   - ③ Provider 内部接续重生成(用 `keyframes-to-video`,首帧=前段末帧 — **会再花额度**,适合对段间过渡不满意时使用)
+
+**事后询问模板**(生成完成后给用户):
 
 ```
-目标时长 X 秒 > 单段硬上限 18s,需要拆段。请问选哪种拼接策略?
-  ① 压缩到 18s 单段(默认推荐,最简单)
-  ② 多段 keyframes-to-video(Provider 内部接续,自然过渡)
-  ③ 多段独立生成 + 你在 CapCut/iMovie 自拼(支持硬切/转场)
+N 段视频已生成(每段都是有效产物,见 sidecar 段列表)。是否需要合并成一个视频?
+  ① 保持独立(默认,无需操作)
+  ② 外部工具自拼(已附 CapCut / iMovie / ffmpeg 菜谱在 sidecar `Generation` 段)
+  ③ Provider 内部接续重生成(keyframes-to-video,首帧=前段末帧 — 会再花额度,适合需要更顺滑过渡时)
 ```
 
 **禁止的反模式**:
-- ❌ 用户说"做个 30s 视频",skill 直接拆 2 段提交 — **未经确认**
-- ❌ 多段全部生成完后再问"要不要合并" — **马后炮,生成已花额度**
-- ❌ 默认走 ②,跳过选项让用户确认 — **剥夺用户对硬切/转场的需求**
+- ❌ 在生成前问"要不要拆 / 怎么拼" — 抢决策;每段都是有效交付
+- ❌ 把 18s / 441 硬编码到 §7 或 prompt — 不同 Provider 不同
+- ❌ skill 内部尝试合并 — 运行时无 ffmpeg 假设,跨 Provider 更不敢合并
+- ❌ "生成前不让用户选 → 默默拆成 2 段" 不算违反,但事后必须问
 
-### 7.2 Multi-segment consistency (一旦确认 ② 或 ③ 后必做)
+### 7.2 Multi-segment consistency (N 段规划阶段必做)
 
-- 选 ② / ③ 后,每段独立满足 §2-§5。
+- 每段独立满足 §2-§5(独立 brief、独立钩子、独立 audio 节点)。
 - 段间一致性: 美学母体照抄,后段以前段末帧作首帧 (§6.1),一套锁定的字幕/音频风格。
-- 选 ③ 时,skill **不**附合并器(运行时无 ffmpeg 假设),交付 N 段 + 拼接菜谱(CapCut 时间线对齐 / iMovie 拖拽 / ffmpeg 命令三选一示例)。
 - Default to **vertical 9:16** unless the user asks otherwise. Express it through `parameters.width/height` (e.g. 720x1280) when the Provider supports it.
 - Keep duration, frame count, and the shot-table total consistent with each other.
 

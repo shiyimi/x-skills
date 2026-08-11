@@ -10,14 +10,16 @@
 
 ### 1.1 单段直出 vs 多段拼接
 
+> 硬上限随 Provider 变,见 [§7.1 Provider 表](../../storyboard-methodology.md);下面数字仅作规划刻度参考。
+
 | 条件 | 单段直出 | 多段拼接 |
 | --- | --- | --- |
 | 总时长 ≤5s | ✓ | — |
 | 总时长 5-10s + 镜头 ≤3 | ✓ | — |
 | 总时长 10-15s + 镜头 ≤3 | ✓ (默认规划刻度) | 也可多段 |
 | 总时长 10-15s + 镜头 4-6 | ⚠️ 风险高 | ✓ 推荐 |
-| 总时长 15-18s + 镜头 ≤3 | ✓ (封顶档,433 帧,接近 441 硬上限) | 也可多段 |
-| 总时长 >18s | ✗ 必拆,但**未经用户确认前不提交** | 走 [§7.1 三选一确认门](../../storyboard-methodology.md) |
+| 总时长 15-18s(Agnes 封顶档,其他 Provider 见 §7.1) + 镜头 ≤3 | ✓ | 也可多段 |
+| 总时长 > provider.maxSingleSegmentDuration | ✗ 必拆,**不预先问;先生成 N 段独立交付,再问用户是否合并** | 走 [§7.1 generate-first 流程](../../storyboard-methodology.md) |
 | 镜头数 9-12 (骨架A 快切) | ✗ 必拆 | ✓ 多段+剪辑 |
 
 ### 1.2 时长 vs 镜头数决策树
@@ -42,7 +44,7 @@
   │    ├─ N ≤ 3 → 单段直出 (433 帧,封顶档)
   │    └─ N > 3 → 必须多段
   │
-  └─ T > 18s? → **必拆,但先经用户确认(见 [§7.1 三选一确认门](../../storyboard-methodology.md));不自动提交**
+  └─ T > provider.maxSingleSegmentDuration? → **必拆;不预先问,先生成 N 段独立交付,事后问合并策略(见 [§7.1](../../storyboard-methodology.md))**
 ```
 
 ### 1.3 镜头数超限的常见症状
@@ -110,7 +112,7 @@ print(validate_frames(20.0))   # 480, 超 441
 | 失败原因 | 修复方案 |
 | --- | --- |
 | 不满足 8n+1 | 微调时长到最近合规值(如 15.0s → 15.04s = 361 帧) |
-| 帧数 > 441 | 必拆;先经用户确认走 [§7.1 三选一确认门](../../storyboard-methodology.md)(压缩/keyframes-to-video/用户自拼);不在 skill 内部合并 |
+| 帧数 > provider.maxFrames | 必拆;**不预先问**,先按 [§7.1 generate-first](../../storyboard-methodology.md) 交付 N 段,事后问用户合并策略;不在 skill 内部合并 |
 | 时长 ≠ 用户预期 | 优先满足 8n+1,在 ±0.5s 内调整 |
 
 ---

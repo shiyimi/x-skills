@@ -29,7 +29,7 @@ Reuse supplied information; ask **at most one round** of clarifying questions an
 
 Items that materially change the result: 主体 / 产物类型 / 硬约束 / 输入资产. Items that do NOT justify a follow-up: 美学形容词偏好、次要运镜/色调、字幕文案微调 — these go to the stated defaults in §1 and §3, not another round of questions.
 
-**Multi-segment gate**: when the target duration exceeds 18s, the user must explicitly choose between compressing to 18s, multi-segment `keyframes-to-video`, or multi-segment + user-side merge. **Never auto-split or auto-submit** before the user picks. See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7.1 for the three-option template.
+**Multi-segment flow (dynamic cap)**: the single-segment cap is the selected Provider's `maxSingleSegmentDuration` (read via `capabilities`, not hardcoded). When the target exceeds it, **do not ask the user up front**; plan N segments, submit each independently, deliver N files + sidecar, **then** prompt the user with merge options (keep / external merge / keyframes-to-video regen). See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7.1 for the post-generation prompt template.
 
 For all new work collect purpose, subject, style, required/forbidden content, input assets, output directory, and readable filename. For images also determine dimensions and whether an input image is required. For videos also determine duration, aspect ratio, pacing, shot count, camera language, continuity, reference images, and keyframes.
 
@@ -61,7 +61,7 @@ Convert the plan into the form supported by the capability:
 | One reference image | `image-to-video` |
 | Start and end frames | `keyframes-to-video` |
 
-Default to vertical 9:16 and map duration to Provider frames: `num_frames = round(duration_seconds * frame_rate)`, at most 441 and satisfying `8n + 1`. Two reference points: **15s @ 24fps = 361** (default planning scale, 3.4s safety margin to the hard cap) and **18s @ 24fps = 433** (封顶档, near the 441 cap — only use when the content truly needs it). For >18s, prefer `keyframes-to-video` and let the Provider stitch segments internally rather than depending on local ffmpeg. Express aspect ratio through `parameters.width/height`.
+Default to vertical 9:16 and map duration to Provider frames: `num_frames = round(duration_seconds * frame_rate)`. The hard cap is the selected Provider's `maxFrames` and `maxSingleSegmentDuration` (read via `capabilities`, do not hardcode 18s/441). Both must satisfy the 8n+1 rule. **Do not hardcode 18s/441** in any prompt or storyboard — different Providers have different caps. For durations that exceed the cap, plan N segments, submit each independently, then ask the user about merging. See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7. Express aspect ratio through `parameters.width/height`.
 
 Before submitting, verify the storyboard: all 11 columns filled, shot durations sum to the target, `★` ≥ 5 per 15s, subtitle copy free of typos with brand names verbatim, and the frame count satisfies the `8n + 1` rule.
 
