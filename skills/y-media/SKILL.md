@@ -31,19 +31,23 @@ For all new work collect purpose, subject, style, required/forbidden content, in
 
 ## 3. Plan — Creative Layer
 
-The Skill owns the creative layer: turn the collected brief into a concrete storyboard document before any submission. Core never plans or generates storyboards. Follow [references/storyboard-methodology.md](references/storyboard-methodology.md) for every creative decision below.
+The Skill owns the creative layer: turn the collected brief into a concrete storyboard document before any submission. Core never plans or generates storyboards. Follow [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) for every creative decision below.
 
 For images, produce one final prompt per §8 of the methodology and select `text-to-image` or `image-to-image`. Review the complete example in [references/image-prompt-example.md](references/image-prompt-example.md) before writing an image prompt with layered layout or typography. For `image-to-image`, state explicitly what to preserve and what to change. Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`.
 
-For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard-example.md](references/storyboard-example.md) before writing the document — it is the granularity calibration anchor; rules without a filled example produce vague output. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
+For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard/storyboard-example.md](references/storyboard/storyboard-example.md) before writing the document — it is the granularity calibration anchor; rules without a filled example produce vague output. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
 
 Three companion references supply concrete parameters alongside the methodology rules. Read the relevant one before filling any column:
 - [references/cinematography-reference.md](references/cinematography-reference.md) — 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值. Consult when filling any shot-table column to pick the exact term.
 - [references/influence-factors.md](references/influence-factors.md) — 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复. Consult to decide how具体 a field must be and to fix generation failures.
 - [references/t2v-model-capability.md](references/t2v-model-capability.md) — t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式. **Read before writing any prompt** — decides which parameters enter the prompt (semantic) vs which leave (numeric/audio).
-- [references/prompt-structure-formula.md](references/prompt-structure-formula.md) — prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律. Consult when assembling the prompt block.
-- [references/templates-and-scene-match.md](references/templates-and-scene-match.md) — 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查. Consult for simple needs or quick scene routing.
-- [references/scene-nature-animal.md](references/scene-nature-animal.md) — 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板. Consult when the subject is nature/animal/healing type.
+- [references/storyboard/prompt-structure-formula.md](references/storyboard/prompt-structure-formula.md) — prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律. Consult when assembling the prompt block.
+- [references/storyboard/cinematic-shot-library.md](references/storyboard/cinematic-shot-library.md) — 14 镜头库(6 运镜组合+4 高级术语+4 构图技法)+ 镜头选择决策表. Consult when picking camera moves.
+- [references/storyboard/granularity-scale.md](references/storyboard/granularity-scale.md) — 颗粒度标尺:展示层/执行层分工 + 12 字段抽象→具体对照. Consult when unsure how具体 a column should be.
+- [references/storyboard/pitfalls-and-iron-rules.md](references/storyboard/pitfalls-and-iron-rules.md) — 避坑三陷阱(物理互斥/静止动词/光影缺失)+ 5 铁律. Run as final self-check before submission.
+- [references/storyboard/storyboard-reality-calculator.md](references/storyboard/storyboard-reality-calculator.md) — 镜头现实性决策 + Python 帧数校验 + Provider 能力速查. Run before submission to verify frame count and single-shot vs multi-segment feasibility.
+- [references/storyboard/templates/templates-3-sets.md](references/storyboard/templates/templates-3-sets.md) + [references/storyboard/templates/scene-quick-match.md](references/storyboard/templates/scene-quick-match.md) — 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查. Consult for simple needs or quick scene routing.
+- [references/storyboard/scenes/scene-nature-animal.md](references/storyboard/scenes/scene-nature-animal.md) / [scene-lifestyle-aesthetic.md](references/storyboard/scenes/scene-lifestyle-aesthetic.md) / [scene-portrait-fashion.md](references/storyboard/scenes/scene-portrait-fashion.md) / [scene-food-asmr.md](references/storyboard/scenes/scene-food-asmr.md) — 4 类场景参考(自然/生活/时尚/美食)的光影/音频/骨架/高潮点模板. Consult when the subject matches a known type.
 
 Convert the plan into the form supported by the capability:
 

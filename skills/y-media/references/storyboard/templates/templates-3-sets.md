@@ -1,12 +1,12 @@
-# 即用模板与场景速配 · Templates & Scene Quick Match
+# 3 套即用模板 · 3 Ready-to-use Templates
 
-> 本文件提供**可直接套用的 prompt 模板**和**场景速配表**。当需求简单或时间紧时,从模板取用并替换占位符;当需求明确时,用场景速配表快速选运镜/光影/风格锚。与 [prompt-structure-formula.md](prompt-structure-formula.md) 配合:那里讲规则,这里给现成模板。
+> 本文件提供**可直接套用的 prompt 模板**,需求简单时替换占位符即可生成。复杂需求用 [scene-quick-match.md](scene-quick-match.md) 路由后回到本文件套模板。
+>
+> 与 [../prompt-structure-formula.md](../prompt-structure-formula.md) 配合:那里讲规则,这里给现成模板。
 
 ---
 
-## 1. 三套即用模板
-
-### 1.1 唯美人像短视频(适合小红书/抖音)
+## 1. 唯美人像短视频(适合小红书/抖音)
 
 ```text
 Vertical 9:16, [时长] seconds. Cinematic lifestyle style, shot on ARRI Alexa with shallow depth of field.
@@ -25,10 +25,15 @@ Vertical 9:16, [时长] seconds. Cinematic lifestyle style, shot on ARRI Alexa w
 
 ★ Quality: 4K, shallow depth of field.
 
-★ Hard constraints: Stable frame, no flicker, natural anatomy, no mutation, no text, no watermark.
+★ Hard constraints:
+— Stable frame, no flicker, natural anatomy, no mutation, no text, no watermark.
 ```
 
-### 1.2 氛围感风景(空镜转场必备)
+**适合**: 小红书/抖音美女人像、生活方式博主、品牌形象短片。
+
+---
+
+## 2. 氛围感风景(空镜转场必备)
 
 ```text
 Vertical 9:16, [时长] seconds. Cinematic landscape style, in the spirit of BBC Earth, shot on ARRI Alexa.
@@ -45,10 +50,15 @@ Vertical 9:16, [时长] seconds. Cinematic landscape style, in the spirit of BBC
 
 ★ Quality: 4K ultra-HD, smooth motion, no flicker, no ghosting.
 
-★ Hard constraints: Stable frame, no flicker, natural physics, no text, no watermark.
+★ Hard constraints:
+— Stable frame, no flicker, natural physics, no text, no watermark.
 ```
 
-### 1.3 图生视频专用(让照片动起来)
+**适合**: 视频片头/片尾空镜、转场插画、城市宣传片、风光 Vlog。
+
+---
+
+## 3. 图生视频专用(让照片动起来)
 
 ```text
 Vertical 9:16, [时长] seconds. Based on <图片1> as the first frame, keep the person's appearance and clothing consistent.
@@ -65,12 +75,15 @@ Vertical 9:16, [时长] seconds. Based on <图片1> as the first frame, keep the
 
 ★ Quality: HD detail, cinematic texture.
 
-★ Hard constraints: Keep identity consistent with <图片1>, no deformation, no stiffness, stable frame, natural anatomy, no text.
+★ Hard constraints:
+— Keep identity consistent with <图片1>, no deformation, no stiffness, stable frame, natural anatomy, no text.
 ```
+
+**适合**: 朋友圈照片动起来、摄影作品活化、产品图 360° 展示。
 
 ---
 
-## 2. 多镜头示例(古风少女舞剑,5s)
+## 4. 多镜头示例(古风少女舞剑,5s)
 
 ```text
 Vertical 9:16, 5 seconds. Wuxia cinematic style, shot on ARRI Alexa with shallow depth of field.
@@ -92,50 +105,33 @@ Vertical 9:16, 5 seconds. Wuxia cinematic style, shot on ARRI Alexa with shallow
 
 ★ Quality: 4K, stable frame.
 
-★ Hard constraints: Stable frame, no flicker, natural anatomy, no deformation, no text, no watermark.
+★ Hard constraints:
+— Stable frame, no flicker, natural anatomy, no deformation, no text, no watermark.
 ```
 
 Notes for downstream audio: 古风琴瑟 + 剑气破空声。
 
 ---
 
-## 3. 场景速配表
+## 5. 钩子速查(前 3 秒,提升完播率)
 
-| 场景类型 | 推荐运镜 + 光影 | 风格锚 |
+| 钩子类型 | 写法(填到 ★ Action 第一段) | 适用 |
 | --- | --- | --- |
-| 人物特写 | Intimate Dolly In + 柔光 | 治愈清新 / 杂志风 |
-| 产品展示 | Subtle Orbit + 纯色背景 | 商业 / 极简 |
-| 城市夜景 | Dutch Angle Pan + 霓虹光污染 | 赛博朋克 / 黑紫橙 |
-| 梦境片段 | Dolly Zoom + 高斯模糊 | 迷幻 / 超现实 |
-| 自然 / 治愈 | Lateral Tracking + 侧逆光 + 拉镜收尾 | BBC Earth / National Geographic |
-| 武侠 / 国风 | Smooth Dolly Forward + 柔光逆光 | 武侠电影感 |
-| 街头纪实 | Handheld Style + 轻微抖动 | 真实 / 躁动 |
-| 美食 ASMR | Macro + 顶光 + 蒸汽粒子 | 暖食欲 / ASMR |
-| 宠物治愈 | Low-angle + 跟拍 + 窗光 | 暖民谣 / Vlog感 |
-| 抽象艺术 | Time-lapse + 超广角 + 强逆光 | 史诗 / 哲理 |
+| **运动钩子** | `the [subject] trots in from the distance` | 通用 |
+| **光影钩子** | `backlight silhouette` / `volumetric light beams` | 治愈/氛围 |
+| **动作钩子** | `suddenly breaks into a gallop` | 动物/运动 |
+| **表情钩子** | `close-up of [subject] tilting head` | 人像/宠物 |
+| **悬念钩子** | `starts with a close-up of [detail], then reveals the full scene` | 叙事 |
 
 ---
 
-## 4. 主体描述速查模板
+## 6. 模板使用工作流
 
-| 主体 | 角色四层模板 |
-| --- | --- |
-| 马/pony | `A [age]-month-old [color] pinto foal with a fluffy mane and a flowing tail, [temperament] temperament` |
-| 猫 | `A [age]-year-old [breed] cat with [coat color/pattern], [eye color] eyes, [temperament]` |
-| 狗 | `A [age]-year-old [breed] with [coat] fur, [ear type] ears, [temperament]` |
-| 人像女 | `A [age]-year-old [ethnicity] woman with [hair], [face feature], wearing [clothing], [temperament]` |
-| 人像男 | `A [age]-year-old [ethnicity] man with [hair], [face feature], wearing [clothing], [temperament]` |
-| 食物 | `A [size] [dish name] with [topping/garnish], [texture description], on [plate/table]` |
-| 产品 | `A [size] [product] with [material/color], [brand mark in quotes], [detail]` |
-
----
-
-## 5. 钩子速查(前 3 秒)
-
-| 钩子类型 | 写法 | 适用 |
-| --- | --- | --- |
-| 运动钩子 | `the [subject] trots in from the distance` / `camera slowly pushes in` | 通用 |
-| 光影钩子 | `backlight silhouette` / `volumetric light beams` / `light shafts through mist` | 治愈/氛围 |
-| 动作钩子 | `suddenly breaks into a gallop` / `leaps up` / `shakes head` | 动物/运动 |
-| 表情钩子 | `close-up of [subject] tilting head` / `gazing at camera` | 人像/宠物 |
-| 悬念钩子 | `starts with a close-up of [detail], then reveals the full scene` | 叙事 |
+```
+1. 选模板(本文件)         → 1/2/3/4 任一
+2. 替换占位符 [xxx]         → 用 brief + scene 路由结果
+3. 加钩子(本文件 §5)        → ★ Action 第一段填入
+4. 加 Notes for downstream audio(展示层音频) → 模板末尾
+5. 校验(见 storyboard-reality-calculator.md) → 单段直出/多段拼接/帧数合规
+6. 提交
+```

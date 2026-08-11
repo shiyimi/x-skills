@@ -6,18 +6,42 @@ Core never consumes this file. The Skill reads it during Step 3 (Plan), produces
 
 ## 0. Companion References
 
-This methodology defines the rules; three companion references supply the concrete parameters, factor thresholds, and scene templates. Read the relevant companion before filling any column:
+This methodology defines the rules; companion references supply concrete parameters, factor thresholds, scene templates, and tools. Read the relevant companion before filling any column.
+
+### 0.1 Top-level (通用,跨模块)
 
 | Companion | Purpose | When to read |
 | --- | --- | --- |
-| [cinematography-reference.md](cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
-| [influence-factors.md](influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
-| [t2v-model-capability.md](t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
-| [prompt-structure-formula.md](prompt-structure-formula.md) | prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律 | 拼接 prompt 时按此结构 |
-| [templates-and-scene-match.md](templates-and-scene-match.md) | 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查 | 需求简单时直接套模板 |
-| [scene-nature-animal.md](scene-nature-animal.md) | 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板 | 主体属自然/动物/治愈类时取参数 |
+| [../cinematography-reference.md](../cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
+| [../influence-factors.md](../influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
+| [../t2v-model-capability.md](../t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
 
-The complete filled example is [storyboard-example.md](storyboard-example.md) — review it before producing any new storyboard to align granularity. Rules without a filled example produce vague output; the example is the granularity calibration anchor.
+### 0.2 storyboard/ (分镜模块)
+
+| Companion | Purpose | When to read |
+| --- | --- | --- |
+| [granularity-scale.md](granularity-scale.md) | 颗粒度标尺:展示层/执行层分工 + 12字段抽象→具体对照 | 判断"填到什么颗粒度"时查 |
+| [prompt-structure-formula.md](prompt-structure-formula.md) | prompt 写作骨架:八要素+五定法+角色四层+场景三层+拼接顺序模板 | 拼接 prompt 时按此结构 |
+| [cinematic-shot-library.md](cinematic-shot-library.md) | 14 镜头库(6 运镜组合+4 高级术语+4 构图技法)+ 镜头选择决策表 | 选运镜时查 |
+| [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) | 避坑三陷阱(物理互斥/静止动词/光影缺失)+ 5 铁律 | 写完后自检 |
+| [storyboard-reality-calculator.md](storyboard-reality-calculator.md) | 镜头现实性决策 + Python 帧数校验 + Provider 能力速查 | 提交前用 |
+| [storyboard-example.md](storyboard-example.md) | 完整填好示例(晨雾森林雄鹿与幼鹿) | 颗粒度校准锚,写新分镜前必读 |
+
+### 0.3 storyboard/scenes/ (场景矩阵)
+
+| Companion | Subject type |
+| --- | --- |
+| [scenes/scene-nature-animal.md](scenes/scene-nature-animal.md) | 自然/动物/治愈 |
+| [scenes/scene-lifestyle-aesthetic.md](scenes/scene-lifestyle-aesthetic.md) | 生活/质感/氛围 |
+| [scenes/scene-portrait-fashion.md](scenes/scene-portrait-fashion.md) | 人像/穿搭/时尚(强 i2v) |
+| [scenes/scene-food-asmr.md](scenes/scene-food-asmr.md) | 美食/ASMR(声音密集) |
+
+### 0.4 storyboard/templates/ (模板与速配)
+
+| Companion | Purpose |
+| --- | --- |
+| [templates/templates-3-sets.md](templates/templates-3-sets.md) | 3 套即用 prompt 模板(人像/风景/i2v)+ 多镜头示例 |
+| [templates/scene-quick-match.md](templates/scene-quick-match.md) | 场景速配表 + 主体描述速查 + 钩子速查 |
 
 ## 1. Brief And Storyboard Document
 
@@ -136,7 +160,7 @@ Environment realism (`3+1` rule for any on-camera environment): `[具体场所] 
 
 ### 3.1 Granularity Scale (颗粒度标尺)
 
-Each column must be filled to the level below. Abstract adjectives ("暖光""柔和""自然") fail because the model has no parameter to lock onto. Concrete values ("4500K""光比2:1""-18dB") succeed because they pin the model's output. When unsure how具体 a field should be, cross-check [cinematography-reference.md](cinematography-reference.md) for the term and [influence-factors.md](influence-factors.md) for the threshold.
+Each column must be filled to the level below. Abstract adjectives ("暖光""柔和""自然") fail because the model has no parameter to lock onto. Concrete values ("4500K""光比2:1""-18dB") succeed because they pin the model's output. When unsure how具体 a field should be, cross-check [granularity-scale.md](granularity-scale.md) for the full scale and [../influence-factors.md](../influence-factors.md) for the threshold.
 
 | Field | Abstract (reject) | Concrete (accept) | Threshold source |
 | --- | --- | --- | --- |
@@ -153,6 +177,16 @@ Each column must be filled to the level below. Abstract adjectives ("暖光""柔
 | 焦段 | "广角" | `16mm广角` / `85mm中焦` (等效mm) | F5 |
 | 约束 | "要有高级感" | `24fps,快门180°,禁止文字` (可执行) | F10 |
 
+#### 3.1.1 Shot Table In-Line Example (11 列填好的参考行)
+
+下面是分镜表一行填好后的样子(完整 6 镜见 [storyboard-example.md](storyboard-example.md) §2):
+
+```
+| S01-03 | 3.0s | 中近景·平视(机位与雄鹿肩同高) | 固定+微推(static + micro push,推程0.2m) | 顶光+侧补光·5000K·光比2.5:1 | 暖金+苔绿 | 雄鹿突然停下,回头凝望幼鹿,幼鹿抬头回应 | 前景:虚化蕨类/中景:雄鹿回头+幼鹿抬头/背景:虚化雾气+光柱 | (环境)树叶"窸窣"-26dB+鸟鸣-30dB·(BGM)钟琴轻入,-16dB,70BPM | — | ★ |
+```
+
+每一列都填了具体值:时长 0.1s 精度、景别+机位+角度、运镜英文+速度、光影四要素(光位+色温+光比+光质)、主色+辅色、慢动作连续动作、前/中/背景三层、音频三层+dB+BPM、无字幕(—)、视觉重点(★)。
+
 Rule of thumb: if a field can be replaced by "etc." without losing information, it is too abstract. Rewrite it with a number or a named term.
 
 ### 3.2 Scene Routing
@@ -161,8 +195,11 @@ After filling the brief (§1), route to a scene template before writing the shot
 
 | Subject type | Template | Key takeaway |
 | --- | --- | --- |
-| 自然 / 动物 / 治愈系 | [scene-nature-animal.md](scene-nature-animal.md) | 骨架B慢切 + 无字幕 + 黄金时刻光 + 清新民谣BGM |
-| (后续可扩展:生活质感 / 人像穿搭 / 美食ASMR / 科技产品...) | — | 按本结构补充新模板 |
+| 自然 / 动物 / 治愈系 | [scenes/scene-nature-animal.md](scenes/scene-nature-animal.md) | 骨架B慢切 + 无字幕 + 黄金时刻光 + 清新民谣BGM |
+| 生活 / 质感 / 氛围 | [scenes/scene-lifestyle-aesthetic.md](scenes/scene-lifestyle-aesthetic.md) | 骨架B慢切 + 暖光系 + 暖民谣/钢琴 |
+| 人像 / 穿搭 / 时尚 | [scenes/scene-portrait-fashion.md](scenes/scene-portrait-fashion.md) | **强 i2v** + 杂志/街头 + i2v 必填 |
+| 美食 / ASMR | [scenes/scene-food-asmr.md](scenes/scene-food-asmr.md) | 微距+顶光+蒸汽 + 声音密集(进 Notes) |
+| 其他(科技/产品/抽象) | — | 按本文件通用流程,未来可扩展 |
 
 ## 4. Audio Design
 
@@ -190,6 +227,27 @@ Design all three layers; never rely on the model default background track alone.
 | 科技/参数/性能 | 合成器电子·脉冲音效 | 115-130 |
 
 Levers worth one line each in the table header when applicable: 开场 3s 音频钩子, 音画卡点, 静音留白→爆点炸开, 声音记忆点, 情绪音量曲线. Silence is a tool: 情感反转前全断 0.5-1s, 数据字幕前 BGM 降 6dB+"叮", 质感片末镜 BGM 淡出只留环境音.
+
+### 4.1 BGM 4-Field Inline Example (写入 `音频策略` 行)
+
+BGM 行必须**只填 4 个字段**,缺一不可,顺序固定:`风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点`。详细反例见 [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) §1.2 静止动词陷阱。下面是 [storyboard-example.md](storyboard-example.md) 的写法:
+
+```
+清新民谣(木吉他+钟琴,95BPM,无歌词) · 轻快治愈 · 0s入3s到-16dB · 镜3副歌推满·镜6淡出至-30dB
+```
+
+| 字段 | 本例写法 | 为什么这样写 |
+| --- | --- | --- |
+| 风格(乐器/参考+BPM) | `清新民谣(木吉他+钟琴,95BPM,无歌词)` | 乐器 + 参考曲风 + 数字 BPM,无歌词声明,模型/音频师都能立刻定位 |
+| 情绪 | `轻快治愈` | 一个情绪标签,不要堆叠多个("悲壮+燃+治愈"会自相矛盾) |
+| 入点/淡出时点 | `0s入3s到-16dB` | 入点 + ramp 时长 + 目标 dB;淡出对称写在末尾,留可执行余量 |
+| 关键节点 | `镜3副歌推满·镜6淡出至-30dB` | 写明 BGM 在哪一镜推满/哪一镜淡出,与分镜表镜号一一对应 |
+
+**常见错误写法**(直接对位修):
+- "轻音乐" → 缺风格 + BPM + 情绪,无法执行。
+- "治愈系钢琴曲" → 缺 BPM、入点、关键节点,信息密度不足。
+- "开头慢慢进来,然后在副歌推满" → "进来""推满"是**静止动词**,模型/音频师都不知道具体多少秒/多少 dB;必须改 `0s入3s到-16dB`。
+- "用《Faded》那种风格" → 引用了但没写 BPM,且《Faded》有版权,生产环境禁用;改 `合成器电子·脉冲(类似《Faded》但无版权),120BPM`。
 
 ## 5. Subtitle Route
 
@@ -241,6 +299,58 @@ For `keyframes-to-video`, describe the transition between the start and end fram
 ### 6.2 Anti-Patterns
 
 避免: 抽象堆砌 ("高级感" without concrete parameters), 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, reusing one BGM across segments with different goals, forgetting the constraint block.
+
+### 6.3 Prompt Assembly Example (八要素 + 角色四层 + 场景三层 + 约束块)
+
+下面是一段**完整 prompt 拼装示例**,对应 [storyboard-example.md](storyboard-example.md) 的雄鹿与幼鹿。读者应能逐项对应到 §3 分镜表的列,并看出**数字已全部语义化降级**(展示层 → 执行层):
+
+```text
+Vertical 9:16, 15 seconds. Cinematic nature documentary style, in the spirit of BBC Earth and National Geographic, shot on ARRI Alexa with shallow depth of field.
+
+★ Main subject (角色四层 · 身份+外貌+服装/形态+气质):
+A mature 5-year-old male red deer with a 9-point antler rack, deep-brown coat, calm protective temperament; and a 3-month-old fawn with light-brown fur marked by white spots, large dark eyes, curious innocent temperament. Keep the same proportions, antler count, and coat patterns across all frames (no character drift).
+
+★ Scene (场景三层 · 时代+具体场所+环境细节+光线天气):
+A misty coniferous forest in the early-morning countryside style, with fern understory, moss-covered fallen logs, and thin drifting mist — soft golden sunrise backlight from a low sun filtering through tree trunks as light shafts (Tyndall effect), with gentle wind in the canopy.
+
+★ Action (写慢·写连续·加 micro-action;用精确时间锚):
+- 0.0–5.0s:  the stag steps slowly out of the distant mist, the fawn follows half a step behind, the stag occasionally glances back. Subtle ear twitches on the fawn, soft breathing visible, light tail sway.
+- 5.0–11.0s: the stag pauses, turns its head to look down at the fawn, the fawn looks up to meet its gaze (a tender moment of eye contact). A few fireflies drift in the foreground bokeh.
+- 11.0–15.0s: the stag lowers its head and gently touches the fawn's forehead with its nose; then both walk slowly into the deeper forest. Camera racks focus from the pair to the mist, then slowly pulls out to a wide shot. The two deer become small warm dots in the vast forest.
+
+★ Camera language (≤2 运镜/段 · 取自 cinematic-shot-library):
+Segment 1: low-angle slow dolly-in as the deer approach.
+Segment 2: static with micro push-in on the eye-contact moment.
+Segment 3: soft rack focus + slow pull-out to wide.
+No whip pans, no shaky-cam.
+
+★ Lighting (光影 · 单光源 · 色板锚定):
+Single light source — low golden morning sun behind the subjects (rim/backlight), soft fill from the mist and sky. Light shafts (Tyndall effect) filter through tree trunks. Color stays in mist white + warm gold + moss green + deep brown throughout.
+
+★ Style anchor (1 个标签 + 情绪曲线):
+Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the forehead touch → ends quietly in the distance".
+
+★ Quality (后置强化):
+4K ultra-high definition, shallow depth of field, soft warm light.
+
+★ Hard constraints (焊死 · 必加):
+— Stable frame, no flicker, natural cervid anatomy, no mutation, no deformed deer, no extra legs.
+— Same deer identities across all frames (no character drift).
+— No text, no logo, no watermark, no on-screen caption.
+```
+
+**逐项对照 §3 分镜表**(展示层 → 执行层的降级路径):
+
+| 分镜表列 | 展示层写法 | 本 prompt 写法 | 降级规则(见 [granularity-scale.md](granularity-scale.md)) |
+| --- | --- | --- | --- |
+| 光影·色温 | `4500K / 5000K` | `soft golden morning backlight` | K值 → 光源描述 |
+| 光影·光比 | `3:1 / 2.5:1` | (删除)用光源方向替代 | 数字 → 方向 |
+| 音频·dB/BPM | `-16dB / 95BPM` | (整体移出 prompt) | 音频 → 放 Notes,见 §4.1 |
+| 运镜·速度 | `0.2m/s` | `slow dolly-in` | m/s → 副词(slow/medium/fast) |
+| 焦段 | `16mm 广角 → 85mm 中焦` | `low-angle` + `wide shot` | mm → 景别词 |
+| 主体 | 雄鹿+幼鹿(完整四层) | 完整四层(保留) | 主信息保留,术语化 |
+
+完整对照表(12 字段)见 [granularity-scale.md](granularity-scale.md) §2;模型为什么读不懂数字的边界,见 [../t2v-model-capability.md](../t2v-model-capability.md) M4。
 
 ## 7. Duration And Segment Strategy
 

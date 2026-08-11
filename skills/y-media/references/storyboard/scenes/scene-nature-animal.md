@@ -143,4 +143,4 @@
 
 ## 9. 完整示例索引
 
-本场景的完整填好示例见 [storyboard-example.md](storyboard-example.md)(小马驹晨光草甸,6镜15s)。写新分镜前通读该示例,对齐颗粒度。
+本场景的完整填好示例见 [../storyboard-example.md](../storyboard-example.md)(晨雾森林雄鹿与幼鹿,6镜15s)。写新分镜前通读该示例,对齐颗粒度。
