@@ -51,6 +51,8 @@ Use `extra_body.image` for image editing and `extra_body.response_format` for `u
 
 Handle each `data[]` entry as either `url` or `b64_json`. Image inputs may be public HTTPS URLs or local PNG/JPEG/WEBP files; the Provider converts local files to Data URIs.
 
+**`negative_prompt` is not supported on the image endpoint.** The `/v1/images/generations` request schema does not include a `negative_prompt` field; passing one in the body is ignored or rejected depending on the model. Skill-side, the image path therefore does not maintain a separate `negative_prompt` field — all negative constraints must be written in positive form (`no X, no Y, no Z`) inside the main prompt. See [../../references/image/image-methodology.md](../../references/image/image-methodology.md) §A and [../../references/image/image-example.md](../../references/image/image-example.md) for the image-side convention; the equivalent video-side method is [../../references/video/negative-prompt-methodology.md](../../references/video/negative-prompt-methodology.md).
+
 ## Videos
 
 ```text
