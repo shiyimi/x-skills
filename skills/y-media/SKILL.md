@@ -35,7 +35,12 @@ The Skill owns the creative layer: turn the collected brief into a concrete stor
 
 For images, produce one final prompt per §8 of the methodology and select `text-to-image` or `image-to-image`. Review the complete example in [references/image-prompt-example.md](references/image-prompt-example.md) before writing an image prompt with layered layout or typography. For `image-to-image`, state explicitly what to preserve and what to change. Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`.
 
-For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard-example.md](references/storyboard-example.md) before writing the document. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
+For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard-example.md](references/storyboard-example.md) before writing the document — it is the granularity calibration anchor; rules without a filled example produce vague output. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
+
+Three companion references supply concrete parameters alongside the methodology rules. Read the relevant one before filling any column:
+- [references/cinematography-reference.md](references/cinematography-reference.md) — 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值. Consult when filling any shot-table column to pick the exact term.
+- [references/influence-factors.md](references/influence-factors.md) — 视频生成影响因子 F1-F10:每个因子的有效填写阈值与失控修复. Consult to decide how具体 a field must be and to fix generation failures.
+- [references/scene-nature-animal.md](references/scene-nature-animal.md) — 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板. Consult when the subject is nature/animal/healing type.
 
 Convert the plan into the form supported by the capability:
 

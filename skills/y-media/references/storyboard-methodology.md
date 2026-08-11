@@ -4,6 +4,18 @@ This reference defines the Skill-owned creative layer: how to turn a collected b
 
 Core never consumes this file. The Skill reads it during Step 3 (Plan), produces a storyboard document, then extracts the prompt and submits through the CLI.
 
+## 0. Companion References
+
+This methodology defines the rules; three companion references supply the concrete parameters, factor thresholds, and scene templates. Read the relevant companion before filling any column:
+
+| Companion | Purpose | When to read |
+| --- | --- | --- |
+| [cinematography-reference.md](cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
+| [influence-factors.md](influence-factors.md) | 视频生成影响因子:F1-F10 每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
+| [scene-nature-animal.md](scene-nature-animal.md) | 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板 | 主体属自然/动物/治愈类时取参数 |
+
+The complete filled example is [storyboard-example.md](storyboard-example.md) — review it before producing any new storyboard to align granularity. Rules without a filled example produce vague output; the example is the granularity calibration anchor.
+
 ## 1. Brief And Storyboard Document
 
 Parse the brief into three slots and fill gaps with stated defaults (record them under a `默认假设` line in the document header):
@@ -98,6 +110,36 @@ Environment realism (`3+1` rule for any on-camera environment): `[具体场所] 
 | 自然动态 | 纱帘轻飘 · 树影摇曳 · 水面波光 |
 | 光影动态 | 光斑缓移 · 明暗呼吸 · 屏幕微闪 |
 | 粒子动态 | 蒸汽升腾 · 尘埃浮动 · 水汽 |
+
+### 3.1 Granularity Scale (颗粒度标尺)
+
+Each column must be filled to the level below. Abstract adjectives ("暖光""柔和""自然") fail because the model has no parameter to lock onto. Concrete values ("4500K""光比2:1""-18dB") succeed because they pin the model's output. When unsure how具体 a field should be, cross-check [cinematography-reference.md](cinematography-reference.md) for the term and [influence-factors.md](influence-factors.md) for the threshold.
+
+| Field | Abstract (reject) | Concrete (accept) | Threshold source |
+| --- | --- | --- | --- |
+| 光影·色温 | "暖光" | `4500K` (具体K值) | F3 |
+| 光影·光比 | "柔和" | `2:1` (数字比) | F3 |
+| 光影·光质 | "好看的光" | `柔光` / `硬光` / `半硬` | F3 |
+| 光影·光位 | "侧光" | `45°侧光` / `150°逆光` (角度) | F3 |
+| 色彩·饱和 | "鲜艳" | `饱和度+10` (±数值) | F4 |
+| 音频·音量 | "轻柔" | `-18dB` (具体dB) | F6 |
+| 音频·BPM | "中速" | `95BPM` (数字) | F6 |
+| 音频·音效 | "蹄声" | `嗒嗒` (拟声词) | F6 |
+| 运镜·速度 | "缓慢" | `0.3m/s` (量化速度) | F2 |
+| 主体 | "一匹小马" | `约6个月大的小马驹,棕白相间,鬃毛蓬松,四肢修长` (≥3特征) | F1 |
+| 焦段 | "广角" | `16mm广角` / `85mm中焦` (等效mm) | F5 |
+| 约束 | "要有高级感" | `24fps,快门180°,禁止文字` (可执行) | F10 |
+
+Rule of thumb: if a field can be replaced by "etc." without losing information, it is too abstract. Rewrite it with a number or a named term.
+
+### 3.2 Scene Routing
+
+After filling the brief (§1), route to a scene template before writing the shot table. Scene templates supply pre-built lighting palettes, audio skins, 7s climax patterns, and AI generation禁区 for common non-commerce subjects. If no template matches, fall back to the generic §2-§6 flow.
+
+| Subject type | Template | Key takeaway |
+| --- | --- | --- |
+| 自然 / 动物 / 治愈系 | [scene-nature-animal.md](scene-nature-animal.md) | 骨架B慢切 + 无字幕 + 黄金时刻光 + 清新民谣BGM |
+| (后续可扩展:生活质感 / 人像穿搭 / 美食ASMR / 科技产品...) | — | 按本结构补充新模板 |
 
 ## 4. Audio Design
 
