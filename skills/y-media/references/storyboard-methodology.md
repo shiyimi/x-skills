@@ -24,7 +24,7 @@ Produce one Markdown file per video segment, saved next to the intended output:
 
 where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. It contains exactly three sections:
 
-1. **视频主要目标** — one line: `产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B) × 时长 × 画幅(默认9:16竖屏)`.
+1. **视频主要目标** — one line: `产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`.
 2. **分镜表格** — one row per shot, columns defined in §3. Lock the following decisions in the header before the table:
    - `默认假设`: filled defaults the user did not provide (no real person on camera, no existing footage → pure generation, etc.).
    - `音频策略`: one line derived from §4.
@@ -40,8 +40,9 @@ Pick one skeleton first; the skeleton determines shot count, pacing, and subtitl
 | --- | --- | --- | --- | --- |
 | **A: showcase** (测评/利益/ASMR/变装/演示) | dense information, fast rhythm | 9-12 | 1.0-2.5s | 含字幕 |
 | **B: narrative** (情感/故事/溯源/品牌) | emotional arc, slower pace | 5-8 | 2.0-5.0s | 无字幕或极简 |
+| **C: 共鸣叙事** (共情/自嘲/治愈/打工人式) | emotional resonance; 共情→自嘲→转折→金句 | 6-10 | 2.0-4.0s | 含字幕 |
 
-Rules that apply to both:
+Rules that apply to all skeletons:
 
 - Keep **1-3 key points per 15s**; more requires splitting segments (§7).
 - **Recover the hook within the first 7 seconds** (visual burst or emotional burst) or completion rate drops.
@@ -56,6 +57,20 @@ Hook templates (mirror on the top of the shot table):
 | ASMR/感官 | 感官特写 + 撕包装/切开音效 | 无口播,全声音 |
 | 溯源/故事 | 场景直入 + 人物出镜 | "刚下火车来看娃" |
 | 品牌/形象 | 氛围场景 + 品牌元素 | slogan 前置 |
+| 共情/自嘲 | 疲惫日常直入 + 内心 OS 字幕 | "上辈子到底造了什么孽" |
+
+### 2.1 骨架C 起承转合与情绪色温对撞
+
+共鸣叙事(骨架C)在表头锁定四条情绪拍, 即起承转合; 每拍决定节奏、美学母体与音频节点:
+
+| 拍 | 情绪 | 时长占比 | 职责 | 音频 |
+| --- | --- | --- | --- | --- |
+| 起 | 共情/痛点 | ~25% | 真实疲惫细节直入, 7s 内出钩子 | 环境音 + 纯OS心声 |
+| 承 | 自嘲/吐槽 | ~35% | 荒诞细节堆叠, 节奏渐快 | BGM 鼓点渐重, 音画卡点 |
+| 转 | 治愈/温柔 | ~25% | 情绪软着陆, 画面转亮 | BGM 切换, 前 0.5-1s 静音留白 |
+| 合 | 金句/收尾 | ~15% | 黑底金句字幕收束 + 互动设问 CTA | BGM 淡出只留环境音 |
+
+**情绪色温对撞** 是骨架C 的美学母体默认: 压抑段用冷灰蓝+荧光白(现实感), 治愈段用暖黄橙(反差治愈); 换色点正好落在转折拍, 光影同步从硬冷光过渡到柔暖光。每镜锚定所属拍的色板, 过渡只做一次有意的转场, 不做逐镜漂移。多段交付(30s 拆 15+15, 60s 拆四段)按拍分界, 段间用 §6.1 接续, 每段仍独立满足 §2-§5。
 
 ## 3. Shot Table Columns
 
@@ -118,17 +133,18 @@ Decide once and lock it in the header.
 - 信息流投放/转化 or information-dense content → **含字幕** (many plays are muted; subtitles carry the message).
 - 质感/情感/ASMR/品牌 → **无字幕或极简 (≤2 条)**. When the picture already carries 70% of the information, subtitles are noise.
 
-Five subtitle types (a segment need not use all):
+Six subtitle types (a segment need not use all):
 
 | Type | Position | Content |
 | --- | --- | --- |
 | ① 钩子 | 0-2s | 痛点问句 / 悬念 / 反常识数据 |
 | ② 数据/卖点 | 核心镜 3-7 | 具体数字+单位, avoid vague claims |
 | ③ 信任背书 | 中后段 | 品牌/成分/资质/产地/销量 |
-| ④ 行动号召/slogan | 末镜 | A: 指令+利益+紧迫 / B: slogan 或情感 tag |
+| ④ 行动号召/slogan | 末镜 | A: 指令+利益+紧迫 / B: slogan 或情感 tag / C: 互动设问(骨架C 收尾) |
 | ⑤ 氛围/口播同步 | 全片 | 口播关键词高亮 |
+| ⑥ 金句/治愈收尾 | 末镜或黑屏 | 情绪总结句, 骨架C 合拍必用; 黑底白字+关键词黄底高亮 |
 
-Lock 5 style items across the whole segment: 字体族 (one family), 色板 (≤2 colors; 数据卖点常金黄加粗), 位置 (per type), 动画 (1-2 kinds), 描边/阴影 (uniform). Design motion in three phases — 入场 (0.2-0.4s: 弹入放大/上滑淡入/逐字打字) · 停留 (1-2s) · 出场 (缓淡出/下滑). Key subtitles (hook/data/CTA) get one short SFX, e.g. `"叮",前0.1s背景降6dB反衬`.
+Lock 5 style items across the whole segment: 字体族 (one family), 色板 (≤2 colors; 数据卖点常金黄加粗; 金句黑底白字+关键词黄底高亮), 位置 (per type), 动画 (1-2 kinds), 描边/阴影 (uniform). Design motion in three phases — 入场 (0.2-0.4s: 弹入放大/上滑淡入/逐字打字) · 停留 (1-2s) · 出场 (缓淡出/下滑). Key subtitles (hook/data/CTA) get one short SFX, e.g. `"叮",前0.1s背景降6dB反衬`.
 
 Copy rules: 品牌名/型号/成分名零容错 — verbatim from the user or confirm; ≤12 字 per line, split longer ones; wrap numbers/units/brand names in English quotes so the model keeps them verbatim; avoid absolute claims; 行动号召 carries urgency when the goal is conversion (仅限今日/前100名).
 
