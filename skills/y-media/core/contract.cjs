@@ -33,6 +33,73 @@ function configurationError(message) {
   return new ProviderError('configuration_error', message);
 }
 
+const NUMERIC_LIMIT_FIELDS = Object.freeze([
+  'maxSingleSegmentDuration',
+  'maxFrames',
+  'minFrames',
+  'defaultFrameRate',
+  'minFrameRate',
+  'maxFrameRate',
+  'minWidth',
+  'maxWidth',
+  'minHeight',
+  'maxHeight',
+  'requiresImageInputs'
+]);
+const STRING_LIMIT_FIELDS = Object.freeze(['frameCountRule']);
+const BOOLEAN_LIMIT_FIELDS = Object.freeze(['requiresImageInput']);
+const STRING_ARRAY_LIMIT_FIELDS = Object.freeze(['supportedAspectRatios']);
+
+function validateCapabilityLimits(limits, entryCapabilities, providerId) {
+  if (limits === undefined) return;
+  if (!limits || typeof limits !== 'object' || Array.isArray(limits)) {
+    throw configurationError(`Provider ${providerId} capability_limits must be an object.`);
+  }
+  for (const [capability, limit] of Object.entries(limits)) {
+    if (!entryCapabilities.includes(capability)) {
+      throw configurationError(
+        `Provider ${providerId} capability_limits.${capability} is not declared in capabilities.`
+      );
+    }
+    if (!limit || typeof limit !== 'object' || Array.isArray(limit)) {
+      throw configurationError(
+        `Provider ${providerId} capability_limits.${capability} must be an object.`
+      );
+    }
+    for (const [field, value] of Object.entries(limit)) {
+      if (NUMERIC_LIMIT_FIELDS.includes(field)) {
+        if (typeof value !== 'number' || !Number.isFinite(value)) {
+          throw configurationError(
+            `Provider ${providerId} capability_limits.${capability}.${field} must be a finite number.`
+          );
+        }
+      } else if (STRING_LIMIT_FIELDS.includes(field)) {
+        if (typeof value !== 'string' || value.trim() === '') {
+          throw configurationError(
+            `Provider ${providerId} capability_limits.${capability}.${field} must be a non-empty string.`
+          );
+        }
+      } else if (BOOLEAN_LIMIT_FIELDS.includes(field)) {
+        if (typeof value !== 'boolean') {
+          throw configurationError(
+            `Provider ${providerId} capability_limits.${capability}.${field} must be boolean.`
+          );
+        }
+      } else if (STRING_ARRAY_LIMIT_FIELDS.includes(field)) {
+        if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || item.trim() === '')) {
+          throw configurationError(
+            `Provider ${providerId} capability_limits.${capability}.${field} must be an array of non-empty strings.`
+          );
+        }
+      } else {
+        throw configurationError(
+          `Provider ${providerId} capability_limits.${capability}.${field} is not a known limit field.`
+        );
+      }
+    }
+  }
+}
+
 function validateManifest(manifest) {
   if (!Array.isArray(manifest) || manifest.length === 0) {
     throw configurationError('Provider manifest must be a non-empty array.');
@@ -72,6 +139,8 @@ function validateManifest(manifest) {
       }
       capabilities.add(capability);
     }
+
+    validateCapabilityLimits(entry.capability_limits, entry.capabilities, entry.id);
 
     if (!entry.provider || typeof entry.provider !== 'object') {
       throw configurationError(`Provider ${entry.id} implementation must be an object.`);

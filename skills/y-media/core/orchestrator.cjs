@@ -338,12 +338,13 @@ function listCapabilities(manifest) {
   }
   return {
     ok: true,
-    providers: entries.map(({ id, enabled, priority, capabilities: registered }) => ({
-      id,
-      enabled,
-      priority,
-      capabilities: [...registered]
-    })),
+    providers: entries.map(({ id, enabled, priority, capabilities: registered, capability_limits }) => {
+      const providerEntry = { id, enabled, priority, capabilities: [...registered] };
+      if (capability_limits !== undefined) {
+        providerEntry.capability_limits = JSON.parse(JSON.stringify(capability_limits));
+      }
+      return providerEntry;
+    }),
     capabilities
   };
 }

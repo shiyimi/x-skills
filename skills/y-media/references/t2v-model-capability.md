@@ -21,10 +21,10 @@
 | ≤ 5s | 1-2 镜 | ≥ 2.5s |
 | 5-10s | 2-3 镜 | ≥ 3s |
 | 10-15s(常用规划刻度) | 3-4 镜 | ≥ 4s |
-| 15s - provider.maxSingleSegmentDuration(动态封顶) | 3 镜 | ≥ 4s |
-| > provider.maxSingleSegmentDuration | 拆分为多段;**生成前先问用户** split-or-merge(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 每段独立 |
+| 15s - `capability_limits[<capability>].maxSingleSegmentDuration`(动态封顶) | 3 镜 | ≥ 4s |
+| > `capability_limits[<capability>].maxSingleSegmentDuration` | 拆分为多段;**生成前先问用户** split-or-merge(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 每段独立 |
 
-**铁律**: 单段 ≤3 镜,单镜 ≥4s,每个时间段用时间锚点标注。规划时首选 15s 留 3.4s 安全裕量到 Agnes 硬上限,确需拉满才到 Provider 实际封顶(由 `capabilities` 读取)。
+**铁律**: 单段 ≤3 镜,单镜 ≥4s,每个时间段用时间锚点标注。规划时首选 15s 留安全裕量到 Provider 实际封顶(由 `capability_limits` 读取,见 §5)。
 
 ### M2 元素都在但不同时在(★★★★★)
 
@@ -116,8 +116,8 @@
 | ≤ 5s | 1-2 镜 | 动作流连接词 |
 | 5-10s | 2-3 镜 | 画面编号 |
 | 10-15s(常用规划刻度) | 3-4 镜 | 精确时间锚点 |
-| 15s - provider.maxSingleSegmentDuration(动态封顶) | 3 镜 | 精确时间锚点 |
-| > provider.maxSingleSegmentDuration | 拆分多段;**生成前问用户 split-or-merge**(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 各段独立 |
+| 15s - `capability_limits[<capability>].maxSingleSegmentDuration`(动态封顶) | 3 镜 | 精确时间锚点 |
+| > `capability_limits[<capability>].maxSingleSegmentDuration` | 拆分多段;**生成前问用户 split-or-merge**(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 各段独立 |
 
 ---
 
@@ -134,28 +134,77 @@
 
 ---
 
-## 5. Agnes video v2.0 关键参数
+## 5. Agnes video v2.0 关键参数(真相源 = `capability_limits`)
 
-| 项 | 值 |
-| --- | --- |
-| Provider | agnes(y-media 已注册) |
-| Model | agnes-video-v2.0 |
-| 默认画幅 | 1152×768(横屏) / 竖屏建议 720×1280 |
-| 默认帧数/帧率 | 121 / 24fps |
-| 15s 帧数(常用规划刻度) | 361(=8×45+1) |
-| 18s 帧数(Agnes 封顶档) | 433(=8×54+1,接近 441 硬上限) |
-| 帧数硬上限 | 441(8n+1) |
-| 单段硬上限 | ~18s(由 `capabilities` 返回的 `maxSingleSegmentDuration`,**不同 Provider 不同**) |
-| 多段接续能力 | keyframes-to-video:首帧=前段末帧,Provider 内部接续 |
-| 拆分前行为 | 见 [storyboard-methodology.md](storyboard-methodology.md) §7.1:生成前先问用户 split-or-merge |
-| 输入形态 | text-to-video / image-to-video / keyframes-to-video |
-| 关键限制 | 本地路径/Data URI 不支持,必须公网 HTTPS URL |
+下表的数值仅作 **当前快照**,**权威值**来自 `node <skill-dir>/core/media.cjs capabilities` 输出中的 `providers[].capability_limits[capability]` 字段(注册在 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段)。**禁止把表里的数字硬编码到 prompt / storyboard / 决策树中**。
+
+| 项 | 值(快照) | 权威源 |
+| --- | --- | --- |
+| Provider | agnes(y-media 已注册) | manifest `id` |
+| Model | agnes-video-v2.0 | `supports()` 校验,不进 manifest |
+| 默认画幅 | 1152×768(横屏) / 竖屏建议 720×1280 | `supports()` 默认值 |
+| 默认帧数/帧率 | 121 / 24fps | `capability_limits[<capability>].maxFrames` / `defaultFrameRate` |
+| 帧数硬上限 | 441(8n+1) | `capability_limits[<capability>].maxFrames` + `frameCountRule` |
+| 单段硬上限 | ~18s | `capability_limits[<capability>].maxSingleSegmentDuration` |
+| 帧率范围 | 1-60 fps | `capability_limits[<capability>].minFrameRate` / `maxFrameRate` |
+| 常用规划刻度 | 15s(留 3.4s 安全裕量到 18s 硬上限) | 派生:封顶 - 10% |
+| 15s 帧数 | 361(=8×45+1) | 派生:(秒数 × fps − 1) 满足 8n+1 |
+| 18s 帧数(封顶档) | 433(=8×54+1,接近 441 硬上限) | 派生:同上 |
+| 多段接续能力 | keyframes-to-video:首帧=前段末帧,Provider 内部接续 | `capability_limits['keyframes-to-video']` |
+| 拆分前行为 | 见 [storyboard-methodology.md](storyboard-methodology.md) §7.1:生成前先问用户 split-or-merge | — |
+| 输入形态 | text-to-video / image-to-video / keyframes-to-video | `capability_limits[*].requiresImageInput(s)` |
+| 关键限制 | 本地路径/Data URI 不支持,必须公网 HTTPS URL | `supports()` |
+
+### 5.1 读取 `capability_limits` 的命令
+
+```bash
+# 一次读所有 Provider 的所有 capability 限制
+node <skill-dir>/core/media.cjs capabilities
+```
+
+输出形如:
+
+```json
+{
+  "ok": true,
+  "providers": [
+    {
+      "id": "agnes",
+      "enabled": true,
+      "priority": 100,
+      "capabilities": ["text-to-video", "image-to-video", "keyframes-to-video"],
+      "capability_limits": {
+        "text-to-video": {
+          "maxSingleSegmentDuration": 18,
+          "maxFrames": 441,
+          "defaultFrameRate": 24,
+          "minFrameRate": 1,
+          "maxFrameRate": 60,
+          "supportedAspectRatios": ["16:9", "9:16", "1:1"],
+          "frameCountRule": "8n+1"
+        }
+      }
+    }
+  ]
+}
+```
+
+### 5.2 未来 Provider 的注册样板(Seedance 2.0 / Sora 1.0 / Veo 2.0)
+
+| Provider | maxSingleSegmentDuration | maxFrames | frameCountRule |
+| --- | --- | --- | --- |
+| Agnes video v2.0 | 18s | 441 | 8n+1 |
+| Seedance 2.0(强 i2v) | 15s | 361 | 8n+1 |
+| Sora 1.0(长段支持好) | 20s | 481 | 8n+1 |
+| Veo 2.0(短段细节好) | 8s | 193 | 8n+1 |
+
+这些数**不写进文档**,只作为新 Provider 注册到 `manifest.cjs` 的 `capability_limits` 时的参考值。
 
 ---
 
 ## 6. 自检清单(提交 prompt 前)
 
-- [ ] **M1 防塌缩**: 单段 ≤3 镜,单镜 ≥4s?(默认规划 15s,封顶取自 capabilities)
+- [ ] **M1 防塌缩**: 单段 ≤3 镜,单镜 ≥4s?(默认规划 15s,封顶取自 `capability_limits[<capability>].maxSingleSegmentDuration`)
 - [ ] **M2 防信息过载**: 每段 1 主体动作 + 1 环境元素 + 1 光影方向?
 - [ ] **M3 防僵硬**: 动作段含 micro-action(耳朵/眼睛/尾巴/呼吸)?
 - [ ] **M4 防数字噪声**: prompt 中无 K/dB/BPM/光比数字?
@@ -163,5 +212,5 @@
 - [ ] **M6 防音频无效**: prompt 中无 BGM/音效/dB/BPM 描述?
 - [ ] **展示层 vs 执行层**: 分镜表用数字,prompt 用语义化?
 - [ ] **音频分离**: 音频信息在 `Notes for downstream audio` 段?
-- [ ] **多段 split-or-merge**: >provider.maxSingleSegmentDuration 时,**生成前已问用户** ① 分开 / ② 合并+菜谱?(不能默默拆)
+- [ ] **多段 split-or-merge**: `target_duration > capability_limits[<capability>].maxSingleSegmentDuration` 时,**生成前已问用户** ① 分开 / ② 合并+菜谱?(不能默默拆)
 - [ ] **约束焊死**: 末尾有 `stable frame / no flicker / natural anatomy / no mutation / no text`?

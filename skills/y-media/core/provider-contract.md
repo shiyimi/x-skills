@@ -65,14 +65,46 @@ module.exports = [
       'image-to-video',
       'keyframes-to-video'
     ],
+    capability_limits: {
+      'text-to-video': {
+        maxSingleSegmentDuration: 18,
+        maxFrames: 441,
+        defaultFrameRate: 24,
+        minFrameRate: 1,
+        maxFrameRate: 60,
+        supportedAspectRatios: ['16:9', '9:16', '1:1'],
+        frameCountRule: '8n+1'
+      }
+    },
     provider: require('./agnes/provider.cjs')
   }
 ];
 ```
 
-Lower priority numbers run first. Enabled IDs and priorities must be unique. Manifest order has no routing meaning. Keep credentials, endpoints, models, and detailed constraints out of the manifest.
+Lower priority numbers run first. Enabled IDs and priorities must be unique. Manifest order has no routing meaning.
 
-The manifest is the only source for Provider IDs, enabled state, priority, and coarse capability lists. Do not duplicate the capability list inside a Provider.
+The manifest is the only source for Provider IDs, enabled state, priority, coarse capability lists, and **per-capability static limits**. Do not duplicate the capability list inside a Provider.
+
+### `capability_limits` (static, request-independent)
+
+`capability_limits` exposes **static, request-independent** limits that callers need at planning time — before any request is built and before any `supports()` call. These are discoverable through `node <skill-dir>/core/media.cjs capabilities` and shown in the output `providers[].capability_limits`.
+
+Recognized fields per capability:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `maxSingleSegmentDuration` | number (seconds) | Hard cap for a single generated segment. The Skill uses this to decide whether to ask the user split-or-merge **before** invoking the Provider. |
+| `maxFrames` | number | Maximum frames the Provider can produce in one segment. |
+| `minFrames` | number | Minimum frames the Provider accepts. |
+| `defaultFrameRate` | number | Provider's default fps when the request omits it. |
+| `minFrameRate`, `maxFrameRate` | number | Frame rate range. |
+| `minWidth`, `maxWidth`, `minHeight`, `maxHeight` | number | Pixel bounds. |
+| `supportedAspectRatios` | string[] | Aspect ratios the Provider can deliver. |
+| `frameCountRule` | string | Frame-count rule the Provider enforces (e.g. `8n+1`). |
+| `requiresImageInput` | boolean | Whether this capability requires at least one image input. |
+| `requiresImageInputs` | number | Exact number of image inputs the capability requires. |
+
+**Keep `capability_limits` static.** Things that depend on a specific request (model choice, output dimensions, exact `num_frames` validity) belong in `supports()` and in the Provider's own request validation, not in the manifest. Credentials, endpoints, model IDs, and request-dependent constraints stay out of the manifest.
 
 ## Provider API
 

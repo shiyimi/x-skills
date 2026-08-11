@@ -3,6 +3,8 @@
 > 本文件是 [storyboard-methodology.md](storyboard-methodology.md) §7 的独立工具集:**镜头现实性决策 + 帧数自动校验 + Provider 能力速查**。
 >
 > 写完分镜表后,用本文件的决策表判断能否单段直出;用 Python 校验帧数合规;用 Provider 速查表确认模型支持。
+>
+> **Provider 限制(单段时长上限、帧数上限、frameCountRule)以 [`capability_limits`](../providers/manifest.cjs) 为权威源**;运行 `node <skill-dir>/core/media.cjs capabilities` 取最新值。本文件中的数字只作规划刻度参考,**不写进 prompt / storyboard**。
 
 ---
 
@@ -10,7 +12,7 @@
 
 ### 1.1 单段直出 vs 多段拼接
 
-> 硬上限随 Provider 变,见 [§7.1 Provider 表](../../storyboard-methodology.md);下面数字仅作规划刻度参考。
+> 硬上限随 Provider 变,以 `capability_limits[<capability>].maxSingleSegmentDuration` 为准(见 §3 速查);下面数字仅作规划刻度参考。
 
 | 条件 | 单段直出 | 多段拼接 |
 | --- | --- | --- |
@@ -18,8 +20,8 @@
 | 总时长 5-10s + 镜头 ≤3 | ✓ | — |
 | 总时长 10-15s + 镜头 ≤3 | ✓ (默认规划刻度) | 也可多段 |
 | 总时长 10-15s + 镜头 4-6 | ⚠️ 风险高 | ✓ 推荐 |
-| 总时长 15-18s(Agnes 封顶档,其他 Provider 见 §7.1) + 镜头 ≤3 | ✓ | 也可多段 |
-| 总时长 > provider.maxSingleSegmentDuration | ✗ 必拆,**生成前先问用户**(用 AskUserQuestion 二选一) | 走 [§7.1 split-or-merge 确认门](../../storyboard-methodology.md) |
+| 总时长 15s - `maxSingleSegmentDuration` + 镜头 ≤3 | ✓ | 也可多段 |
+| 总时长 > `capability_limits[<capability>].maxSingleSegmentDuration` | ✗ 必拆,**生成前先问用户**(用 AskUserQuestion 二选一) | 走 [§7.1 split-or-merge 确认门](../../storyboard-methodology.md) |
 | 镜头数 9-12 (骨架A 快切) | ✗ 必拆 | ✓ 多段+剪辑 |
 
 ### 1.2 时长 vs 镜头数决策树
@@ -40,11 +42,11 @@
   │    ├─ N = 4 → 谨慎,可单段
   │    └─ N ≥ 5 → 必须多段拼接
   │
-  ├─ 15 < T ≤ 18s? (封顶档,接近 441 硬上限)
-  │    ├─ N ≤ 3 → 单段直出 (433 帧,封顶档)
+  ├─ 15 < T ≤ capability_limits.maxSingleSegmentDuration? (封顶档)
+  │    ├─ N ≤ 3 → 单段直出
   │    └─ N > 3 → 必须多段
   │
-  └─ T > provider.maxSingleSegmentDuration? → **必拆;生成前先问用户 split-or-merge(见 [§7.1](../../storyboard-methodology.md))**
+  └─ T > capability_limits[<capability>].maxSingleSegmentDuration? → **必拆;生成前先问用户 split-or-merge(见 [§7.1](../../storyboard-methodology.md))**
 ```
 
 ### 1.3 镜头数超限的常见症状
@@ -54,7 +56,7 @@
 | 6 镜塌缩成 1-2 景别 | 超模型执行窗口 (M1) | 砍到 3 段时间锚点 |
 | 中间画面静止 | 镜头数过多,生成预算不足 | 减镜头或拆段 |
 | 主体漂移/变形 | 跨镜头压力 | 锁主体描述词,i2v 优先 |
-| 时长生成被截 | 帧数超 441 上限 | 拆段或减时长 |
+| 时长生成被截 | 帧数超 `capability_limits.maxFrames` 上限 | 拆段或减时长 |
 
 详见 [t2v-model-capability.md](../../t2v-model-capability.md) M1。
 
@@ -64,70 +66,98 @@
 
 ### 2.1 规则
 
-主流 t2v 模型(Agnes/Seedance/Wan/Sora/Veo)的帧数约束:
+主流 t2v 模型(Agnes/Seedance/Wan/Sora/Veo)的帧数约束以 [`capability_limits`](../providers/manifest.cjs) 为准:
 
 ```
-约束 1: 帧数 ≤ 441
-约束 2: 帧数满足 8n + 1 规则 (n = 0,1,2,...)
+约束 1: 帧数 ≤ capability_limits[<capability>].maxFrames
+约束 2: 帧数满足 capability_limits[<capability>].frameCountRule (如 8n+1, n = 0,1,2,...)
 ```
 
-### 2.2 帧数速查
+读法: `node <skill-dir>/core/media.cjs capabilities | jq '.providers[].capability_limits'`
+
+### 2.2 帧数速查(以 Agnes 24fps 为例,其他 Provider 见 capability_limits)
 
 | 时长 @24fps | 帧数 | 合规 | 角色 |
 | --- | --- | --- | --- |
 | 5s | 121 | ✓ (8×15+1) | 最小叙事单元 |
 | 10s | 241 | ✓ (8×30+1) | — |
-| 15s | 361 | ✓ (8×45+1) | **默认规划刻度**(留 3.4s 裕量) |
+| 15s | 361 | ✓ (8×45+1) | **默认规划刻度**(留 3.4s 裕量到 18s 封顶) |
 | 18s | 433 | ✓ (8×54+1) | **封顶档**(接近 441 硬上限) |
 | 18.375s | 441 | ✓ (8×55+1) | 理论极限 |
-| 20s | 481 | ✗ 超 441 上限 | 必拆 |
+| 20s | 481 | ✗ 超 Agnes 441 上限 | 必拆 |
 
-### 2.3 Python 自动校验
+### 2.3 Python 自动校验(从 `capability_limits` 读上限,不写死 441)
 
 ```python
-def validate_frames(duration_sec: float, fps: int = 24, max_frames: int = 441) -> dict:
-    """校验总帧数是否合规: 8n+1 且 ≤ max_frames"""
+def fetch_capability_limits(provider_id: str, capability: str) -> dict:
+    """从 capabilities 命令读 capability_limits,而不是硬编码 441。"""
+    import json, subprocess
+    out = subprocess.check_output(
+        ['node', '<skill-dir>/core/media.cjs', 'capabilities'],
+        text=True
+    )
+    data = json.loads(out)
+    for provider in data['providers']:
+        if provider['id'] == provider_id:
+            return provider.get('capability_limits', {}).get(capability, {})
+    return {}
+
+def validate_frames(
+    duration_sec: float,
+    fps: int = 24,
+    capability_limits: dict | None = None
+) -> dict:
+    """校验总帧数是否合规: frameCountRule 且 ≤ maxFrames"""
+    limits = capability_limits or {}
+    max_frames = limits.get('maxFrames', 441)
+    rule = limits.get('frameCountRule', '8n+1')  # 默认 8n+1
     n = round(duration_sec * fps)
-    mod = (n - 1) % 8
-    compliant_8n1 = (mod == 0)
+    mod = (n - 1) % 8  # 当前仅支持 8n+1
+    compliant_rule = (mod == 0)
     compliant_max = (n <= max_frames)
     return {
         "duration_sec": duration_sec,
         "fps": fps,
         "raw_frames": n,
-        "compliant_8n1": compliant_8n1,
+        "compliant_8n1": compliant_rule,
         "compliant_max": compliant_max,
-        "nearest_valid_8n1": 8 * round(n / 8) + 1 if not compliant_8n1 else n,
+        "max_frames": max_frames,
+        "frameCountRule": rule,
+        "nearest_valid_8n1": 8 * round(n / 8) + 1 if not compliant_rule else n,
         "suggested_duration_sec": (8 * round(n / 8) + 1) / fps,
     }
 
 # 使用示例
-print(validate_frames(15.0))   # 361, 全部合规
-print(validate_frames(18.0))   # 432, 不满足 8n+1
-print(validate_frames(20.0))   # 480, 超 441
+limits = fetch_capability_limits('agnes', 'text-to-video')
+# → {'maxFrames': 441, 'frameCountRule': '8n+1', 'maxSingleSegmentDuration': 18, ...}
+print(validate_frames(15.0, capability_limits=limits))  # 361, 全部合规
+print(validate_frames(18.0, capability_limits=limits))  # 432, 不满足 8n+1
+print(validate_frames(20.0, capability_limits=limits))  # 480, 超 441
 ```
 
 ### 2.4 校验失败时
 
 | 失败原因 | 修复方案 |
 | --- | --- |
-| 不满足 8n+1 | 微调时长到最近合规值(如 15.0s → 15.04s = 361 帧) |
-| 帧数 > provider.maxFrames | 必拆;**生成前先问用户**走 [§7.1 split-or-merge 确认门](../../storyboard-methodology.md)(① 分开独立 / ② 合并+菜谱);不在 skill 内部合并 |
-| 时长 ≠ 用户预期 | 优先满足 8n+1,在 ±0.5s 内调整 |
+| 不满足 `frameCountRule` | 微调时长到最近合规值(如 15.0s → 15.04s = 361 帧) |
+| 帧数 > `capability_limits[<capability>].maxFrames` | 必拆;**生成前先问用户**走 [§7.1 split-or-merge 确认门](../../storyboard-methodology.md)(① 分开独立 / ② 合并+菜谱);不在 skill 内部合并 |
+| 时长 ≠ 用户预期 | 优先满足 `frameCountRule`,在 ±0.5s 内调整 |
 
 ---
 
 ## 3. Provider 能力速查
 
+> **以 `node <skill-dir>/core/media.cjs capabilities` 输出为准**。本表只列**未来 Provider 注册时的参考值**,数字以 `capability_limits` 声明为准。
+
 ### 3.1 主流 t2v Provider 横向对比
 
-| Provider | Model | 默认尺寸 | 默认 fps | 单段最长 | 8n+1 | 音频生成 | 备注 |
+| Provider | Model | 默认尺寸 | 默认 fps | 单段最长 (`maxSingleSegmentDuration`) | 帧数上限 (`maxFrames`) | 音频生成 | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Agnes** | agnes-video-v2.0 | 1152×768 横 / 720×1280 竖 | 24 | ~18s | ✓ | ✗ | y-media 默认 |
-| **Seedance** | seedance-2.0 | 1024×1024 / 720×1280 | 24 | ~15s | ✓ | ✗ | 强 i2v,识别低角度精准 |
-| **Wan** | wan-2.x | 1280×720 / 720×1280 | 24 | ~15s | ✓ | ✗ | 中文友好 |
-| **Sora** | sora-1.0 | 1920×1080 / 1080×1920 | 24 | ~20s | ✓ | ✗ | 长段支持好 |
-| **Veo** | veo-2.0 | 1920×1080 / 1080×1920 | 24 | ~8s | ✓ | ✗ | 8s 限制 |
+| **Agnes** | agnes-video-v2.0 | 1152×768 横 / 720×1280 竖 | 24 | 18s | 441 | ✗ | y-media 默认 |
+| **Seedance** | seedance-2.0 | 1024×1024 / 720×1280 | 24 | 15s | 361 | ✗ | 强 i2v,识别低角度精准 |
+| **Wan** | wan-2.x | 1280×720 / 720×1280 | 24 | 15s | 361 | ✗ | 中文友好 |
+| **Sora** | sora-1.0 | 1920×1080 / 1080×1920 | 24 | 20s | 481 | ✗ | 长段支持好 |
+| **Veo** | veo-2.0 | 1920×1080 / 1080×1920 | 24 | 8s | 193 | ✗ | 8s 限制 |
 
 ### 3.2 关键限制
 
@@ -157,11 +187,13 @@ print(validate_frames(20.0))   # 480, 超 441
 ## 4. 自检流程(提交生成前)
 
 ```
-1. 用决策树判断: 单段直出 vs 多段拼接?
-2. 用 Python 校验: 帧数 ≤ 441 且满足 8n+1?
-3. 用 Provider 速查: 选定 Provider,确认能力匹配?
-4. 用 F1-F12 评分卡(见 influence-factors.md)打分: ≥90 可提交
-5. 用 M1-M6 自检清单(见 t2v-model-capability.md §6)过一遍
+1. 读 capability_limits:`node media.cjs capabilities` 拿到 `maxSingleSegmentDuration` / `maxFrames` / `frameCountRule`
+2. 用决策树判断: 单段直出 vs 多段拼接?
+3. 用 Python 校验: 帧数 ≤ maxFrames 且满足 frameCountRule?
+4. 用 Provider 速查: 选定 Provider,确认能力匹配?
+5. 用 F1-F12 评分卡(见 influence-factors.md)打分: ≥90 可提交
+6. 用 M1-M6 自检清单(见 t2v-model-capability.md §6)过一遍
+7. 超 maxSingleSegmentDuration 时,生成前用 AskUserQuestion 走 split-or-merge 确认门
 ```
 
 任一不达标则修复后再提交。

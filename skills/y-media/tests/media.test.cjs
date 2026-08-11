@@ -578,6 +578,99 @@ test('capabilities are derived from the manifest without checking credentials', 
   assert.equal(configuredChecks, 0);
 });
 
+test('capability_limits are exposed in the capabilities output and parsed without aliasing the manifest', () => {
+  const manifest = [entry('limited', 10, {
+    capabilities: ['text-to-video'],
+    capability_limits: {
+      'text-to-video': {
+        maxSingleSegmentDuration: 18,
+        maxFrames: 441,
+        defaultFrameRate: 24,
+        supportedAspectRatios: ['16:9', '9:16'],
+        frameCountRule: '8n+1'
+      }
+    }
+  })];
+
+  const output = listCapabilities(manifest);
+  assert.deepEqual(output.providers[0].capability_limits, {
+    'text-to-video': {
+      maxSingleSegmentDuration: 18,
+      maxFrames: 441,
+      defaultFrameRate: 24,
+      supportedAspectRatios: ['16:9', '9:16'],
+      frameCountRule: '8n+1'
+    }
+  });
+  // Mutating the output must not leak into the manifest
+  output.providers[0].capability_limits['text-to-video'].maxSingleSegmentDuration = 999;
+  assert.equal(manifest[0].capability_limits['text-to-video'].maxSingleSegmentDuration, 18);
+});
+
+test('manifest rejects unknown fields, wrong types, and undeclared capabilities in capability_limits', async (t) => {
+  await t.test('unknown limit field', () => {
+    assert.throws(
+      () => validateManifest([entry('bad', 10, {
+        capabilities: ['text-to-video'],
+        capability_limits: { 'text-to-video': { madeUpField: 1 } }
+      })]),
+      (error) => error.kind === 'configuration_error' && /capability_limits/.test(error.message)
+    );
+  });
+
+  await t.test('undeclared capability in capability_limits', () => {
+    assert.throws(
+      () => validateManifest([entry('bad', 10, {
+        capabilities: ['text-to-video'],
+        capability_limits: { 'text-to-image': { maxFrames: 100 } }
+      })]),
+      (error) => error.kind === 'configuration_error' && /not declared in capabilities/.test(error.message)
+    );
+  });
+
+  await t.test('non-numeric numeric field', () => {
+    assert.throws(
+      () => validateManifest([entry('bad', 10, {
+        capabilities: ['text-to-video'],
+        capability_limits: { 'text-to-video': { maxFrames: '441' } }
+      })]),
+      (error) => error.kind === 'configuration_error' && /maxFrames/.test(error.message)
+    );
+  });
+
+  await t.test('non-array supportedAspectRatios', () => {
+    assert.throws(
+      () => validateManifest([entry('bad', 10, {
+        capabilities: ['text-to-video'],
+        capability_limits: { 'text-to-video': { supportedAspectRatios: '16:9' } }
+      })]),
+      (error) => error.kind === 'configuration_error' && /supportedAspectRatios/.test(error.message)
+    );
+  });
+
+  await t.test('non-boolean requiresImageInput', () => {
+    assert.throws(
+      () => validateManifest([entry('bad', 10, {
+        capabilities: ['text-to-video'],
+        capability_limits: { 'text-to-video': { requiresImageInput: 'true' } }
+      })]),
+      (error) => error.kind === 'configuration_error' && /requiresImageInput/.test(error.message)
+    );
+  });
+});
+
+test('live Agnes manifest declares capability_limits for every video capability', () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  const limits = sorted[0].capability_limits;
+  for (const capability of ['text-to-video', 'image-to-video', 'keyframes-to-video']) {
+    assert.ok(limits?.[capability], `${capability} should declare capability_limits`);
+    assert.equal(limits[capability].maxSingleSegmentDuration, 18);
+    assert.equal(limits[capability].maxFrames, 441);
+    assert.equal(limits[capability].frameCountRule, '8n+1');
+  }
+});
+
 test('manifest registers Agnes once at priority 100 for every media capability', () => {
   const manifest = require('../providers/manifest.cjs');
   const sorted = validateManifest(manifest);

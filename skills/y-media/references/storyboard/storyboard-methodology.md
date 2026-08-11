@@ -359,18 +359,27 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 
 ### 7.1 Dynamic cap + Split-or-merge confirmation (生成前问,按用户选择执行)
 
-**硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出:
+**硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出中的 `providers[].capability_limits[<capability>]`:
+
+```bash
+node <skill-dir>/core/media.cjs capabilities
+# → providers[].capability_limits["text-to-video"].maxSingleSegmentDuration
+# → providers[].capability_limits["text-to-video"].maxFrames
+# → providers[].capability_limits["text-to-video"].frameCountRule
+```
+
+这些字段由各 Provider 的 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段在注册时声明。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
+
+未来 Provider 的注册参考值(以 `capability_limits` 声明为准,不是文档数字):
 
 | Provider | maxSingleSegmentDuration | maxFrames | 备注 |
 | --- | --- | --- | --- |
-| Agnes video v2.0 | ~18s | 441 | y-media 默认注册 |
-| Seedance 2.0 | ~15s | 361 | 强 i2v |
-| Sora 1.0 | ~20s | 481 | 长段支持好 |
-| Veo 2.0 | ~8s | 193 | 短段细节好 |
+| Agnes video v2.0 | 18s | 441 | y-media 默认注册 |
+| Seedance 2.0 | 15s | 361 | 强 i2v |
+| Sora 1.0 | 20s | 481 | 长段支持好 |
+| Veo 2.0 | 8s | 193 | 短段细节好 |
 
-**读取方式**: `node <skill-dir>/core/media.cjs capabilities` 输出中找 `maxSingleSegmentDuration`。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
-
-**触发条件**: `target_duration > provider.maxSingleSegmentDuration`。
+**触发条件**: `target_duration > providers[].capability_limits[<capability>].maxSingleSegmentDuration`。
 
 **流程:生成前问,按用户选择执行**
 
@@ -384,7 +393,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 **确认模板**(向用户提问时直接用):
 
 ```
-目标时长 X 秒 > Provider 封顶 Y 秒(读自 capabilities)。需要您选:
+目标时长 X 秒 > Provider 封顶 Y 秒(读自 capability_limits)。需要您选:
   ① 分开 (默认) — N 段独立交付,各段都是有效产物,不再合并
   ② 合并 — N 段 + sidecar 附 CapCut/iMovie/ffmpeg 拼接菜谱,您自己拼
 ```
