@@ -747,80 +747,17 @@ node <skill-dir>/core/media.cjs capabilities
 - Default to **vertical 9:16** unless the user asks otherwise. Express it through `parameters.width/height` (e.g. 720x1280) when the Provider supports it.
 - Keep duration, frame count, and the shot-table total consistent with each other.
 
-## 8. Image Prompts
+## 8. Image Work — Cross-Reference
 
-The same creative discipline applies to still images; only the timeline, audio, and motion dimensions disappear. Write **one final prompt per image**. Reuse the video skeleton, environment realism, subtitle zero-tolerance, and constraint rules where they apply. A complete spec-conformant example is [image-prompt-example.md](image-prompt-example.md) — review it before writing an image prompt with layered layout or typography.
-
-### 8.1 Seven Dimensions For Images
-
-Begin with one sentence locking the style type, aspect ratio, and aesthetic basis (e.g. `Lifestyle collage poster, vertical 3:4, warm indie zine aesthetic`), then expand:
-
-```text
-[风格总领句] + [主体] + [动作/状态] + [场景/环境] + [光线/色调] + [视角/构图] + [视觉风格/画质] + [约束条件]
-```
-
-| Dimension | Rule | Example |
-| --- | --- | --- |
-| 风格总领句 | style type + ratio + aesthetic basis in one line | Lifestyle collage poster, vertical 3:4, warm indie zine aesthetic |
-| 主体 | concrete, single subject with material/state | 一只大号南美白虾仁,表面冷凝水珠 |
-| 动作/状态 | one static pose or frozen instant | 从冰水中捞起的瞬间,水珠滑落 |
-| 场景/环境 | §3 `3+1` element rule, front/mid/back layers | 大理石台面+木铲+几片绿叶,背景虚化 |
-| 光线/色调 | direction + color temperature + contrast + quality | 45°侧光,6000K,柔光高对比,青白+冰蓝冷调 |
-| 视角/构图 | 景别 + 机位 + composition (中心/三分法/留白) | 微距特写,低角度仰拍,主体居中 |
-| 视觉风格/画质 | photography style + fidelity cues | 食物摄影,浅景深,超清细节 |
-| 约束 | anti-AI-synthetic, text, negative | 避免纯色渐变背景,避免过度AI合成感 |
-
-### 8.2 Text-to-Image vs Image-to-Image
-
-- **text-to-image**: describe the full scene; no reference exists.
-- **image-to-image**: state what to preserve and what to change explicitly. Format: `保持<保留项>,把<修改项>替换为<新内容>`. For localized edits: `仅修改<区域>,其余保持不变`.
-- **Element-level binding** for photo-to-poster work: list exactly which elements must come from the reference and which must not change, e.g. `Use the uploaded photo as the exact source for the cup, straw, table, street, and sunlight. Do not replace the cup or change the real-life scene.` Without this list the model may redraw or restyle the reference subject.
-
-### 8.3 Aspect Ratio As A Creative Decision
-
-Pick the ratio by intended use, not by default: 竖 9:16 封面/信息流素材, 方 1:1 商品图/头像, 横 16:9 横幅/社媒头图. Put the ratio and resolution into `parameters` (e.g. `size`, `ratio`) and verify them against the selected Provider reference. State the composition direction in the prompt when the ratio is unusual.
-
-### 8.4 Layered Typography
-
-Text is a design layer, not an afterthought. Specify every text layer: content (in quotes), position, font family and style, visual size, letter spacing, color, and readability. For layered layouts (collage/poster/editorial) distinguish:
-
-- **主标题** (primary): large and distinctive — e.g. 中文手写衬线/宋体, elegant, readable.
-- **副标题** (secondary): smaller, uppercase English with wide letter spacing, e.g. `AFTERNOON · COFFEE · GREEN`.
-- **角标** (corner/date): smallest and quiet, e.g. `2026.08` in the upper-right corner.
-
-Zero-tolerance: brand names, numbers, and slogans go in English quotes with an explicit `按引号内文字原样渲染` instruction; avoid long sentences — short labels render reliably.
-
-### 8.5 Structured Layouts (Collage And Multi-Zone)
-
-For collage / poster / editorial split compositions, treat zones as explicit regions:
-
-- **Zone allocation**: give each zone a percentage or share (upper 38% / lower 62%) and one responsibility.
-- **Zone material**: describe texture, color range, and content per zone (kraft paper with fiber texture, hand-torn edge).
-- **Boundary transition**: name the edge treatment between zones (irregular hand-torn edge / hard line / natural fade).
-- **Full bleed**: state whether a photo zone extends to all edges with full bleed.
-- **Zone editing**: state what to remove from the source and what replaces it: `The upper sky of the original photo is removed and replaced by kraft paper.`
-
-### 8.6 Accent Elements
-
-One or two restrained decoration elements anchor a layout: give visual size (约 1.5cm 或画面占比), color, position (near the title, slightly offset), and style (flat solid block). Do not stack accents.
-
-### 8.7 Mood And Style Close
-
-Close the prompt with a mood line and/or a negative-style list:
-
-- **MOOD**: emotion + a concrete metaphor (`Like a WeChat Moments life record meets an independent coffee magazine`) + texture details (scanned-paper grain, natural aging).
-- **STYLE**: a flat `no` list (`flat, no 3D, no neon, no gradients, no commercial buttons, no extra people, no extra cups`) + an overall feel (quiet, warm, diary-like, indie editorial).
-
-This mirrors the video constraint block in §6.
-
-### 8.8 Consistency For A Series
-
-For a set of images sharing one subject, lock the subject descriptor and the 美学母体 from §1 once, then vary only 场景/动作/视角 per image. Change the descriptor between images and the subject will drift.
-
-### 8.9 Images As Video Inputs
-
-Generated images can feed `image-to-video` and `keyframes-to-video` directly. Compose them with video constraints in mind: full subject within the frame, room for the intended camera move, and a first frame or keyframes that match the segment goal. Reuse the §6.1 input-binding syntax to anchor the subject in the video prompt.
-
-### 8.10 Image Anti-Patterns
-
-避免: 抽象堆砌 ("高级感" without parameters), 多主体混淆 (one subject per image), 一图多个冲突动作, 文字错字或文字层缺位置/字体规范, 空盒子背景 (add §3 life traces), 过度AI合成感, 区域拼贴无边界过渡 (zones without edge/transition), over-压缩 detail (state the fidelity you want).
+> image 路径是**独立模块**,有完整的方法论、companion references、scene 路由与 sidecar 模板。本文件(视频版)不重复内容,只给跨模块衔接。
+>
+> **完整 image 方法论见 [../image/image-methodology.md](../image/image-methodology.md)**。它包含:R1-R5 单帧降维、§1.2 路径判定(G 纯生成 / E 二次编辑 / H 多图分区)、§2 视觉骨架(5 种)、§3 视觉规范表(11 列单行模板)、§4 文字版式、§5 约束收尾、§6 七维度 prompt、§7 画幅、§8 系列图一致性、§9 与 i2v 桥接、§10 反模式、§11 自检。
+>
+> **image sidecar 模板**: `<name>.image-brief.md`(平级于 `<name>.storyboard.md`),结构为 1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
+>
+> **示例**: [../image/image-example.md](../image/image-example.md) — 含 3 套完整 image-brief(蓝牙耳机产品图 G 路径 / 咖啡海报拼贴 H 路径 / Logo 极简 E 骨架)+ 反例对照表。
+>
+> **本文件(video)与 image 的协同点**:
+> - image 路径**借用**本文件:① R2 叙事驱动(简化为 R2 视觉驱动)、② R3 视听双轨(简化为 R3 图层纪律)、④ R5 零错字铁律、⑤ 颗粒度标尺(去掉运镜/音频字段)。
+> - i2v / kf2v 场景:image prompt 与 video prompt 共享 `§6.1 Input Binding Syntax` 语法;image 路径的 §9 给出"准备给 video 的图"自检清单。
+> - commerce mode(§1.1):image 与 video 同源,共享 `scene-commerce-product.md` 的产品摄影部分 + R5 + 合规清单。

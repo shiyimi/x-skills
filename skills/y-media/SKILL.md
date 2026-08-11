@@ -31,21 +31,25 @@ After classifying the work, **also classify the mode** before collecting details
 | --- | --- | --- |
 | 出现品牌/产品名 + 价格/优惠/CTA(产品名 + "99元"/"前1000名"/"点击购买"等) | **commerce** | §1.1 commerce flow |
 | 出现美妆/服饰/家居/数码/母婴/食品 + 测评/开箱/演示/种草 | **commerce** | §1.1 commerce flow |
-| 出现"我要卖货"/"带货"/"挂车"/"挂链接"/"投流"/"完播转化" | **commerce** | §1.1 commerce flow |
+| 出现"我要卖货"/"带货"/"挂车"/"挂链接"/"投流"/"完播转化"/"主图"/"详情页" | **commerce** | §1.1 commerce flow |
 | 仅出现 风景/动物/治愈/故事/品牌形象/情感/ASMR/概念演示(无具体产品) | **general** | 默认 §2-§7 通用流程 |
 | 模糊(出现"产品"但无价格/优惠/CTA 信号) | **ambiguous** | **§2 Collect 阶段必问 1 轮**(R1 + commerce 信号),按用户选择路由 |
 
-**commerce mode 强制动作清单**(在 §3 Plan 阶段自动追加,无需用户确认):
+**commerce mode × work 类型的差异化强制项**:
 
-1. **路径决策**(§1.2):默认推荐 G 纯生成;若用户已有实拍(产品 demo / 真人出镜)走 E 或 H。
-2. **场景模板**:强制读取 [references/storyboard/scenes/scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md),按 §10 跨品类决策表路由到对应子场景(美妆/服饰/家居/数码/母婴/通用)。
-3. **视听路线**:**默认含字幕** + 6 类字幕全用(钩/数据/背书/CTA)—— §5 commerce 增强版。
-4. **音频策略**:走 §4.0 商业目标定风格 3 步法(目标 → 情绪信号 → BGM 4 字段),转化类必带 §4.4 静音法则。
-5. **R5 零错字铁律**:**品牌名/型号/成分/SPF/价格/资质/限量数字逐字核对**,在 storyboard 表头显式标注 `品牌名: <verbatim>`。
-6. **合规清单**:**§9 合规清单**发布前必查(广告法/品牌/价格/资质/版权 BGM/母婴伦理)。
-7. **生成路径标注**:storyboard 表头必填 `生成路径: G | E | H`(§1.2.3)。
+| 强制项 | video commerce | image commerce | 说明 |
+| --- | --- | --- | --- |
+| 1. 路径决策 | §1.2 (G/E/H) | [references/image/image-methodology.md](references/image/image-methodology.md) §1.2 (G/E/H) | 概念相同,image 三选一 |
+| 2. 场景模板 | [scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md) 6 大品类 | 共享同一模板,取"产品摄影"相关列 | image 与 video 同源 |
+| 3. 视听路线 | **默认含字幕** + 6 类字幕全用 | **默认含文字** + 4 件套(字体/色板/位置/描边) | video 6 类 → image 4 件套 |
+| 4. 音频策略 | §4.0 商业目标定风格 3 步法 + §4.4 静音法则 | 不适用(单图无音频) | 跳过 |
+| 5. R5 零错字铁律 | 品牌/型号/成分/SPF/价格/资质/限量 逐字 | 同(video 列)| R5 跨模块通用 |
+| 6. 合规清单 | [scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md) §9 | 同 §9(广告法/品牌/价格/资质/版权 BGM/母婴伦理;image 路径跳过"版权 BGM"那行) | 共享清单 |
+| 7. 生成路径标注 | `<name>.storyboard.md` 表头 `生成路径: G | E | H` | `<name>.image-brief.md` 表头 `生成路径: G | E | H` | sidecar 文件名不同 |
 
-> **general mode 不强制这些动作**——仅在用户明确表达商业意图时才加载 commerce flow。这种"模式分流"避免了给风景/治愈类视频强行塞 6 类字幕,保持了 y-media 对非商业创作者的中性。
+> 简言之:**image commerce = video commerce 去掉音频/字幕相关,加上"文字版式 4 件套"**。两个路径共享 R5 铁律和合规清单(广告法部分)。
+
+> **general mode 不强制这些动作**——仅在用户明确表达商业意图时才加载 commerce flow。这种"模式分流"避免了给风景/治愈类视频/海报强行塞价格字幕或品牌强制项,保持了 y-media 对非商业创作者的中性。
 
 **为什么不在 description 写死 commerce 触发**:commerce vs general 的边界依赖 brief 内容(产品名 + 价格 vs 风景名 + 故事),description 阶段无 brief 信息可读,只能在运行时分类。
 
@@ -63,7 +67,7 @@ For all new work collect purpose, subject, style, required/forbidden content, in
 
 The Skill owns the creative layer: turn the collected brief into a concrete storyboard document before any submission. Core never plans or generates storyboards. Follow [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) for every creative decision below.
 
-For images, produce one final prompt per §8 of the methodology and select `text-to-image` or `image-to-image`. Review the complete example in [references/image-prompt-example.md](references/image-prompt-example.md) before writing an image prompt with layered layout or typography. For `image-to-image`, state explicitly what to preserve and what to change. Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`.
+For images, produce one final prompt per §6 of [references/image/image-methodology.md](references/image/image-methodology.md) and select `text-to-image` or `image-to-image` (or `H` multi-zone for layered layouts). Review the complete example in [references/image/image-example.md](references/image/image-example.md) before writing an image prompt with layered layout or typography — it is the granularity calibration anchor for the `<name>.image-brief.md` sidecar. For `image-to-image`, state explicitly what to preserve and what to change (element-level binding). Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`. The image sidecar is `<output filename stem>.image-brief.md` (parallel to `<name>.storyboard.md` for video).
 
 For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard/storyboard-example.md](references/storyboard/storyboard-example.md) before writing the document — it is the granularity calibration anchor; rules without a filled example produce vague output. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
 
@@ -79,6 +83,8 @@ Three companion references supply concrete parameters alongside the methodology 
 - [references/storyboard/templates/templates-3-sets.md](references/storyboard/templates/templates-3-sets.md) + [references/storyboard/templates/scene-quick-match.md](references/storyboard/templates/scene-quick-match.md) — 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查. Consult for simple needs or quick scene routing.
 - [references/storyboard/scenes/scene-nature-animal.md](references/storyboard/scenes/scene-nature-animal.md) / [scene-lifestyle-aesthetic.md](references/storyboard/scenes/scene-lifestyle-aesthetic.md) / [scene-portrait-fashion.md](references/storyboard/scenes/scene-portrait-fashion.md) / [scene-food-asmr.md](references/storyboard/scenes/scene-food-asmr.md) — 4 类场景参考(自然/生活/时尚/美食)的光影/音频/骨架/高潮点模板. Consult when the subject matches a known type.
 - [references/storyboard/scenes/scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md) — **commerce mode 专属** 6 大品类(美妆/服饰/家居/数码/母婴/通用)的产品演示模板;含光影/音频/高潮点/反模式/合规清单/R5 零错字铁律. **mandatory when mode = commerce (§1.1)**;otherwise skip.
+- [references/image/image-methodology.md](references/image/image-methodology.md) — **image 路径方法论主文件**(平级于 storyboard-methodology.md). 完整 R1-R5 单帧降维 + 路径判定(G/E/H) + 视觉骨架 + 视觉规范表 + 文字版式 + 七维度 prompt + 系列图一致性 + i2v 桥接 + 反模式. **mandatory when work = image**.
+- [references/image/image-example.md](references/image/image-example.md) — image-brief.md 完整示例(3 套:G 路径产品图 / H 路径海报拼贴 / E 骨架 Logo)+ 反例对照表. Granularity calibration anchor for image sidecars.
 
 Convert the plan into the form supported by the capability:
 
@@ -129,7 +135,14 @@ A successful video delivers two adjacent files with the same basename:
 <name>.storyboard.md  (Step 3 creative document + Generation)
 ```
 
-The sidecar is the storyboard document produced in Step 3, which already carries `Brief`, `Storyboard`, `Final Prompt`, `Negative Prompt`, and `Inputs`. After delivery, append a `Generation` section recording the Provider, model, pinned task ID, effective parameters, and warnings. Do not rewrite the creative content. Never include credentials, authorization headers, or raw external responses.
+A successful image delivers two adjacent files with the same basename:
+
+```text
+<name>.<ext>          (core media artifact, .png/.jpg/.webp per Provider)
+<name>.image-brief.md (Step 3 creative document + Generation)
+```
+
+The sidecar (storyboard.md for video, image-brief.md for image) is the creative document produced in Step 3, which already carries `Brief`, the visual spec table (`Storyboard` for video / `视觉规范表` for image), `Final Prompt`, `Negative Prompt`, and `Inputs`. After delivery, append a `Generation` section recording the Provider, model, pinned task ID, effective parameters, and warnings. Do not rewrite the creative content. Never include credentials, authorization headers, or raw external responses.
 
 For a resumed task, reuse the original storyboard and prompts. If the sidecar is unavailable, do not invent them; write `Unavailable from recovered task` in those sections and preserve the available task and generation metadata. If appending `Generation` fails after video success, report the video path and the sidecar failure without regenerating the video.
 
