@@ -357,9 +357,9 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 - **Single-segment default**: prefer one segment. The hard cap is **dynamic**, not fixed — see §7.1.
 - **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must satisfy the selected Provider's `maxFrames` rule and the 8n+1 rule. Run `node <skill-dir>/core/media.cjs capabilities` to read the current Provider's `maxFrames` and `maxSingleSegmentDuration`; **do not hardcode 18s/441** in any prompt or storyboard.
 
-### 7.1 Dynamic cap + Generate-first segment delivery (用户决定是否合并)
+### 7.1 Dynamic cap + Split-or-merge confirmation (生成前问,按用户选择执行)
 
-**Cap 是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出:
+**硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出:
 
 | Provider | maxSingleSegmentDuration | maxFrames | 备注 |
 | --- | --- | --- | --- |
@@ -368,34 +368,33 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | Sora 1.0 | ~20s | 481 | 长段支持好 |
 | Veo 2.0 | ~8s | 193 | 短段细节好 |
 
-**触发条件**: `target_duration > provider.maxSingleSegmentDuration`。规划阶段就按 `ceil(target / maxSingleSegmentDuration)` 拆段,每段 ≤ 上限,单段 ≥ 4s,单段 ≤ 3 镜(M1 防塌缩)。
+**读取方式**: `node <skill-dir>/core/media.cjs capabilities` 输出中找 `maxSingleSegmentDuration`。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
 
-**流程:先生成独立的 N 段,再问用户是否合并**
+**触发条件**: `target_duration > provider.maxSingleSegmentDuration`。
 
-1. **规划** N 段分镜表(每段独立的 `.storyboard.md` 或一份大表分 N 段)
-2. **提交** N 段,每段独立走 §4-§7 Provider 路由与生成。**不预先问用户**
-3. **交付** N 段视频文件 + 共享的 `.storyboard.md` sidecar,记录:
-   - 段列表(每段文件路径、时长、帧数、Provider 任务 ID)
-   - 美学母体 + 一致的字幕/音频风格锚(保证段间可合并)
-4. **事后问用户是否合并**(N 段已交付,任一段都是有效产物):
-   - ① 保持独立(无操作)
-   - ② 外部工具自拼(附 CapCut 时间线对齐 / iMovie 拖拽 / ffmpeg `-f concat -i list.txt -c copy` 三选一菜谱,放在 sidecar 的 `Generation` 段)
-   - ③ Provider 内部接续重生成(用 `keyframes-to-video`,首帧=前段末帧 — **会再花额度**,适合对段间过渡不满意时使用)
+**流程:生成前问,按用户选择执行**
 
-**事后询问模板**(生成完成后给用户):
+1. **规划** 时检测到目标 > 封顶,**暂停** §3 Plan
+2. **确认门** — 给出二选一(用 AskUserQuestion 工具):
+   - **① 分开 (默认推荐)** — 拆成 N 段独立交付,每段都是有效产物;sidecar 不附拼接菜谱
+   - **② 合并** — 拆成 N 段独立生成 + sidecar `Generation` 段附外部工具拼接菜谱(CapCut 时间线对齐 / iMovie 拖拽 / ffmpeg `-f concat -i list.txt -c copy` 三选一);**由用户自拼**
+3. **执行** 用户选择后,提交 N 段(每段独立走 Provider 路由)
+4. **禁止 skill 内部合并** — 运行时无 ffmpeg 假设
+
+**确认模板**(向用户提问时直接用):
 
 ```
-N 段视频已生成(每段都是有效产物,见 sidecar 段列表)。是否需要合并成一个视频?
-  ① 保持独立(默认,无需操作)
-  ② 外部工具自拼(已附 CapCut / iMovie / ffmpeg 菜谱在 sidecar `Generation` 段)
-  ③ Provider 内部接续重生成(keyframes-to-video,首帧=前段末帧 — 会再花额度,适合需要更顺滑过渡时)
+目标时长 X 秒 > Provider 封顶 Y 秒(读自 capabilities)。需要您选:
+  ① 分开 (默认) — N 段独立交付,各段都是有效产物,不再合并
+  ② 合并 — N 段 + sidecar 附 CapCut/iMovie/ffmpeg 拼接菜谱,您自己拼
 ```
 
 **禁止的反模式**:
-- ❌ 在生成前问"要不要拆 / 怎么拼" — 抢决策;每段都是有效交付
 - ❌ 把 18s / 441 硬编码到 §7 或 prompt — 不同 Provider 不同
-- ❌ skill 内部尝试合并 — 运行时无 ffmpeg 假设,跨 Provider 更不敢合并
-- ❌ "生成前不让用户选 → 默默拆成 2 段" 不算违反,但事后必须问
+- ❌ 不问用户就默默拆段 — 抢决策
+- ❌ 默认走 ① 不问 — 剥夺用户选 ② 的机会
+- ❌ skill 内部尝试合并 — 运行时无 ffmpeg 假设
+- ❌ 拆完 N 段后才问"要不要拆/怎么拼" — 生成已花额度,且 N 段已交付,"分 vs 合"已隐含决定
 
 ### 7.2 Multi-segment consistency (N 段规划阶段必做)
 

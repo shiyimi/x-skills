@@ -10,7 +10,7 @@
 
 ### M1 镜头塌缩(最严重 ★★★★★)
 
-**症状**: 默认 15s 规划刻度内写 6 个 Shot,模型只生成 1-2 个景别,中间全塌缩。
+**症状**: 单段内写 6 个 Shot,模型只生成 1-2 个景别,中间全塌缩。
 
 **根因**: t2v 模型的"注意力窗口"有限,长段内处理不了多次景别切换。镜头越多,每镜分到的生成预算越少,信息熵过高,模型选择"最安全的 1-2 个景别"覆盖全程。
 
@@ -20,11 +20,11 @@
 | --- | --- | --- |
 | ≤ 5s | 1-2 镜 | ≥ 2.5s |
 | 5-10s | 2-3 镜 | ≥ 3s |
-| 10-15s(默认规划刻度) | 3-4 镜 | ≥ 4s |
-| 15-18s(封顶档,接近 441 硬上限) | 3 镜 | ≥ 4s |
-| > 18s | 拆分为多段 | 每段独立 |
+| 10-15s(常用规划刻度) | 3-4 镜 | ≥ 4s |
+| 15s - provider.maxSingleSegmentDuration(动态封顶) | 3 镜 | ≥ 4s |
+| > provider.maxSingleSegmentDuration | 拆分为多段;**生成前先问用户** split-or-merge(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 每段独立 |
 
-**铁律**: 18s 封顶档内 ≤3 镜,单镜 ≥4s,每个时间段用时间锚点标注。规划时首选 15s 留 3.4s 安全裕量,确需拉满才用 18s。
+**铁律**: 单段 ≤3 镜,单镜 ≥4s,每个时间段用时间锚点标注。规划时首选 15s 留 3.4s 安全裕量到 Agnes 硬上限,确需拉满才到 Provider 实际封顶(由 `capabilities` 读取)。
 
 ### M2 元素都在但不同时在(★★★★★)
 
@@ -117,7 +117,7 @@
 | 5-10s | 2-3 镜 | 画面编号 |
 | 10-15s(常用规划刻度) | 3-4 镜 | 精确时间锚点 |
 | 15s - provider.maxSingleSegmentDuration(动态封顶) | 3 镜 | 精确时间锚点 |
-| > provider.maxSingleSegmentDuration | 拆分多段;先生成 N 段独立交付,再问用户合并策略(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 各段独立 |
+| > provider.maxSingleSegmentDuration | 拆分多段;**生成前问用户 split-or-merge**(见 [storyboard-methodology.md](storyboard-methodology.md) §7.1) | 各段独立 |
 
 ---
 
@@ -142,10 +142,12 @@
 | Model | agnes-video-v2.0 |
 | 默认画幅 | 1152×768(横屏) / 竖屏建议 720×1280 |
 | 默认帧数/帧率 | 121 / 24fps |
-| 15s 帧数(默认规划刻度) | 361(=8×45+1) |
-| 18s 帧数(封顶档) | 433(=8×54+1,接近 441 硬上限) |
+| 15s 帧数(常用规划刻度) | 361(=8×45+1) |
+| 18s 帧数(Agnes 封顶档) | 433(=8×54+1,接近 441 硬上限) |
 | 帧数硬上限 | 441(8n+1) |
+| 单段硬上限 | ~18s(由 `capabilities` 返回的 `maxSingleSegmentDuration`,**不同 Provider 不同**) |
 | 多段接续能力 | keyframes-to-video:首帧=前段末帧,Provider 内部接续 |
+| 拆分前行为 | 见 [storyboard-methodology.md](storyboard-methodology.md) §7.1:生成前先问用户 split-or-merge |
 | 输入形态 | text-to-video / image-to-video / keyframes-to-video |
 | 关键限制 | 本地路径/Data URI 不支持,必须公网 HTTPS URL |
 
@@ -153,7 +155,7 @@
 
 ## 6. 自检清单(提交 prompt 前)
 
-- [ ] **M1 防塌缩**: 18s 封顶档内 ≤3 镜,单镜 ≥4s?(默认规划 15s)
+- [ ] **M1 防塌缩**: 单段 ≤3 镜,单镜 ≥4s?(默认规划 15s,封顶取自 capabilities)
 - [ ] **M2 防信息过载**: 每段 1 主体动作 + 1 环境元素 + 1 光影方向?
 - [ ] **M3 防僵硬**: 动作段含 micro-action(耳朵/眼睛/尾巴/呼吸)?
 - [ ] **M4 防数字噪声**: prompt 中无 K/dB/BPM/光比数字?
@@ -161,5 +163,5 @@
 - [ ] **M6 防音频无效**: prompt 中无 BGM/音效/dB/BPM 描述?
 - [ ] **展示层 vs 执行层**: 分镜表用数字,prompt 用语义化?
 - [ ] **音频分离**: 音频信息在 `Notes for downstream audio` 段?
-- [ ] **多段接续**: >18s 已用 keyframes-to-video 拆段,首帧=前段末帧?(如适用)
+- [ ] **多段 split-or-merge**: >provider.maxSingleSegmentDuration 时,**生成前已问用户** ① 分开 / ② 合并+菜谱?(不能默默拆)
 - [ ] **约束焊死**: 末尾有 `stable frame / no flicker / natural anatomy / no mutation / no text`?

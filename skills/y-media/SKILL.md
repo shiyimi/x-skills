@@ -29,7 +29,7 @@ Reuse supplied information; ask **at most one round** of clarifying questions an
 
 Items that materially change the result: 主体 / 产物类型 / 硬约束 / 输入资产. Items that do NOT justify a follow-up: 美学形容词偏好、次要运镜/色调、字幕文案微调 — these go to the stated defaults in §1 and §3, not another round of questions.
 
-**Multi-segment flow (dynamic cap)**: the single-segment cap is the selected Provider's `maxSingleSegmentDuration` (read via `capabilities`, not hardcoded). When the target exceeds it, **do not ask the user up front**; plan N segments, submit each independently, deliver N files + sidecar, **then** prompt the user with merge options (keep / external merge / keyframes-to-video regen). See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7.1 for the post-generation prompt template.
+**Multi-segment flow (dynamic cap)**: the single-segment cap is the selected Provider's `maxSingleSegmentDuration` (read via `capabilities`, not hardcoded). When the target exceeds it, **stop at the §2 Collect gate and ask the user** to choose between ① split (deliver N segments as separate files, no recipe) and ② merge (deliver N segments + external merge recipe in the sidecar). Do not auto-decide, do not auto-merge, and do not hardcode `18s/441`. See [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) §7.1 for the confirmation template.
 
 For all new work collect purpose, subject, style, required/forbidden content, input assets, output directory, and readable filename. For images also determine dimensions and whether an input image is required. For videos also determine duration, aspect ratio, pacing, shot count, camera language, continuity, reference images, and keyframes.
 
