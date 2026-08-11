@@ -23,6 +23,32 @@ Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put crede
 
 Never infer a Provider from an opaque task ID. Existing work stays pinned to its original Provider and never re-enters priority selection.
 
+### 1.1 Mode Detection (commerce vs general)
+
+After classifying the work, **also classify the mode** before collecting details. The mode is read from the brief, not from the user's wording alone — the Skill should detect both explicit and implicit commerce signals and route accordingly.
+
+| Signal in brief | Mode | Apply |
+| --- | --- | --- |
+| 出现品牌/产品名 + 价格/优惠/CTA(产品名 + "99元"/"前1000名"/"点击购买"等) | **commerce** | §1.1 commerce flow |
+| 出现美妆/服饰/家居/数码/母婴/食品 + 测评/开箱/演示/种草 | **commerce** | §1.1 commerce flow |
+| 出现"我要卖货"/"带货"/"挂车"/"挂链接"/"投流"/"完播转化" | **commerce** | §1.1 commerce flow |
+| 仅出现 风景/动物/治愈/故事/品牌形象/情感/ASMR/概念演示(无具体产品) | **general** | 默认 §2-§7 通用流程 |
+| 模糊(出现"产品"但无价格/优惠/CTA 信号) | **ambiguous** | **§2 Collect 阶段必问 1 轮**(R1 + commerce 信号),按用户选择路由 |
+
+**commerce mode 强制动作清单**(在 §3 Plan 阶段自动追加,无需用户确认):
+
+1. **路径决策**(§1.2):默认推荐 G 纯生成;若用户已有实拍(产品 demo / 真人出镜)走 E 或 H。
+2. **场景模板**:强制读取 [references/storyboard/scenes/scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md),按 §10 跨品类决策表路由到对应子场景(美妆/服饰/家居/数码/母婴/通用)。
+3. **视听路线**:**默认含字幕** + 6 类字幕全用(钩/数据/背书/CTA)—— §5 commerce 增强版。
+4. **音频策略**:走 §4.0 商业目标定风格 3 步法(目标 → 情绪信号 → BGM 4 字段),转化类必带 §4.4 静音法则。
+5. **R5 零错字铁律**:**品牌名/型号/成分/SPF/价格/资质/限量数字逐字核对**,在 storyboard 表头显式标注 `品牌名: <verbatim>`。
+6. **合规清单**:**§9 合规清单**发布前必查(广告法/品牌/价格/资质/版权 BGM/母婴伦理)。
+7. **生成路径标注**:storyboard 表头必填 `生成路径: G | E | H`(§1.2.3)。
+
+> **general mode 不强制这些动作**——仅在用户明确表达商业意图时才加载 commerce flow。这种"模式分流"避免了给风景/治愈类视频强行塞 6 类字幕,保持了 y-media 对非商业创作者的中性。
+
+**为什么不在 description 写死 commerce 触发**:commerce vs general 的边界依赖 brief 内容(产品名 + 价格 vs 风景名 + 故事),description 阶段无 brief 信息可读,只能在运行时分类。
+
 ## 2. Collect
 
 Reuse supplied information; ask **at most one round** of clarifying questions and only for items that materially change the result (subject, output kind, hard constraints, input assets). Do not loop — if a second round would be needed, mark the slot with a stated default and proceed.
@@ -52,6 +78,7 @@ Three companion references supply concrete parameters alongside the methodology 
 - [references/storyboard/storyboard-reality-calculator.md](references/storyboard/storyboard-reality-calculator.md) — 镜头现实性决策 + Python 帧数校验 + Provider 能力速查. Run before submission to verify frame count and single-shot vs multi-segment feasibility.
 - [references/storyboard/templates/templates-3-sets.md](references/storyboard/templates/templates-3-sets.md) + [references/storyboard/templates/scene-quick-match.md](references/storyboard/templates/scene-quick-match.md) — 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查. Consult for simple needs or quick scene routing.
 - [references/storyboard/scenes/scene-nature-animal.md](references/storyboard/scenes/scene-nature-animal.md) / [scene-lifestyle-aesthetic.md](references/storyboard/scenes/scene-lifestyle-aesthetic.md) / [scene-portrait-fashion.md](references/storyboard/scenes/scene-portrait-fashion.md) / [scene-food-asmr.md](references/storyboard/scenes/scene-food-asmr.md) — 4 类场景参考(自然/生活/时尚/美食)的光影/音频/骨架/高潮点模板. Consult when the subject matches a known type.
+- [references/storyboard/scenes/scene-commerce-product.md](references/storyboard/scenes/scene-commerce-product.md) — **commerce mode 专属** 6 大品类(美妆/服饰/家居/数码/母婴/通用)的产品演示模板;含光影/音频/高潮点/反模式/合规清单/R5 零错字铁律. **mandatory when mode = commerce (§1.1)**;otherwise skip.
 
 Convert the plan into the form supported by the capability:
 
