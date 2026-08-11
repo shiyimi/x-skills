@@ -39,7 +39,10 @@ For videos, generate a storyboard document per §1-§3 and §6 of the methodolog
 
 Three companion references supply concrete parameters alongside the methodology rules. Read the relevant one before filling any column:
 - [references/cinematography-reference.md](references/cinematography-reference.md) — 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值. Consult when filling any shot-table column to pick the exact term.
-- [references/influence-factors.md](references/influence-factors.md) — 视频生成影响因子 F1-F10:每个因子的有效填写阈值与失控修复. Consult to decide how具体 a field must be and to fix generation failures.
+- [references/influence-factors.md](references/influence-factors.md) — 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复. Consult to decide how具体 a field must be and to fix generation failures.
+- [references/t2v-model-capability.md](references/t2v-model-capability.md) — t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式. **Read before writing any prompt** — decides which parameters enter the prompt (semantic) vs which leave (numeric/audio).
+- [references/prompt-structure-formula.md](references/prompt-structure-formula.md) — prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律. Consult when assembling the prompt block.
+- [references/templates-and-scene-match.md](references/templates-and-scene-match.md) — 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查. Consult for simple needs or quick scene routing.
 - [references/scene-nature-animal.md](references/scene-nature-animal.md) — 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板. Consult when the subject is nature/animal/healing type.
 
 Convert the plan into the form supported by the capability:

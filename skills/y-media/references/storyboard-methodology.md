@@ -11,7 +11,10 @@ This methodology defines the rules; three companion references supply the concre
 | Companion | Purpose | When to read |
 | --- | --- | --- |
 | [cinematography-reference.md](cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
-| [influence-factors.md](influence-factors.md) | 视频生成影响因子:F1-F10 每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
+| [influence-factors.md](influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
+| [t2v-model-capability.md](t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
+| [prompt-structure-formula.md](prompt-structure-formula.md) | prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律 | 拼接 prompt 时按此结构 |
+| [templates-and-scene-match.md](templates-and-scene-match.md) | 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查 | 需求简单时直接套模板 |
 | [scene-nature-animal.md](scene-nature-animal.md) | 场景参考:自然/动物/治愈系的光影/音频/骨架/高潮点模板 | 主体属自然/动物/治愈类时取参数 |
 
 The complete filled example is [storyboard-example.md](storyboard-example.md) — review it before producing any new storyboard to align granularity. Rules without a filled example produce vague output; the example is the granularity calibration anchor.
@@ -59,6 +62,26 @@ Rules that apply to all skeletons:
 - Keep **1-3 key points per 15s**; more requires splitting segments (§7).
 - **Recover the hook within the first 7 seconds** (visual burst or emotional burst) or completion rate drops.
 - Mark `★` on cover-grade shots; a 15s segment should have at least 5, one every 3s at minimum.
+
+### 2.0 Shot Count: Planning vs Execution (⚠️ critical)
+
+The shot counts above (5-12) are **planning-layer** numbers for the storyboard table and human review. The **execution-layer** shot count — what the t2v model can actually render in a single straight-out generation — is much smaller. See [t2v-model-capability.md](t2v-model-capability.md) M1.
+
+| Generation mode | Max shots in 15s | Min shot length | Time expression |
+| --- | --- | --- | --- |
+| **Single straight-out t2v** (default for y-media) | 3-4 | ≥4s | Precise time anchors (`0.0-5.0s`) |
+| **Multi-segment + edit** (split + concat) | per segment ≤3 | per segment ≥4s | Each segment independent |
+| **Clip-style dense cut** (骨架A 带货) | 9-12 (planning only) | 1.0-2.5s | Requires multi-segment generation + manual edit |
+
+**Rule**: For a 15s single straight-out generation, write 5-8 shots in the storyboard table (planning), but **merge them into 3 time-anchored segments in the prompt** (execution). Writing 6 shots directly into the prompt causes shot collapse (M1) — the model renders only 1-2 shot sizes.
+
+Three time-expression modes (see [t2v-model-capability.md](t2v-model-capability.md) §3):
+
+| Mode | Strength | Writing | Use when |
+| --- | --- | --- | --- |
+| Precise time anchor | Strongest | `0.0-5.0s: ...` | 10-15s, 3-4 shots |
+| Scene numbering | Medium | `Scene 1: ...` | 5-10s, 2-3 shots |
+| Action-flow connectors | Weak/natural | `then` / `suddenly` / `as` | ≤5s, 1-2 shots |
 
 Hook templates (mirror on the top of the shot table):
 
