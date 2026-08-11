@@ -300,6 +300,55 @@ Each column must be filled to the level below. Abstract adjectives ("暖光""柔
 
 Rule of thumb: if a field can be replaced by "etc." without losing information, it is too abstract. Rewrite it with a number or a named term.
 
+#### 3.1.2 Display layer vs Execution layer (展示层 vs 执行层)
+
+| 字段 | 展示层(分镜表,人读) | 执行层(prompt,模型读) | 降级规则 |
+| --- | --- | --- | --- |
+| **色温** | 4500K | `soft golden morning backlight` / `cool blue hour diffused light` | K值 → 光源描述 |
+| **光比** | 3:1 | (删除)用光源方向替代: `rim/backlight with soft sky fill` | 数字 → 方向 |
+| **光质** | 柔光 / 硬光 | `soft diffused light` / `hard direct light` | 保留语义词 |
+| **光位** | 45°侧光 / 150°逆光 | `side light from the left` / `backlight from behind` | 角度 → 方位词 |
+| **饱和度** | 饱和度+10 | (删除)用风格标签替代: `vibrant colors` / `muted tones` | 数字 → 风格词 |
+| **音量** | -18dB | (移出 prompt,进 `Notes for downstream audio`) | 数字 → 删除 |
+| **BPM** | 95 BPM | (移出 prompt,进 `Notes for downstream audio`) | 数字 → 删除 |
+| **音效拟声** | 嗒嗒/唰/噗噗 | (移出 prompt,进 `Notes for downstream audio`) | 拟声词 → 删除 |
+| **主体月龄** | 约6个月大 | `a 6-month-old ... foal` (保留,模型理解) | 数字描述保留 |
+| **焦段** | 16mm-85mm | (作为风格参考保留) `shot on ARRI Alexa with shallow depth of field` | 焦段 → 摄影机 |
+| **运镜速度** | 0.3m/s | (删除)用运镜语义替代: `slow` / `moderate` / `fast` | 数值 → 形容词 |
+| **帧数** | 361 (8n+1,默认 15s) / 433 (8n+1,封顶 18s) | (不写进 prompt,进 API 参数) | 数字 → API参数 |
+| **镜头数** | 6镜(规划) | 3时间段(执行) | 合并压缩 |
+
+#### 3.1.3 Execution layer 降级范例
+
+| 展示层(分镜表) | 执行层(prompt) |
+| --- | --- |
+| `4500K` 清晨侧逆光 | `soft golden morning backlight from a low sun` |
+| `光比 3:1` | (删,光源方向自带对比) `rim/backlight with soft sky fill` |
+| `4800K 强逆光 发丝光勾边` | `strong backlight with rim light on hair, soft fill from sky` |
+| `95 BPM 清新民谣吉他+钟琴` | (移出 prompt,进 `Notes for downstream audio`) |
+| `-18dB BGM` | (移出 prompt,进 `Notes for downstream audio`) |
+| `0.3m/s 缓推` | `slow dolly-in` |
+| `16mm-85mm 焦段切换` | `shot on ARRI Alexa with shallow depth of field` |
+| `约6个月大,棕白相间,鬃毛蓬松` | `a 6-month-old brown-and-white pinto foal with a fluffy mane` (保留) |
+
+#### 3.1.4 三层划分总结
+
+| 层 | 用途 | 读者 | 关键字段 |
+| --- | --- | --- | --- |
+| **展示层** | 分镜表 + 创作规划 | 人(导演/客户/归档) | 具体数字(K/dB/BPM/月龄/焦段/拟声词) |
+| **执行层** | 提交给 t2v 模型的 prompt | 模型 | 语义化描述(soft golden / BBC Earth / slow dolly-in) |
+| **音频笔记层** | 供下游音频制作 | 人(后期) | BPM/dB/拟声词/环境音优先级 |
+
+**铁律**: 展示层的数字不写进 prompt(模型忽略 M4);执行层不写 dB/BPM(模型无效 M6)。
+
+#### 3.1.5 自检(提交前)
+
+- [ ] 展示层每列都填了具体数字或具名术语?
+- [ ] prompt 中没有 K/dB/BPM/光比/拟声词数字?
+- [ ] 音频信息在 `Notes for downstream audio` 段?
+- [ ] 主体月龄/数字描述在 prompt 中保留?
+- [ ] 焦段/速度数字已降级为语义词?
+
 ### 3.2 Scene Routing
 
 After filling the brief (§1), route to a scene template before writing the shot table. Scene templates supply pre-built lighting palettes, audio skins, 7s climax patterns, and AI generation禁区 for common non-commerce subjects. If no template matches, fall back to the generic §2-§6 flow.
@@ -685,7 +734,326 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | 焦段 | `16mm 广角 → 85mm 中焦` | `low-angle` + `wide shot` | mm → 景别词 |
 | 主体 | 雄鹿+幼鹿(完整四层) | 完整四层(保留) | 主信息保留,术语化 |
 
-完整对照表(12 字段)见 [granularity-scale.md](granularity-scale.md) §2;模型为什么读不懂数字的边界,见 [t2v-model-capability.md](t2v-model-capability.md) M4。
+完整对照表(12 字段)见 §3.1 颗粒度标尺;模型为什么读不懂数字的边界,见 [t2v-model-capability.md](t2v-model-capability.md) M4。
+
+### 6.4 Prompt Structure Formula (八要素 + 五定法 + 角色四层 + 场景三层)
+
+> 提示词的**写作骨架**。本节定义"一段 prompt 应该按什么顺序、什么结构拼接";规则在 §6 整体,术语在 [../../cinematography-reference.md](../../cinematography-reference.md),模型限制在 [t2v-model-capability.md](t2v-model-capability.md)。
+>
+> **核心原则**:八要素不可省略,五定法定维度,角色四层/场景三层定颗粒度,14 镜头库选运镜,避坑三陷阱防翻车,5 铁律做最终校验。
+
+#### 6.4.1 八要素万能公式(写作骨架)
+
+提示词严格按八个要素拼接,顺序固定,不可省略:
+
+```
+主体 + 动作 + 场景 + 光影 + 镜头语言 + 风格 + 画质 + 约束
+```
+
+**满分作业实例**:
+
+```
+(主体)一位年轻女生
+(场景)在海边
+(动作)慢走,微风拂动头发,微笑看向镜头
+(光影)黄昏暖光
+(画质)4K 高清
+(风格)电影感
+(镜头)稳定运镜
+(约束)画面流畅不抖动,细节清晰。
+```
+
+**八要素写法要点**:
+
+| 要素 | 写法规则 | 反例 |
+| --- | --- | --- |
+| 主体 | 身份 + 外貌 + 服装 + 气质(角色四层) | "一个女生" |
+| 动作 | 写慢、写具体、写连续,加 micro-action | "跳舞" → "微微低头、回眸微笑、发丝随风摆动" |
+| 场景 | 场景类型 + 时代风格 + 环境细节 + 光线天气(场景三层) | "街上" |
+| 光影 | 必加,缺则给廉价漫反射光 | "漂亮的光" → "黄昏暖光 / 体积光 / 侧逆光" |
+| 镜头语言 | 至少 1 个运镜词,建议 ≤2 个组合 | 混用"超高速"+"极度稳定"等矛盾指令 |
+| 风格 | 1 个明确标签:治愈清新 / 赛博朋克 / 日系 / 武侠电影感 / BBC Earth | "好看" / "很美" / "震撼" |
+| 画质 | 后置强化:4K / 超清 / 电影质感 / shallow depth of field | 写得太靠前会喧宾夺主 |
+| 约束 | 必加:画面稳定 / 无闪烁 / 人体结构正常 / 不变形 | 漏了 = 主角变脸、肢体扭曲 |
+
+#### 6.4.2 五定法(写作维度索引)
+
+| 维度 | 解决什么 | 关键控制点 |
+| --- | --- | --- |
+| 定人 | 角色长什么样 | 外貌 + 服装 + 气质 |
+| 定景 | 故事发生在哪里 | 环境 + 时代 + 天气 + 光线 |
+| 定调 | 整体什么风格 | 片型 + 画面质感 + 情绪基调 |
+| 定音 | 声音怎么处理 | 对白 + 音效 + 配乐 + 语种(**移出 prompt,进 Notes**) |
+| 定拍 | 怎么动、怎么拍 | 角色动作 + 镜头运动 + 节奏 |
+
+五定解决"拍什么",时间解决"什么时候拍"。
+
+#### 6.4.3 角色四层结构(定人)
+
+从粗到细四层,主角才写满三层以上:
+
+```
+[身份标签] + [外貌特征] + [服装描写] + [气质/状态修饰]
+```
+
+| 层级 | 作用 | 实例 |
+| --- | --- | --- |
+| 第一层 身份标签 | 调用模型已有形象模板 | "赛博朋克深海潜员" / "古风少女" / "a 6-month-old pinto foal" |
+| 第二层 外貌特征 | 模型可画面化的特征 | "短发的中年男人" / "brown-and-white with a fluffy mane" |
+| 第三层 服装描写 | 信息密度最高,颜色最易执行 | "穿黑色长风衣的" / "一袭白衣" |
+| 第四层 气质/状态 | "看起来什么感觉" | "气质冷峻的" / "joyful temperament" |
+
+**锁定原则**: 主体描述词全片/全系列锁同一套,改一个词模型就漂移。
+
+#### 6.4.4 场景三层结构(定景)
+
+```
+[场景类型] + [时代/风格修饰] + [环境细节] + [光线/天气]
+```
+
+| 层级 | 实例 |
+| --- | --- |
+| 第一层 场景类型 | "街头 / 酒吧 / 海边 / 林间 / meadow" |
+| 第二层 时代/风格修饰 | "赛博朋克风格的街道" / "early-morning countryside style" |
+| 第三层 环境细节 | "墙角堆着几个纸箱" / "dew-drenched clover, pink wildflowers, thin drifting mist" |
+| 第四层 光线/天气 | "黄昏 / 晨雾 / 雨水" / "soft golden sunrise backlight, gentle wind" |
+
+### 6.5 Cinematic Shot Library (14 镜头库)
+
+> 导演级速查表。6 种运镜组合 + 4 种高级电影术语 + 4 种构图/镜头进阶技法 = 14 个技法,供写 prompt 时按场景选用。
+>
+> **铁律**: 单段 ≤2 个组合运镜(治愈/温情/广告片禁用手持抖动);多个运镜必须用连接词分开:`slowly tracking, then orbiting to face`。
+
+#### 6.5.1 六种运镜组合(成功率最高)
+
+| # | 运镜组合 | 写法(执行层) | 适用场景 | 警告 |
+| --- | --- | --- | --- | --- |
+| 1 | 跟拍 + 环绕 | `lateral tracking then slowly orbiting to face` | 人物登场万金油,侧后方起绕到正面 | 360° 全环绕易晕,限 45-90° 弧 |
+| 2 | 升降 + 横摇 | `crane up while slowly panning right` | 宏大叙事开场,低位→全景揭示 | 速度太快=玩具感 |
+| 3 | 手持摄影风格 | `handheld style, slight shake` | 动作追逐/街头纪实 | **治愈系禁用**;抖动幅度要控 |
+| 4 | 主观视角 POV | `first-person POV shot` | 代入感无敌,配合一镜到底 | 慎用,易致动晕 |
+| 5 | 低角度仰拍 | `low-angle hero shot` | Seedance 2.0 识别极精准,初次亮相首选 | 仰角 >30° 易变形 |
+| 6 | 推拉结合 | `push in to close-up, then pull out to wide` | 叙事法:先聚焦细节,后揭示真相 | 推拉速度不一致=割裂 |
+
+#### 6.5.2 四种高级电影术语
+
+| # | 术语 | 写法 | 效果 | 适用 |
+| --- | --- | --- | --- | --- |
+| 1 | 希区柯克变焦 | `dolly zoom` | 主体大小不变,背景剧烈拉伸 → 震惊/空间扭曲 | 心理冲击、转场 |
+| 2 | 匹配剪辑 | `match cut` | 最高级转场,动作相似性跨时空丝滑过渡 | 多段拼接转场 |
+| 3 | 升格慢动作 | `slow motion` | 仪式感,雨滴/火星/细腻情绪 | 高潮时刻、特写 |
+| 4 | 荷兰角 | `Dutch angle` | 不安/心理阴暗/疯狂情绪 | 悬疑、惊悚 |
+
+#### 6.5.3 四种构图与镜头进阶技法
+
+| # | 技法 | 写法 | 适用 | 注意 |
+| --- | --- | --- | --- | --- |
+| 1 | 微距镜头 | `macro lens, 1:1 close-up` | 材质纹理细节,露珠穿透光线 | 浅景深极浅,主体必须清晰 |
+| 2 | 框景构图 | `framing through window/door/tree branch` | 窥视感、层次 | 框不能太大抢主体 |
+| 3 | 超广角镜头 | `ultra-wide angle, edge distortion` | 极大空间包容度,边缘畸变冲击力 | 边缘畸变会拉变形主体,慎用于人像 |
+| 4 | 延时摄影 | `time-lapse` | 压缩极慢变化(日落/结晶/云涌),哲理性史诗感 | t2v 模型支持有限,优先短段 |
+
+#### 6.5.4 镜头选择决策表
+
+| 场景意图 | 首选 | 次选 | 禁用 |
+| --- | --- | --- | --- |
+| 人物登场亮相 | 低角度仰拍(#5) | 跟拍+环绕(#1) | 手持抖动(#3) |
+| 自然/治愈 | 横移跟拍 + 缓推 | 推拉结合(#6) | 手持抖动(#3) / 荷兰角(#4) |
+| 产品展示 | 环绕小角度(#1 改) | 固定+微推 | 推拉快速 |
+| 武侠/古风 | 缓推 dolly forward | 升降+横摇(#2) | 手持抖动 |
+| 街头纪实 | 手持风格(#3) | 跟拍+环绕(#1) | 固定机位长镜 |
+| 食物/ASMR | 俯拍 + 微距(#1+#4) | 固定+微推 | 运镜>1 个组合 |
+| 梦境/超现实 | 希区柯克变焦(#1) | 荷兰角(#4) | 平实跟拍 |
+| 城市夜景 | 横移+霓虹 | 低角度仰拍 | 慢动作 |
+
+#### 6.5.5 镜头使用铁律
+
+1. **单段 ≤2 个组合运镜**;超过 2 个模型会"运动不接戏"
+2. **治愈/温情/广告片禁用手持抖动**;治愈系 = 平滑稳定
+3. **多个运镜用连接词分开**:`slowly tracking, then orbiting to face` / `dolly in, then rack focus`
+4. **360° 全环绕慎用**;限 45-90° 弧,避免观感晕眩
+5. **仰角不超过 30°**;过大导致主体变形(M3)
+6. **运镜速度在 prompt 中用 slow/moderate/fast 描述**(语义化,非 m/s,见 [t2v-model-capability.md](t2v-model-capability.md) M4)
+
+#### 6.5.6 跨段运镜接续规则
+
+| 上段运镜末 | 下段运镜起 | 接续方式 |
+| --- | --- | --- |
+| dolly-in | dolly-out | 推拉反转 = 强调(慎用) |
+| tracking | static | 运动→静止 = 聚焦 |
+| low-angle | eye-level | 仰→平 = 权力转移 |
+| wide | close-up | 远→近 = 揭示 |
+| close-up | wide | 近→远 = 释放 |
+| slow motion | normal speed | 慢→常 = 现实回归 |
+
+### 6.6 Pitfalls: 避坑三陷阱(物理互斥 / 静止动词 / 光影缺失)
+
+> 写 prompt 前**必读**。从原方法论拆出,便于写 prompt 时翻阅,避免跳读。
+
+#### 6.6.1 物理逻辑互斥(物理层)
+
+**禁令**: 不要在同一提示词里写矛盾指令。
+
+| 反例 | 矛盾点 | 修复 |
+| --- | --- | --- |
+| "大远景" + "背景虚化" | 大远景景深必深,与虚化互斥 | 删"背景虚化"或改中景 |
+| "大晴天" + "阴沉感" | 光线调性互斥 | 选一种光线 |
+| "超高速" + "极度稳定" | AI 逻辑死锁 | 选快/稳其一 |
+| "流畅" + "抖动风格" | 描述互斥 | 删"流畅"或"抖动" |
+| "微距特写" + "全景观看" | 景别矛盾 | 选一种景别 |
+| "正面光" + "逆光剪影" | 光位矛盾 | 选一种光位 |
+
+#### 6.6.2 静止动词陷阱(动作层)
+
+**禁令**: 避免只用"站立"、"看着"等静止词。
+
+**正确做法**: 主体内部必须有微观动作(micro-action):
+- 动物: `with subtle ear twitches, light tail sway, occasional eye blinks`
+- 人像: `with soft breathing visible, hair lightly swaying, gentle eye movement`
+- 食物/产品: `with steam rising slowly, surface texture shifting`
+
+**为什么**: 否则画面呈"3D 模型平移感",缺乏生命感。
+
+#### 6.6.3 光影指令缺失(光影层)
+
+**禁令**: 如果不写光,AI 默认给漫反射平光 → 廉价 3D 感。
+
+**保底二选一必须出现**:
+- `soft directional lighting`
+- `volumetric morning backlight`
+
+**完整写法**: 光位 + 光质 + 光源 + 填充,如 `single light source — low golden morning sun behind the subject, soft fill from the sky`。
+
+详见 [../../cinematography-reference.md](../../cinematography-reference.md) §3 光影与 [t2v-model-capability.md](t2v-model-capability.md) M4 数字参数被忽略。
+
+### 6.7 Iron Rules: 5 铁律(最终校验)
+
+> 提交 prompt 前**必过**。与 §6.6 配合:那里讲"不要用什么",这里讲"必须做什么"。
+
+#### 6.7.1 动作写慢写连续
+
+- 写"轻抬手腕"而非"挥手"
+- 写"缓步转身"而非"走动"
+- 写"mane and tail lifting lightly"而非"running"
+
+**为什么**: t2v 模型对快动作渲染差(帧间跳跃),慢动作给模型更多时间生成连续姿态。
+
+#### 6.7.2 运镜写稳写简单
+
+- 单段 ≤2 个组合运镜
+- 多个运镜用连接词分开:`slowly tracking, then orbiting to face`
+- 治愈/温情/广告片禁用手持抖动
+
+详见 §6.5.5。
+
+#### 6.7.3 强制约束焊死结尾
+
+末尾必加,缺则 = 主角变脸、肢体扭曲:
+
+```
+— Stable frame, no flicker, natural [物种] anatomy, no mutation, no deformed [主体].
+— Same [主体] identity across all frames (no character drift).
+— No text, no logo, no watermark, no on-screen caption.
+```
+
+**有效 vs 无效约束**:
+
+| 有效(可执行) | 无效(抽象) |
+| --- | --- |
+| `no mutation, no deformed horse` | `要有高级感` |
+| `no text, no logo, no watermark` | `画质要好` |
+| `stable frame, no flicker` | `自然一点` |
+| `same identity across all frames` | `保持一致` |
+
+#### 6.7.4 术语转换:形容词 → 摄影参数和风格标签
+
+| 抽象词(拒绝) | 摄影参数化 |
+| --- | --- |
+| "好看" | `healing fresh + warm diffused light` |
+| "震撼" | `dolly zoom / slow motion / wide-angle distortion` |
+| "电影感" | `shot on ARRI Alexa with shallow depth of field` |
+| "高级" | `BBC Earth style + backlight rim` |
+| "真实" | `natural motion + real-world physics + no CGI look` |
+| "梦幻" | `volumetric light + soft bokeh + low saturation` |
+
+#### 6.7.5 风格锚定:每个镜头绑定 1 个明确风格标签
+
+每段写 1 个,不要堆叠:
+- 治愈清新 / 赛博朋克 / 日系 / 武侠电影感 / BBC Earth / National Geographic / Pixar / ARRI Alexa / iPhone 15 Pro Cinematic Mode / 16mm Bolex ...
+
+**风格锚层级**(越具体模型越能锁定):
+
+| 层级 | 示例 | 效果 |
+| --- | --- | --- |
+| 抽象 | "好看" / "震撼" | 模型自由发挥 |
+| 中等 | "治愈清新" / "赛博朋克" | 风格基本对 |
+| 具体 | "BBC Earth + ARRI Alexa" | 质感锁定 |
+| 影视级 | "in the spirit of BBC Earth, shot on ARRI Alexa with shallow depth of field" | 锁定 |
+
+### 6.8 Hook Types (钩子类型,前 3 秒防流失)
+
+| 钩子类型 | 写法 | 适用 |
+| --- | --- | --- |
+| 运动钩子 | 主体入画 / 运镜推入 | 通用 |
+| 光影钩子 | 逆光剪影 / 体积光 / 光束穿透 | 治愈/氛围 |
+| 动作钩子 | 突然动作(跃起/甩头/冲刺) | 动物/运动 |
+| 表情钩子 | 特写表情(歪头/凝视/微笑) | 人像/宠物 |
+| 悬念钩子 | 局部特写先出现,后揭示全貌 | 叙事 |
+
+### 6.9 Prompt Assembly Template (拼接顺序模板)
+
+```text
+[画幅/时长/质感总述] Vertical 9:16, 15 seconds. [风格锚] style, shot on [摄影机] with shallow depth of field.
+
+★ Main subject (four layers, keep consistent in every frame):
+[角色四层描述] — keep the same [关键特征] across all frames (no character drift).
+
+★ Scene (three layers + atmosphere):
+[场景三层 + 光线天气].
+
+★ Action (slow, continuous, single motion per beat; with micro-actions):
+- 0.0–Xs: [动作1 + micro-action].
+- Xs–Ys: [动作2 + micro-action].
+- Ys–15s: [动作3 + micro-action].
+
+★ Camera language (≤ 2 moves per segment, from cinematic shot library):
+- Segment 1: [运镜1].
+- Segment 2: [运镜2].
+- Segment 3: [运镜3].
+[运镜禁令: No whip pans, no shaky-cam.]
+
+★ Lighting (mandatory, single source):
+[单一光源语义化描述 + 配色锚].
+
+★ Style anchor:
+[风格标签 + 情绪弧线: "starts calmly → peaks with X → ends quietly"].
+
+★ Quality (post-positioned):
+4K ultra-high definition, shallow depth of field, [光质].
+
+★ Hard constraints (weld to end):
+— Stable frame, no flicker, natural [物种] anatomy, no mutation, no deformed [主体].
+— Same [主体] identity across all frames (no character drift).
+— No text, no logo, no watermark, no on-screen caption.
+```
+
+Notes for downstream audio (do NOT include in the video prompt):
+- BGM skin: [音频皮肤].
+- Ambient priorities: [环境音优先级].
+
+### 6.10 Self-Check (提交 prompt 前)
+
+- [ ] 物理逻辑:无矛盾指令(光位/景别/速度)?
+- [ ] 动作:无纯静止动词,有 micro-action?
+- [ ] 光影:已写 soft directional / volumetric,非空?
+- [ ] 动作:写慢写连续,无"挥手/走动"等快词?
+- [ ] 运镜:≤2 组合,连接词分开,治愈系无手持?
+- [ ] 约束:焊死结尾,无抽象词?
+- [ ] 术语转换:形容词已换摄影参数?
+- [ ] 风格锚:每段 1 个明确风格标签?
+- [ ] 八要素全填(主体/动作/场景/光影/镜头/风格/画质/约束)?
+
+详见 [../../influence-factors.md](../../influence-factors.md) F9 负面约束精炼。
 
 ## 7. Duration And Segment Strategy
 
