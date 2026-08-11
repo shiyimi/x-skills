@@ -83,7 +83,7 @@ function errorResult(error, secrets = []) {
     : new ProviderError('invalid_response', 'Unexpected media workflow failure.');
   const result = {
     ok: false,
-    status: normalized.task?.provider_status ? 'failed' : 'failed',
+    status: 'failed',
     error: {
       kind: normalized.kind,
       message: redactValue(normalized.message, secrets),

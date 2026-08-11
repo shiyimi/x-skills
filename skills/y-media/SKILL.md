@@ -29,17 +29,25 @@ Reuse supplied information and ask only for missing details that materially chan
 
 For all new work collect purpose, subject, style, required/forbidden content, input assets, output directory, and readable filename. For images also determine dimensions and whether an input image is required. For videos also determine duration, aspect ratio, pacing, shot count, camera language, continuity, reference images, and keyframes.
 
-## 3. Plan
+## 3. Plan — Creative Layer
 
-For images, produce one final prompt and select `text-to-image` or `image-to-image`.
+The Skill owns the creative layer: turn the collected brief into a concrete storyboard document before any submission. Core never plans or generates storyboards. Follow [references/storyboard-methodology.md](references/storyboard-methodology.md) for every creative decision below.
 
-For videos, prepare and retain a concise storyboard until delivery. Each shot contains a time range, subject/action, scene, camera, continuity notes, and prompt. The storyboard is Skill planning data, not a core contract. Convert it into the form supported by the capability:
+For images, produce one final prompt per §8 of the methodology and select `text-to-image` or `image-to-image`. Review the complete example in [references/image-prompt-example.md](references/image-prompt-example.md) before writing an image prompt with layered layout or typography. For `image-to-image`, state explicitly what to preserve and what to change. Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`.
+
+For videos, generate a storyboard document per §1-§3 and §6 of the methodology and save it next to the intended output as `<output filename stem>.storyboard.md`. Review the complete example in [references/storyboard-example.md](references/storyboard-example.md) before writing the document. The document carries the brief, the shot table, and the full video prompt, and it doubles as the delivery sidecar: Step 7 appends `Generation` metadata instead of writing a second file.
+
+Convert the plan into the form supported by the capability:
 
 | Input plan | Capability |
 | --- | --- |
 | Prompt only | `text-to-video` |
 | One reference image | `image-to-video` |
 | Start and end frames | `keyframes-to-video` |
+
+Default to vertical 9:16 and map duration to Provider frames: `num_frames = round(duration_seconds * frame_rate)`, at most 441 and satisfying `8n + 1` (15s @ 24fps = 361). Express aspect ratio through `parameters.width/height`.
+
+Before submitting, verify the storyboard: all 11 columns filled, shot durations sum to the target, `★` ≥ 5 per 15s, subtitle copy free of typos with brand names verbatim, and the frame count satisfies the `8n + 1` rule.
 
 Build the public request defined in [core/provider-contract.md](core/provider-contract.md). Keep Provider-specific controls in `parameters` and verify them against the selected Provider reference.
 
@@ -69,18 +77,18 @@ Never use `generate` or `create` to resume work. On `wait_timeout`, retain the P
 
 ## 7. Save
 
-Successful `generate` and `wait` operations save Artifact Sources through core. Use one readable `output.filename` of at most 120 characters. Core keeps task IDs out of local paths, applies the actual media extension, numbers multiple artifacts, avoids overwrites, and returns absolute paths.
+Successful `generate` and `wait` operations save Artifact Sources through core. Use one readable `output.filename` of at most 120 characters; the same stem names the video and its sidecar. Core keeps task IDs out of local paths, applies the actual media extension, numbers multiple artifacts, avoids overwrites, and returns absolute paths.
 
-For every successful video, write a UTF-8 Markdown sidecar beside it using the same basename:
+A successful video delivers two adjacent files with the same basename:
 
 ```text
-<name>.mp4
-<name>.storyboard.md
+<name>.mp4            (core media artifact)
+<name>.storyboard.md  (Step 3 creative document + Generation)
 ```
 
-The sidecar contains `Brief`, `Storyboard`, `Final Prompt`, `Negative Prompt`, `Inputs`, and `Generation` sections. The storyboard table records each shot's time range, visual/action, camera, continuity, and shot prompt. `Generation` records the Provider, model, pinned task ID, effective parameters, and warnings. Never include credentials, authorization headers, or raw external responses.
+The sidecar is the storyboard document produced in Step 3, which already carries `Brief`, `Storyboard`, `Final Prompt`, `Negative Prompt`, and `Inputs`. After delivery, append a `Generation` section recording the Provider, model, pinned task ID, effective parameters, and warnings. Do not rewrite the creative content. Never include credentials, authorization headers, or raw external responses.
 
-For a resumed task, reuse the original storyboard and prompts. If they are unavailable, do not invent them; write `Unavailable from recovered task` in those sections and preserve the available task and generation metadata. If sidecar writing fails after video success, report the video path and sidecar failure without regenerating the video.
+For a resumed task, reuse the original storyboard and prompts. If the sidecar is unavailable, do not invent them; write `Unavailable from recovered task` in those sections and preserve the available task and generation metadata. If appending `Generation` fails after video success, report the video path and the sidecar failure without regenerating the video.
 
 Do not claim media integrity checks that core does not perform.
 
