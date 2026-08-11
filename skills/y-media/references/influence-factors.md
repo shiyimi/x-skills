@@ -2,7 +2,7 @@
 
 > 本文件定义"一个视频生成 prompt 的质量由哪些因子决定",以及每个因子的**权重**、**有效填写阈值**和**失控修复**。当 [storyboard-methodology.md](storyboard-methodology.md) 要求"填满 11 列"时,本文件解释"为什么填、填到什么程度模型才听话、填错会出什么问题"。
 >
-> 核心升级:F1-F12 **带权重评分卡**(满分 100),新增 F11 关键帧/参考图、F12 风格母题。与 [t2v-model-capability.md](t2v-model-capability.md) 配合:那里讲"模型限制",这里讲"因子权重"。
+> 核心升级:F1-F12 **带权重评分卡**(满分 100),新增 F11 关键帧/参考图、F12 风格母题。与 [video/t2v-model-capability.md](video/t2v-model-capability.md) 配合:那里讲"模型限制",这里讲"因子权重"。
 
 ---
 
@@ -63,7 +63,7 @@
 ### 检查点
 - 默认 15s(361 帧)≤3 镜,单镜 ≥4s;封顶 18s(433 帧,接近 441 硬上限)≤3 镜,单镜 ≥4s
 - 时长用精确时间锚点标注(0.0-5.0s / 5.0-11.0s / 11.0-15.0s)
-- >18s 必拆,首选 keyframes-to-video(Provider 内部接续,见 [t2v-model-capability.md](t2v-model-capability.md) §5)
+- >18s 必拆,首选 keyframes-to-video(Provider 内部接续,见 [video/t2v-model-capability.md](video/t2v-model-capability.md) §5)
 
 ### 镜头数阈值
 
@@ -83,7 +83,7 @@
 | 时长不符 | 镜头时长之和≠目标 | 重算镜头时长 |
 | 生成失败 | 帧数>441 或不满足 8n+1 | 调整到合规帧数(15s→361,18s→433) |
 
-详见 [t2v-model-capability.md](t2v-model-capability.md) M1。
+详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M1。
 
 ---
 
@@ -164,7 +164,7 @@
 | 动作僵硬 | 动作与摄影参数混写 | 动作段只写动作+micro-action |
 | 反物理 | 物理未约束 | 加 `natural motion, gravity correct` |
 
-详见 [t2v-model-capability.md](t2v-model-capability.md) M3、[prompt-structure-formula.md](prompt-structure-formula.md) §6.2 静止动词陷阱。
+详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M3、[prompt-structure-formula.md](prompt-structure-formula.md) §6.2 静止动词陷阱。
 
 ---
 
@@ -191,7 +191,7 @@
 | 塑料感 | 光比数字塞进 prompt(M4) | 数字移出,用光源方向替代 |
 | 闪烁 | 光源跨段不连续 | 锁单一光源方向 |
 
-详见 [t2v-model-capability.md](t2v-model-capability.md) M4、§2 展示层→执行层对照表。
+详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M4、§2 展示层→执行层对照表。
 
 ---
 

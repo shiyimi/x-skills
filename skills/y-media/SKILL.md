@@ -74,7 +74,7 @@ For videos, generate a storyboard document per §1-§3 and §6 of the methodolog
 Three companion references supply concrete parameters alongside the methodology rules. Read the relevant one before filling any column:
 - [references/cinematography-reference.md](references/cinematography-reference.md) — 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值. Consult when filling any shot-table column to pick the exact term.
 - [references/influence-factors.md](references/influence-factors.md) — 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复. Consult to decide how具体 a field must be and to fix generation failures.
-- [references/t2v-model-capability.md](references/t2v-model-capability.md) — t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式. **Read before writing any prompt** — decides which parameters enter the prompt (semantic) vs which leave (numeric/audio).
+- [references/video/t2v-model-capability.md](references/video/t2v-model-capability.md) — t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式. **Read before writing any prompt** — decides which parameters enter the prompt (semantic) vs which leave (numeric/audio).
 - [references/video/prompt-structure-formula.md](references/video/prompt-structure-formula.md) — prompt 写作骨架:八要素+五定法+角色四层+场景三层+14镜头库+避坑三陷阱+5铁律. Consult when assembling the prompt block.
 - [references/video/cinematic-shot-library.md](references/video/cinematic-shot-library.md) — 14 镜头库(6 运镜组合+4 高级术语+4 构图技法)+ 镜头选择决策表. Consult when picking camera moves.
 - [references/video/granularity-scale.md](references/video/granularity-scale.md) — 颗粒度标尺:展示层/执行层分工 + 12 字段抽象→具体对照. Consult when unsure how具体 a column should be.

@@ -51,11 +51,11 @@ y-media/
 |   |   |-- cinematic-shot-library.md        (14 镜头库)
 |   |   |-- pitfalls-and-iron-rules.md       (避坑+铁律)
 |   |   |-- storyboard-reality-calculator.md (镜头现实性+帧数校验)
+|   |   |-- t2v-model-capability.md        (模型能力边界 M1-M6)
 |   |   |-- scenes/                          (4 类场景模板)
 |   |   `-- templates/                       (3 套模板+速配表)
 |   |-- cinematography-reference.md
 |   |-- influence-factors.md
-|   |-- t2v-model-capability.md
 |   `-- image-prompt-example.md
 |-- core/
 |   |-- media.cjs

@@ -2,7 +2,7 @@
 
 > 本文件是 [storyboard-methodology.md](storyboard-methodology.md) §1-§3、§6 的**完整填好示例**,对应一次 15s 视频生成的最终交付。题材选**晨雾森林雄鹿与幼鹿**,展示**成兽+幼兽+关系**类主体类型的写法。
 >
-> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对 t2v 模型无效(M6)。详见 [t2v-model-capability.md](../../t2v-model-capability.md) 与 [prompt-structure-formula.md](prompt-structure-formula.md)。
+> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对 t2v 模型无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) 与 [prompt-structure-formula.md](prompt-structure-formula.md)。
 >
 > **⚠️ 镜头数修正(M1)**:t2v 模型在 15s 内塞 6 镜会塌缩成 1-2 景别,应 ≤3 镜、单镜 ≥4s。本示例分镜表保留 6 镜做**创作规划展示**,但 prompt 合并为 3 个时间段执行。
 
@@ -34,7 +34,7 @@
 
 ## 3. 视频 prompt(执行层 · 提交给 t2v 模型)
 
-> **执行层规则**(见 [t2v-model-capability.md](../../t2v-model-capability.md) §2):
+> **执行层规则**(见 [t2v-model-capability.md](t2v-model-capability.md) §2):
 > 1. 6 镜合并为 3 个时间段(M1 防塌缩,单段 ≥4s)
 > 2. 数字参数语义化降级:4500K → `soft golden morning backlight`;光比 → 删除;dB/BPM 移出(M4)
 > 3. 音频移出 prompt,放 Notes for downstream audio(M6)

@@ -63,7 +63,7 @@
 3. **多个运镜用连接词分开**:`slowly tracking, then orbiting to face` / `dolly in, then rack focus`
 4. **360° 全环绕慎用**;限 45-90° 弧,避免观感晕眩
 5. **仰角不超过 30°**;过大导致主体变形(M3)
-6. **运镜速度在 prompt 中用 slow/moderate/fast 描述**(语义化,非 m/s,见 [t2v-model-capability.md](../../t2v-model-capability.md) M4)
+6. **运镜速度在 prompt 中用 slow/moderate/fast 描述**(语义化,非 m/s,见 [t2v-model-capability.md](t2v-model-capability.md) M4)
 
 ---
 

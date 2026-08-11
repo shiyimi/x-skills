@@ -28,7 +28,7 @@ This methodology defines the rules; companion references supply concrete paramet
 | --- | --- | --- |
 | [../cinematography-reference.md](../cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
 | [../influence-factors.md](../influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
-| [../t2v-model-capability.md](../t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
+| [t2v-model-capability.md](t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
 
 ### 0.2 video/ (分镜模块)
 
@@ -220,7 +220,7 @@ Step 2: 主体是否有"人物/故事/情绪弧"?
 | **音频节点** | 3-5 个(钩子音效+卡点+CTA) | 1-2 个(起/收) | 4 个(每拍 1 个情绪节点) |
 | **主线 KPI** | 完播 + 点击转化 | 完播 + 互动(评论) | 完播 + 收藏 + 转发 |
 
-> **注**:镜头数是**规划层**上限,执行层(prompt)需合并到 Provider 单段上限内的 3-4 个时间锚(见 [t2v-model-capability.md](../t2v-model-capability.md) M1)。
+> **注**:镜头数是**规划层**上限,执行层(prompt)需合并到 Provider 单段上限内的 3-4 个时间锚(见 [t2v-model-capability.md](t2v-model-capability.md) M1)。
 
 #### 2.3.2 自检 4 问(填完表后逐条过)
 
@@ -685,7 +685,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | 焦段 | `16mm 广角 → 85mm 中焦` | `low-angle` + `wide shot` | mm → 景别词 |
 | 主体 | 雄鹿+幼鹿(完整四层) | 完整四层(保留) | 主信息保留,术语化 |
 
-完整对照表(12 字段)见 [granularity-scale.md](granularity-scale.md) §2;模型为什么读不懂数字的边界,见 [../t2v-model-capability.md](../t2v-model-capability.md) M4。
+完整对照表(12 字段)见 [granularity-scale.md](granularity-scale.md) §2;模型为什么读不懂数字的边界,见 [t2v-model-capability.md](t2v-model-capability.md) M4。
 
 ## 7. Duration And Segment Strategy
 

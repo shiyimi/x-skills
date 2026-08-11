@@ -58,7 +58,7 @@
 | 主体漂移/变形 | 跨镜头压力 | 锁主体描述词,i2v 优先 |
 | 时长生成被截 | 帧数超 `capability_limits.maxFrames` 上限 | 拆段或减时长 |
 
-详见 [t2v-model-capability.md](../../t2v-model-capability.md) M1。
+详见 [t2v-model-capability.md](t2v-model-capability.md) M1。
 
 ---
 
@@ -180,7 +180,7 @@ print(validate_frames(20.0, capability_limits=limits))  # 480, 超 441
 | 短段 8s 极致 | Veo | 8s 段细节好 |
 | y-media 默认 | Agnes | 已注册,即用 |
 
-详见 [t2v-model-capability.md](../../t2v-model-capability.md) §5 Agnes 关键参数 + Provider 速查。
+详见 [t2v-model-capability.md](t2v-model-capability.md) §5 Agnes 关键参数 + Provider 速查。
 
 ---
 

@@ -42,7 +42,7 @@
 
 **完整写法**: 光位 + 光质 + 光源 + 填充,如 `single light source — low golden morning sun behind the subject, soft fill from the sky`。
 
-详见 [cinematography-reference.md](../../cinematography-reference.md) §3 光影与 [t2v-model-capability.md](../../t2v-model-capability.md) M4 数字参数被忽略。
+详见 [cinematography-reference.md](../../cinematography-reference.md) §3 光影与 [t2v-model-capability.md](t2v-model-capability.md) M4 数字参数被忽略。
 
 ---
 
