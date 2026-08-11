@@ -1,6 +1,6 @@
 # Image Methodology — Creative Layer
 
-> Image 路径的方法论主文件。**平级于** [../storyboard/storyboard-methodology.md](../storyboard/storyboard-methodology.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
+> Image 路径的方法论主文件。**平级于** [../video/storyboard-methodology.md](../video/storyboard-methodology.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
 >
 > Core 永不消费本文件。Skill 在 Step 3 (Plan) 时为图片工作读取本文件,产出 `<name>.image-brief.md`,再抽取 prompt 通过 CLI 提交。
 
@@ -180,7 +180,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 ### 3.1 颗粒度标尺(image 降维版)
 
-> 视频的颗粒度标尺见 [../storyboard/granularity-scale.md](../storyboard/granularity-scale.md);image 路径只取**静态**字段(光影/色彩/焦段/约束),去掉运镜/速度/音频相关字段。
+> 视频的颗粒度标尺见 [../video/granularity-scale.md](../video/granularity-scale.md);image 路径只取**静态**字段(光影/色彩/焦段/约束),去掉运镜/速度/音频相关字段。
 
 | 字段 | 抽象(reject) | 具体(accept) | 阈值源 |
 | --- | --- | --- | --- |
@@ -209,7 +209,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 | 风景/治愈/氛围 | 骨架D + 广角 + 黄金时刻光 + 1-2 慢动态元素 | 添加 1-2 动态元素避免空盒子感 |
 | 标识/logo/icon | 骨架E + 极简 + 主色占 60%+ + 中心 | 锁品牌色,逐字渲染品牌名 |
 | 抽象/科技/参数 | 骨架A/D + 暗背景 + 顶光 + 数字/几何元素 | 数据逐字核对(R5) |
-| **商业带货/产品演示** | 走 [../storyboard/scenes/scene-commerce-product.md](../storyboard/scenes/scene-commerce-product.md) 的 6 大品类配置(取其中"产品摄影"相关列) + R5 零错字 + 合规清单 | 与视频同源;**i2i 优先**(实拍) |
+| **商业带货/产品演示** | 走 [../video/scenes/scene-commerce-product.md](../video/scenes/scene-commerce-product.md) 的 6 大品类配置(取其中"产品摄影"相关列) + R5 零错字 + 合规清单 | 与视频同源;**i2i 优先**(实拍) |
 
 > **未来扩展**:image/scenes/ 目录会按需补充独立 image 场景模板(产品图/海报/人像/美食静态/质感)。当前借用 video 场景模板的产品摄影部分,够用。
 
@@ -413,7 +413,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 - **风格参考**: `参考 <图片1> 的色调与光影`
 - **主体一致**: `以 <图片1> 为主体,保持产品外观/logo/配色一致`
 
-复用 [../storyboard/storyboard-methodology.md](../storyboard/storyboard-methodology.md) §6.1 input binding 语法。
+复用 [../video/storyboard-methodology.md](../video/storyboard-methodology.md) §6.1 input binding 语法。
 
 > **i2v 的 image 准备自检**:① 主体在画面内完整(留出运镜空间)?② 第一帧/末帧的构图与 video 段的运镜匹配?③ 主体与背景对比度足够,运镜不会丢焦?
 
@@ -431,7 +431,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 | 拼贴无边界过渡 | 上/下区域硬接 | 显式说明手撕/硬线/渐变 |
 | i2i 漂移 | 参考图主体被重画 | 列元素级绑定清单 |
 | 比例异常 | 选 9:16 但构图是横构图 | 显式说明"主体居左,右侧留白"或换画幅 |
-| 商业类缺 R5 | 品牌错字/数字错 | R5 铁律 + 合规清单(见 [../storyboard/scenes/scene-commerce-product.md](../storyboard/scenes/scene-commerce-product.md) §9) |
+| 商业类缺 R5 | 品牌错字/数字错 | R5 铁律 + 合规清单(见 [../video/scenes/scene-commerce-product.md](../video/scenes/scene-commerce-product.md) §9) |
 | 系列图漂移 | 3 张图主体不像同一物 | §8 锁主体描述符 + 美学母体 |
 
 ## 11. 自检 4 问(填完 brief 后 30 秒过)

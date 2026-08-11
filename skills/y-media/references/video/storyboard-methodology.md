@@ -30,7 +30,7 @@ This methodology defines the rules; companion references supply concrete paramet
 | [../influence-factors.md](../influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
 | [../t2v-model-capability.md](../t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
 
-### 0.2 storyboard/ (分镜模块)
+### 0.2 video/ (分镜模块)
 
 | Companion | Purpose | When to read |
 | --- | --- | --- |
@@ -41,7 +41,7 @@ This methodology defines the rules; companion references supply concrete paramet
 | [storyboard-reality-calculator.md](storyboard-reality-calculator.md) | 镜头现实性决策 + Python 帧数校验 + Provider 能力速查 | 提交前用 |
 | [storyboard-example.md](storyboard-example.md) | 完整填好示例(晨雾森林雄鹿与幼鹿) | 颗粒度校准锚,写新分镜前必读 |
 
-### 0.3 storyboard/scenes/ (场景矩阵)
+### 0.3 video/scenes/ (场景矩阵)
 
 | Companion | Subject type |
 | --- | --- |
@@ -51,7 +51,7 @@ This methodology defines the rules; companion references supply concrete paramet
 | [scenes/scene-food-asmr.md](scenes/scene-food-asmr.md) | 美食/ASMR(声音密集) |
 | [scenes/scene-commerce-product.md](scenes/scene-commerce-product.md) | 商业带货/产品演示(6 大品类) |
 
-### 0.4 storyboard/templates/ (模板与速配)
+### 0.4 video/templates/ (模板与速配)
 
 | Companion | Purpose |
 | --- | --- |
@@ -73,7 +73,7 @@ The goal drives tone, pacing, and subtitle route. All three goals are equal choi
 Produce one Markdown file per video segment, saved next to the intended output:
 
 ```text
-<name>.storyboard.md
+<name>.video-brief.md
 ```
 
 where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. It contains exactly three sections:
@@ -753,7 +753,7 @@ node <skill-dir>/core/media.cjs capabilities
 >
 > **完整 image 方法论见 [../image/image-methodology.md](../image/image-methodology.md)**。它包含:R1-R5 单帧降维、§1.2 路径判定(G 纯生成 / E 二次编辑 / H 多图分区)、§2 视觉骨架(5 种)、§3 视觉规范表(11 列单行模板)、§4 文字版式、§5 约束收尾、§6 七维度 prompt、§7 画幅、§8 系列图一致性、§9 与 i2v 桥接、§10 反模式、§11 自检。
 >
-> **image sidecar 模板**: `<name>.image-brief.md`(平级于 `<name>.storyboard.md`),结构为 1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
+> **image sidecar 模板**: `<name>.image-brief.md`(平级于 `<name>.video-brief.md`),结构为 1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
 >
 > **示例**: [../image/image-example.md](../image/image-example.md) — 含 3 套完整 image-brief(蓝牙耳机产品图 G 路径 / 咖啡海报拼贴 H 路径 / Logo 极简 E 骨架)+ 反例对照表。
 >

@@ -27,14 +27,14 @@ core/orchestrator.cjs
 
 | 区域         | 职责                                                                                                                             |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Skill        | 收集意图，按 [references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) 规划分镜，编写创意文档，并构建公共请求 |
+| Skill        | 收集意图，按 [references/video/storyboard-methodology.md](references/video/storyboard-methodology.md) 规划分镜，编写创意文档，并构建公共请求 |
 | CLI          | 解析命令与 JSON、脱敏错误、输出一个 JSON 结果、映射退出码                                                                        |
 | Orchestrator | 选择 Provider、只提交一次、固定任务、轮询、协调保存                                                                              |
 | Contract     | 校验 manifest、公共请求、结果与稳定错误分类                                                                                      |
 | Artifacts    | 校验公共 URL，并原子保存下载内容、Base64 或字节                                                                                  |
 | Provider     | 解析凭证、映射参数、调用一个外部 API、规范化结果                                                                                 |
 
-创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层：[references/storyboard/storyboard-methodology.md](references/storyboard/storyboard-methodology.md) 定义了通用的分镜、音频、字幕与提示词方法；一个视频 brief 会落地为具体的 `<name>.storyboard.md` 文档，其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
+创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层：[references/video/storyboard-methodology.md](references/video/storyboard-methodology.md) 定义了通用的分镜、音频、字幕与提示词方法；一个视频 brief 会落地为具体的 `<name>.video-brief.md` 文档，其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
 
 ## 目录结构
 
@@ -43,7 +43,7 @@ y-media/
 |-- SKILL.md
 |-- README.md
 |-- references/
-|   |-- storyboard/
+|   |-- video/
 |   |   |-- storyboard-methodology.md        (方法论主文件)
 |   |   |-- storyboard-example.md            (完整填好示例:雄鹿与幼鹿)
 |   |   |-- granularity-scale.md             (颗粒度标尺:展示层/执行层)
@@ -94,10 +94,10 @@ CLI 通过 `core/media.cjs` 暴露 `capabilities`、`generate`、`create`、`sta
 
 ```text
 <name>.mp4
-<name>.storyboard.md
+<name>.video-brief.md
 ```
 
-`.storyboard.md` 侧车是 Skill 创意层（Step 3）产出的创意文档：包含 brief、分镜表、最终与负向提示词。交付后追加 `Generation` 节，记录 Provider、模型、固定任务 ID、生效参数与警告，不包含密钥或原始外部响应。Skill 拥有侧车，因为 brief 收集与分镜属于创意规划关注点；core 只拥有媒体产物。
+`.video-brief.md` 侧车是 Skill 创意层（Step 3）产出的创意文档：包含 brief、分镜表、最终与负向提示词。交付后追加 `Generation` 节，记录 Provider、模型、固定任务 ID、生效参数与警告，不包含密钥或原始外部响应。Skill 拥有侧车，因为 brief 收集与分镜属于创意规划关注点；core 只拥有媒体产物。
 
 恢复的任务复用其原始规划数据。当规划数据不可用时，侧车将相关节标记为不可用，而不是重建未经证实的事实。侧车写入失败永远不会触发新的生成请求。
 
