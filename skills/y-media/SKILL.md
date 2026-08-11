@@ -1,6 +1,6 @@
 ---
 name: y-media
-description: Use when generating or editing images, generating videos, using Agnes AI or another registered media Provider, spending a Provider's free media quota, checking or resuming an existing media task, or downloading generated media.
+description: Use when generating or editing images, generating videos, using Agnes AI or another registered media Provider, spending a Provider's free media quota, checking or resuming an existing media task, or downloading generated media. 不适用于:纯文字 brief 无媒体产物 / 离线模型训练或微调场景。
 ---
 
 # Media Workflow
@@ -25,7 +25,9 @@ Never infer a Provider from an opaque task ID. Existing work stays pinned to its
 
 ## 2. Collect
 
-Reuse supplied information and ask only for missing details that materially change the result.
+Reuse supplied information; ask **at most one round** of clarifying questions and only for items that materially change the result (subject, output kind, hard constraints, input assets). Do not loop — if a second round would be needed, mark the slot with a stated default and proceed.
+
+Items that materially change the result: 主体 / 产物类型 / 硬约束 / 输入资产. Items that do NOT justify a follow-up: 美学形容词偏好、次要运镜/色调、字幕文案微调 — these go to the stated defaults in §1 and §3, not another round of questions.
 
 For all new work collect purpose, subject, style, required/forbidden content, input assets, output directory, and readable filename. For images also determine dimensions and whether an input image is required. For videos also determine duration, aspect ratio, pacing, shot count, camera language, continuity, reference images, and keyframes.
 
