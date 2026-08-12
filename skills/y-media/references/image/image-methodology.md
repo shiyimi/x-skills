@@ -1,6 +1,6 @@
 # 图片方法论 — 创意层
 
-> Image 路径的方法论主文件。**平级于** [../video/storyboard-methodology.md](../video/storyboard-methodology.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
+> Image 路径的方法论主文件。**平级于** [../video/storyboard.md](../video/storyboard.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
 >
 > Core 永不消费本文件。Skill 在 Step 3 (Plan) 时为图片工作读取本文件,产出 `<name>.image-brief.md`,再抽取 prompt 通过 core 提交。
 
@@ -180,7 +180,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 ### 3.1 颗粒度标尺(image 降维版)
 
-> 视频的颗粒度标尺见 [../video/granularity-scale.md](../video/granularity-scale.md);image 路径只取**静态**字段(光影/色彩/焦段/约束),去掉运镜/速度/音频相关字段。
+> 视频的颗粒度标尺见 [../video/media-rules.md §2](../video/media-rules.md);image 路径只取**静态**字段(光影/色彩/焦段/约束),去掉运镜/速度/音频相关字段。
 
 | 字段 | 抽象(reject) | 具体(accept) | 阈值源 |
 | --- | --- | --- | --- |
@@ -364,7 +364,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 
 **逐项对照 §3 视觉规范表**:
 
-| 规范表字段 | 本 prompt 写法 | 降级规则(沿用 video granularity-scale) |
+| 规范表字段 | 本 prompt 写法 | 降级规则(沿用 video media-rules §2) |
 | --- | --- | --- |
 | 主体 | 透明塑料杯 + 木桌 + 阳光 | ≥3 特征 + 材质保留 |
 | 光影·色温 | `4000K` | K 值(展示层)在本 prompt 中保留(image 不必语义化降级,因为单图,无时间轴) |
@@ -413,7 +413,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 - **风格参考**: `参考 <图片1> 的色调与光影`
 - **主体一致**: `以 <图片1> 为主体,保持产品外观/logo/配色一致`
 
-复用 [../video/storyboard-methodology.md](../video/storyboard-methodology.md) §6.1 的输入绑定(input binding)语法。
+复用 [../video/storyboard.md](../video/storyboard.md) §6.1 的输入绑定(input binding)语法。
 
 > **i2v 的 image 准备自检**:① 主体在画面内完整(留出运镜空间)?② 第一帧/末帧的构图与 video 段的运镜匹配?③ 主体与背景对比度足够,运镜不会丢焦?
 
@@ -457,4 +457,4 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 — (图像路径不独立维护 negative_prompt,所有负面约束在 §3 Final Prompt 的 Hard Constraints 块内。详见 image-methodology.md §A 与 providers/agnes/api.md)
 ```
 
-**与视频方法的差异**:视频路径有独立 `negative_prompt` 字段方法论,见 [../video/negative-prompt-methodology.md](../video/negative-prompt-methodology.md)。**不要把视频的负面词表照搬到 image-brief**。
+**与视频方法的差异**:视频路径有独立 `negative_prompt` 字段方法论,见 [../video/prompt-craft.md §11](../video/prompt-craft.md)。**不要把视频的负面词表照搬到 image-brief**。

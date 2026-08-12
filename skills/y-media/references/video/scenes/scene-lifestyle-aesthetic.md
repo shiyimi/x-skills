@@ -2,7 +2,7 @@
 
 > 与 [scene-nature-animal.md](scene-nature-animal.md) 平级。本文件覆盖**生活美学/慢生活/家居氛围**类场景:倒咖啡/翻书/插花/家居场景/晨间日常/独处时刻/旅行随拍等。
 >
-> 与 [../templates/scene-quick-match.md](../templates/scene-quick-match.md) 配合选运镜/光影;与 [../storyboard-methodology.md](../storyboard-methodology.md) §1 配合填充 brief。
+> 与 [../templates/scene-quick-match.md](../templates/scene-quick-match.md) 配合选运镜/光影;与 [../storyboard.md](../storyboard.md) §1 配合填充 brief。
 
 ---
 
@@ -127,4 +127,4 @@
 
 ## 8. 完整示例索引
 
-完整填好示例见 [../storyboard-example.md](../storyboard-example.md)(已从小马驹改为**晨雾森林雄鹿**题材);通用 prompt 模板见 [../templates/templates-3-sets.md](../templates/templates-3-sets.md)。
+完整填好示例见 [../example.md](../example.md)(已从小马驹改为**晨雾森林雄鹿**题材);通用 prompt 模板见 [../templates/templates-3-sets.md](../templates/templates-3-sets.md)。

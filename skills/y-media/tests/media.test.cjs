@@ -734,6 +734,79 @@ test('Agnes video mapping enforces defaults, frame rule, and public URL inputs',
   }), /public HTTPS URL/);
 });
 
+test('Agnes video mapping merges negative prompt into the submitted prompt', () => {
+  const mapped = agnes.buildVideoRequest({
+    capability: 'text-to-video',
+    prompt: 'Shot 1: A red bicycle crosses a rainy street.',
+    parameters: {
+      negative_prompt: 'blur, watermark, distorted wheels'
+    }
+  });
+
+  assert.equal(mapped.prompt, [
+    'Shot 1: A red bicycle crosses a rainy street.',
+    'Negative constraints: blur, watermark, distorted wheels'
+  ].join('\n\n'));
+  assert.equal(Object.hasOwn(mapped, 'negative_prompt'), false);
+});
+
+test('Agnes video mapping omits blank negative prompt placeholders', () => {
+  const mapped = agnes.buildVideoRequest({
+    capability: 'text-to-video',
+    prompt: 'Shot 1: Morning light over a quiet lake.',
+    parameters: {
+      negative_prompt: '   '
+    }
+  });
+
+  assert.equal(mapped.prompt, 'Shot 1: Morning light over a quiet lake.');
+  assert.equal(Object.hasOwn(mapped, 'negative_prompt'), false);
+});
+
+test('Agnes video mapping rejects non-positive or fractional dimensions', () => {
+  for (const parameters of [{ width: 0 }, { width: -1 }, { height: 1.5 }, { width: '1152' }]) {
+    assert.throws(() => agnes.buildVideoRequest({
+      capability: 'text-to-video',
+      prompt: 'A short animation',
+      parameters
+    }), /positive integer/);
+  }
+});
+
+test('Agnes provider video limits stay consistent with the manifest capability_limits', () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  const limits = sorted[0].capability_limits['text-to-video'];
+  const request = (parameters) => ({ capability: 'text-to-video', prompt: 'A short animation', parameters });
+
+  assert.doesNotThrow(() => agnes.buildVideoRequest(request({ num_frames: limits.maxFrames })));
+  assert.throws(
+    () => agnes.buildVideoRequest(request({ num_frames: limits.maxFrames + 8 })),
+    /8n \+ 1/
+  );
+  assert.doesNotThrow(() => agnes.buildVideoRequest(request({ frame_rate: limits.minFrameRate })));
+  assert.doesNotThrow(() => agnes.buildVideoRequest(request({ frame_rate: limits.maxFrameRate })));
+  assert.throws(
+    () => agnes.buildVideoRequest(request({ frame_rate: limits.minFrameRate - 1 })),
+    /frame_rate/
+  );
+  assert.throws(
+    () => agnes.buildVideoRequest(request({ frame_rate: limits.maxFrameRate + 1 })),
+    /frame_rate/
+  );
+});
+
+test('Agnes manifest advertises the five documented video aspect ratios', () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  for (const capability of ['text-to-video', 'image-to-video', 'keyframes-to-video']) {
+    assert.deepEqual(
+      sorted[0].capability_limits[capability].supportedAspectRatios,
+      ['16:9', '9:16', '1:1', '4:3', '3:4']
+    );
+  }
+});
+
 test('Agnes supports performs detailed checks without credentials or network', () => {
   assert.deepEqual(agnes.supports({
     capability: 'text-to-image',

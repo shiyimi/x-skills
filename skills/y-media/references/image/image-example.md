@@ -4,7 +4,7 @@
 >
 > 写新 image-brief 前必读,作为颗粒度校准锚。
 >
-> **Negative Prompt 字段**: 图像路径不独立维护 `negative_prompt`,所有负面约束以正向写法 `no X, no Y, no Z` 焊死在 §3 Final Prompt 的 Hard Constraints 块内。详见 [image-methodology.md §A](image-methodology.md) 与 [providers/agnes/api.md](../../providers/agnes/api.md)。视频路径的方法论见 [../video/negative-prompt-methodology.md](../video/negative-prompt-methodology.md),**不要照搬**。
+> **Negative Prompt 字段**: 图像路径不独立维护 `negative_prompt`,所有负面约束以正向写法 `no X, no Y, no Z` 焊死在 §3 Final Prompt 的 Hard Constraints 块内。详见 [image-methodology.md §A](image-methodology.md) 与 [providers/agnes/api.md](../../providers/agnes/api.md)。视频路径的方法论见 [../video/prompt-craft.md §11](../video/prompt-craft.md),**不要照搬**。
 
 ---
 

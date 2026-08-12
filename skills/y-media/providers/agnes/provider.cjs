@@ -62,6 +62,12 @@ function assertPrompt(request) {
   }
 }
 
+function videoPromptWithNegativeConstraints(prompt, negativePrompt) {
+  const cleanPrompt = prompt.trim();
+  if (typeof negativePrompt !== 'string' || !negativePrompt.trim()) return cleanPrompt;
+  return `${cleanPrompt}\n\nNegative constraints: ${negativePrompt.trim()}`;
+}
+
 function imageInputShape(input) {
   if (!input || input.type !== 'image' || !input.source) {
     throw new ProviderError('invalid_request', 'Each image input must contain an image source.');
@@ -124,15 +130,21 @@ function buildVideoRequest(request) {
   if (typeof frameRate !== 'number' || frameRate < 1 || frameRate > 60) {
     throw new ProviderError('invalid_request', 'frame_rate must be a number between 1 and 60.');
   }
+  for (const dimension of ['width', 'height']) {
+    const value = parameters[dimension];
+    if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+      throw new ProviderError('invalid_request', `${dimension} must be a positive integer.`);
+    }
+  }
   const result = {
     model,
-    prompt: request.prompt.trim(),
+    prompt: videoPromptWithNegativeConstraints(request.prompt, parameters.negative_prompt),
     width: parameters.width ?? 1152,
     height: parameters.height ?? 768,
     num_frames: numFrames,
     frame_rate: frameRate
   };
-  for (const key of ['num_inference_steps', 'seed', 'negative_prompt']) {
+  for (const key of ['num_inference_steps', 'seed']) {
     if (parameters[key] !== undefined) result[key] = parameters[key];
   }
   if (request.capability === 'image-to-video') result.image = videoInputUrls(request, 1)[0];

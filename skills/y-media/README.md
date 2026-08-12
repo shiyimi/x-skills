@@ -23,13 +23,13 @@ core/orchestrator.cjs
 
 | 区域         | 职责                                                                                                                             |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Skill        | 收集意图，按 [references/video/storyboard-methodology.md](references/video/storyboard-methodology.md) 规划分镜，编写创意文档，并构建公共请求 |
+| Skill        | 收集意图，按 [references/video/storyboard.md](references/video/storyboard.md) 规划分镜，编写创意文档，并构建公共请求 |
 | Orchestrator | 选择 Provider、只提交一次、固定任务、轮询、协调保存                                                                              |
 | Contract     | 校验 manifest、公共请求、结果与稳定错误分类                                                                                      |
 | Artifacts    | 校验公共 URL，并原子保存下载内容、Base64 或字节                                                                                  |
 | Provider     | 解析凭证、映射参数、调用一个外部 API、规范化结果                                                                                 |
 
-创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层：[references/video/storyboard-methodology.md](references/video/storyboard-methodology.md) 定义了通用的分镜、音频、字幕与提示词方法；一个视频 brief 会落地为具体的 `<name>.video-brief.md` 文档，其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
+创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层：[references/video/storyboard.md](references/video/storyboard.md) 定义了通用的分镜、音频、字幕与提示词方法；一个视频 brief 会落地为具体的 `<name>.video-brief.md` 文档，其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
 
 ## 目录结构
 
@@ -39,22 +39,19 @@ y-media/
 |-- README.md
 |-- references/
 |   |-- video/
-|   |   |-- storyboard-methodology.md        (方法论主文件)
-|   |   |-- storyboard-example.md            (完整填好示例:雄鹿与幼鹿)
-|   |   |-- granularity-scale.md             (颗粒度标尺:展示层/执行层)
-|   |   |-- prompt-structure-formula.md      (八要素+五定法骨架)
-|   |   |-- cinematic-shot-library.md        (14 镜头库)
-|   |   |-- pitfalls-and-iron-rules.md       (避坑+铁律)
-|   |   |-- storyboard-reality-calculator.md (镜头现实性+Node 帧数校验)
-|   |   |-- t2v-model-capability.md          (模型能力边界 M1-M6)
-|   |   |-- negative-prompt-methodology.md   (视频 negative_prompt 方法论)
-|   |   |-- scenes/                          (5 类场景模板)
+|   |   |-- storyboard.md                 (主方法论:分镜+路径判定+骨架+镜头结构)
+|   |   |-- example.md                    (完整填好示例:雄鹿与幼鹿)
+|   |   |-- prompt-craft.md               (八要素+五定法+14 镜头库+Negative Prompt)
+|   |   |-- media-rules.md                (M1-M6 模型能力+展示/执行层+14 镜头库+避坑+铁律)
+|   |   |-- audio-design.md               (音频三层:人声/环境音/BGM)
+|   |   |-- subtitle-spec.md              (字幕规范:用不用+6 类+动效)
+|   |   |-- scenes/                       (5 类场景模板)
 |   |   |   |-- scene-nature-animal.md
 |   |   |   |-- scene-lifestyle-aesthetic.md
 |   |   |   |-- scene-portrait-fashion.md
 |   |   |   |-- scene-food-asmr.md
 |   |   |   `-- scene-commerce-product.md    (电商专属)
-|   |   `-- templates/                       (3 套模板+速配表)
+|   |   `-- templates/                    (3 套模板+速配表)
 |   |       |-- templates-3-sets.md
 |   |       `-- scene-quick-match.md
 |   |-- cinematography-reference.md

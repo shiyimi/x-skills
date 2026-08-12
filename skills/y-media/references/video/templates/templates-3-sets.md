@@ -2,7 +2,7 @@
 
 > 本文件提供**可直接套用的 prompt 模板**,需求简单时替换占位符即可生成。复杂需求用 [scene-quick-match.md](scene-quick-match.md) 路由后回到本文件套模板。
 >
-> 与 [../prompt-structure-formula.md](../prompt-structure-formula.md) 配合:那里讲规则,这里给现成模板。
+> 与 [../prompt-craft.md](../prompt-craft.md) 配合:那里讲规则,这里给现成模板。
 
 ---
 
@@ -132,6 +132,6 @@ Notes for downstream audio: 古风琴瑟 + 剑气破空声。
 2. 替换占位符 [xxx]         → 用 brief + scene 路由结果
 3. 加钩子(本文件 §5)        → ★ Action 第一段填入
 4. 加 Notes for downstream audio(展示层音频) → 模板末尾
-5. 校验(见 storyboard-reality-calculator.md) → 单段直出/多段拼接/帧数合规
+5. 校验(见 media-rules.md §5) → 单段直出/多段拼接/帧数合规
 6. 提交
 ```

@@ -17,7 +17,7 @@ module.exports = [
         defaultFrameRate: 24,
         minFrameRate: 1,
         maxFrameRate: 60,
-        supportedAspectRatios: ['16:9', '9:16', '1:1'],
+        supportedAspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4'],
         frameCountRule: '8n+1'
       },
       'image-to-video': {
@@ -26,7 +26,7 @@ module.exports = [
         defaultFrameRate: 24,
         minFrameRate: 1,
         maxFrameRate: 60,
-        supportedAspectRatios: ['16:9', '9:16', '1:1'],
+        supportedAspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4'],
         frameCountRule: '8n+1',
         requiresImageInput: true
       },
@@ -36,7 +36,7 @@ module.exports = [
         defaultFrameRate: 24,
         minFrameRate: 1,
         maxFrameRate: 60,
-        supportedAspectRatios: ['16:9', '9:16', '1:1'],
+        supportedAspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4'],
         frameCountRule: '8n+1',
         requiresImageInputs: 2
       }

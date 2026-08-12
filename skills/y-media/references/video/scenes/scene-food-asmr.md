@@ -138,7 +138,7 @@
 
 | 约束 | 原因 | 修复 |
 | --- | --- | --- |
-| 声音不进 prompt | M6: 当前 Agnes 不生成分时音频(边界见 t2v-model-capability.md) | 全部进 `Notes for downstream audio` |
+| 声音不进 prompt | M6: 当前 Agnes 不生成分时音频(边界见 media-rules.md) | 全部进 `Notes for downstream audio` |
 | 必须极慢 | ASMR 灵魂是慢 | 3-5s/镜,加 `slow motion` 或 `time-lapse of micro motion` |
 | 必须微距 | 感官细节 | `macro lens, 1:1 close-up`,主体占画面 80%+ |
 | 暗背景 | 突出主体 | `dark background with top key light` |

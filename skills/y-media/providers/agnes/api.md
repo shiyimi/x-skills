@@ -51,7 +51,7 @@ POST https://api.agnes-ai.cn/v1/images/generations
 
 每个 `data[]` 条目按 `url` 或 `b64_json` 处理。图片输入可以是公网 HTTPS URL 或本地 PNG/JPEG/WEBP 文件；Provider 将本地文件转换为 Data URI。
 
-**图片端不支持 `negative_prompt`。** `/v1/images/generations` 请求模式没有 `negative_prompt` 字段；传入该字段会依模型被忽略或拒绝。因此 Skill 侧图片路径不维护独立的 `negative_prompt` 字段——所有负面约束必须以正向写法（`no X, no Y, no Z`）写进主 prompt。图片侧约定见 [../../references/image/image-methodology.md](../../references/image/image-methodology.md) §A 与 [../../references/image/image-example.md](../../references/image/image-example.md)；视频侧对应方法是 [../../references/video/negative-prompt-methodology.md](../../references/video/negative-prompt-methodology.md)。
+**图片端不支持 `negative_prompt`。** `/v1/images/generations` 请求模式没有 `negative_prompt` 字段；传入该字段会依模型被忽略或拒绝。因此 Skill 侧图片路径不维护独立的 `negative_prompt` 字段——所有负面约束必须以正向写法（`no X, no Y, no Z`）写进主 prompt。图片侧约定见 [../../references/image/image-methodology.md](../../references/image/image-methodology.md) §A 与 [../../references/image/image-example.md](../../references/image/image-example.md)；视频侧对应方法是 [../../references/video/prompt-craft.md §11](../../references/video/prompt-craft.md)。
 
 ## 视频（Videos）
 
@@ -76,6 +76,8 @@ Model: agnes-video-v2.0
 ```
 
 使用 `video_id`（而非 `task_id`）作为规范化任务 ID。
+
+官方参数表含 `negative_prompt` 独立字段；y-media 刻意不使用它——负面约束作为 `Negative constraints:` 段并入 `prompt`，与正向指令构成同一条提交指令（见 [prompt-craft.md §11](../../references/video/prompt-craft.md)）。宽高超范围时 API 就近归一化到 480p/720p/1080p 三档，官方画幅为 16:9 / 9:16 / 1:1 / 4:3 / 3:4（见 `capability_limits[<capability>].supportedAspectRatios`）；归一化会通过 `metadata.size_mapping.adjusted` 报告警告。
 
 ## 视频状态（Video Status）
 

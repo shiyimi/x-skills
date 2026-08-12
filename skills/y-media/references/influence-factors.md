@@ -1,8 +1,8 @@
 # 视频生成影响因子与要素清单 · Influence Factors
 
-> 本文件定义"一个视频生成 prompt 的质量由哪些因子决定",以及每个因子的**权重**、**有效填写阈值**和**失控修复**。当 [video/storyboard-methodology.md](video/storyboard-methodology.md) 要求"填满 11 列"时,本文件解释"为什么填、填到什么程度模型才听话、填错会出什么问题"。
+> 本文件定义"一个视频生成 prompt 的质量由哪些因子决定",以及每个因子的**权重**、**有效填写阈值**和**失控修复**。当 [video/storyboard.md](video/storyboard.md) 要求"填满 11 列"时,本文件解释"为什么填、填到什么程度模型才听话、填错会出什么问题"。
 >
-> 核心升级:F1-F12 **带权重评分卡**(满分 100),新增 F11 关键帧/参考图、F12 风格母题。与 [video/t2v-model-capability.md](video/t2v-model-capability.md) 配合:那里讲"模型限制",这里讲"因子权重"。
+> 核心升级:F1-F12 **带权重评分卡**(满分 100),新增 F11 关键帧/参考图、F12 风格母题。与 [video/media-rules.md](video/media-rules.md) 配合:那里讲"模型限制",这里讲"因子权重"。
 
 ---
 
@@ -11,7 +11,7 @@
 | # | 因子 | 权重 | 核心问题 | 失控症状 |
 | --- | --- | --- | --- | --- |
 | F1 | 主体锚定密度 | 25% | 主体长什么样?首句锁定? | 漂移、畸形、恐怖谷 |
-| F2 | 镜头数 × 时长现实性 | 15% | 默认 15s / 封顶 18s 各几镜?单镜几秒? | 6镜塌缩、景别塌缩 |
+| F2 | 镜头结构 × 时长清晰度 | 15% | 镜头边界、主体动作、转场和时长是否清楚? | 镜头丢失、景别跳变、转场不稳 |
 | F3 | 视觉风格锚 | 10% | 风格标签具体到作品/摄像机? | 风格模糊、AI味 |
 | F4 | 构图 × 景别 × 画幅匹配 | 10% | 竖屏避极远景? | 主体偏移、画面空 |
 | F5 | 动作/动词密度 | 8% | 动词数 ≥ 形容词数?写慢写连续? | 僵硬、3D平移感 |
@@ -56,34 +56,33 @@
 
 ---
 
-## F2. 镜头数 × 时长现实性 Shot Count × Duration (15%)
+## F2. 镜头结构 × 时长清晰度 Shot Structure × Duration (15%)
 
-**决定生成是否塌缩。** 这是 t2v 模型最大痛点(M1)。
+**决定 prompt 中的镜头边界、主体动作与转场能否被稳定执行。** 镜头数量本身不是硬上限;真正需要控制的是单段时长、帧数上限和表达清晰度。
 
 ### 检查点
-- 默认 15s(361 帧)≤3 镜,单镜 ≥4s;封顶 18s(433 帧,接近 441 硬上限)≤3 镜,单镜 ≥4s
-- 时长用精确时间锚点标注(0.0-5.0s / 5.0-11.0s / 11.0-15.0s)
-- >18s 必拆,首选 keyframes-to-video(Provider 内部接续,见 [video/t2v-model-capability.md](video/t2v-model-capability.md) §5)
+- 目标时长满足 `capability_limits[<capability>].maxSingleSegmentDuration` 与 `maxFrames`
+- 镜头边界、主体动作、转场写清楚;必要时用时间锚点或画面编号
+- 镜头信息过密时,先删无关装饰并澄清动作;仍不清楚时才合并相邻镜头或拆段
 
-### 镜头数阈值
+### 结构清晰度阈值
 
-| 时长 | 最大镜头数 | 单镜最短 |
-| --- | --- | --- |
-| ≤5s | 1-2 镜 | ≥2.5s |
-| 5-10s | 2-3 镜 | ≥3s |
-| 10-15s(默认规划刻度) | 3-4 镜 | ≥4s |
-| 15-18s(封顶档,接近 441 硬上限) | 3 镜 | ≥4s |
-| >18s | 拆分多段,keyframes-to-video 接续 | 各段独立 |
+| 条件 | 推荐处理 |
+| --- | --- |
+| 单一连续动作 | 用动作流连接词自然表达 |
+| 多个动作阶段或明确转场 | 用时间锚点或画面编号分层表达 |
+| 信息密集快切 | 优先多段+剪辑,不要把剪辑节奏强塞进单段 prompt |
+| 超过 Provider 单段时长或帧数上限 | 拆分多段,keyframes-to-video 接续或走 split-or-merge 确认门 |
 
 ### 失控症状与修复
 
 | 症状 | 根因 | 修复 |
 | --- | --- | --- |
-| 6 镜塌缩成 1-2 景别 | 镜头数超模型窗口 | 15s 砍到 3 镜,单镜 ≥4s |
-| 时长不符 | 镜头时长之和≠目标 | 重算镜头时长 |
-| 生成失败 | 帧数>441 或不满足 8n+1 | 调整到合规帧数(15s→361,18s→433) |
+| 镜头丢失或景别跳变 | 镜头边界/转场不清 | 明确每段主体、动作、转场 |
+| 中间画面静止 | 动作链条缺少连续变化 | 增加 micro-action 或动作流连接词 |
+| 生成失败 | 帧数超上限或不满足 frameCountRule | 调整到合规帧数;仍超上限则拆段 |
 
-详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M1。
+详见 [video/media-rules.md](video/media-rules.md) M1。
 
 ---
 
@@ -164,7 +163,7 @@
 | 动作僵硬 | 动作与摄影参数混写 | 动作段只写动作+micro-action |
 | 反物理 | 物理未约束 | 加 `natural motion, gravity correct` |
 
-详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M3、[video/prompt-structure-formula.md](video/prompt-structure-formula.md) §6.2 静止动词陷阱。
+详见 [video/media-rules.md](video/media-rules.md) M3、[video/prompt-craft.md](video/prompt-craft.md) §6.2 静止动词陷阱。
 
 ---
 
@@ -191,7 +190,7 @@
 | 塑料感 | 光比数字塞进 prompt(M4) | 数字移出,用光源方向替代 |
 | 闪烁 | 光源跨段不连续 | 锁单一光源方向 |
 
-详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M4、§2 展示层→执行层对照表。
+详见 [video/media-rules.md](video/media-rules.md) M4、§2 展示层→执行层对照表。
 
 ---
 
@@ -232,7 +231,7 @@
 | 晕 | 全环绕 360° | 改 arc shot 45° |
 | 廉价感 | 用 zoom 而非 dolly | 改 dolly-in/out |
 
-详见 [video/prompt-structure-formula.md](video/prompt-structure-formula.md) §5 14 镜头库。
+详见 [video/prompt-craft.md](video/prompt-craft.md) §5 14 镜头库。
 
 ---
 
@@ -250,7 +249,7 @@
 | `no text, no logo, no watermark` | `画质要好` |
 | `stable frame, no flicker` | `自然一点` |
 
-详见 [video/prompt-structure-formula.md](video/prompt-structure-formula.md) §6 避坑三陷阱、§7 5 铁律。
+详见 [video/prompt-craft.md](video/prompt-craft.md) §6 避坑三陷阱、§7 5 铁律。
 
 ---
 
@@ -327,7 +326,7 @@
 提交 prompt 前逐项核对,任一不达标则补:
 
 - [ ] **F1 主体(25%)**: 首句锁定 + 角色四层 + 全片锁同一套?
-- [ ] **F2 镜头数(15%)**: 默认 15s ≤3 镜 / 封顶 18s ≤3 镜,单镜 ≥4s?>18s 已用 keyframes-to-video 拆段?
+- [ ] **F2 镜头结构(15%)**: 单段时长/帧数满足 `capability_limits`,且镜头边界、主体动作、转场清楚?
 - [ ] **F3 风格锚(10%)**: 具体到作品+摄像机(BBC Earth + ARRI Alexa)?
 - [ ] **F4 构图(10%)**: 竖屏避极远景 + 主体居中 + 前景虚焦?
 - [ ] **F5 动词(8%)**: 动词≥形容词 + 写慢写连续 + micro-action?
@@ -346,7 +345,7 @@
 资源有限时按权重补:
 
 ```
-P0(必填,缺失即失控): F1主体(25%) > F2镜头数(15%) > F3风格锚(10%)
+P0(必填,缺失即失控): F1主体(25%) > F2镜头结构(15%) > F3风格锚(10%)
 P1(必填,影响质量): F4构图(10%) > F5动词(8%) > F8运镜(6%) > F6光线(6%)
 P2(必填,影响完整度): F7色彩(5%) > F10情绪(3%) > F9约束(3%)
 P3(建议填,提升精度): F11参考图(2%) > F12母题(2%)

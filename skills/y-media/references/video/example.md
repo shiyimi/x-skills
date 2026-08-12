@@ -1,10 +1,12 @@
 # 分镜示例 · 晨雾森林雄鹿与幼鹿(自然治愈系,骨架B)
 
-> 本文件是 [storyboard-methodology.md](storyboard-methodology.md) §1-§3、§6 的**完整填好示例**,对应一次 15s 视频生成的最终交付。题材选**晨雾森林雄鹿与幼鹿**,展示**成兽+幼兽+关系**类主体类型的写法。
+> 本文件是 [storyboard.md](storyboard.md) §1-§3、§6 的**完整填好示例**,对应一次 15s 视频生成的最终交付。题材选**晨雾森林雄鹿与幼鹿**,展示**成兽+幼兽+关系**类主体类型的写法。
 >
-> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对**不支持音频的模型**(当前 Agnes)无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) 与 [prompt-structure-formula.md](prompt-structure-formula.md)。
+> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对**不支持音频的模型**(当前 Agnes)无效(M6)。详见 [media-rules.md](media-rules.md) 与 [prompt-craft.md](prompt-craft.md)。
 >
-> **⚠️ 镜头数修正(M1)**:t2v 模型在 15s 内塞 6 镜会塌缩成 1-2 景别,应 ≤3 镜、单镜 ≥4s。本示例分镜表保留 6 镜做**创作规划展示**,但 prompt 合并为 3 个时间段执行。
+> **镜头结构说明**(对应 [storyboard.md](storyboard.md) §2.0):分镜表记录完整创作规划;**`Final Prompt` 按 §2 表格镜号 1:1 对应——每个镜号一个时间锚点,`Action` 与 `Camera language` 两段都用同一组时间锚点,不主动合并相邻镜头**。本示例共 6 镜,`Final Prompt` 也对应 6 个时间段(0.0–2.5s/2.5–5.0s/5.0–8.0s/8.0–10.5s/10.5–13.0s/13.0–15.0s),不再压缩成 3 段。
+>
+> **文档顺序**:1. 视频主要目标 → 2. 分镜表格 → 3. Generation → 4. Final Prompt(执行层,放最后)。`Final Prompt` 是终点产出,放最后便于 reviewer 整段复制提交。
 
 ---
 
@@ -19,7 +21,7 @@
 
 ## 2. 分镜表格(展示层 · 创作规划)
 
-> 以下 6 镜为**创作规划与归档用途**,记录完整视听意图。实际提交 prompt 按 §3 执行层合并为 3 个时间段。
+> 以下 6 镜为**创作规划与归档用途**,记录完整视听意图。`Final Prompt`(§4)**按本表镜号 1:1 对应**,6 镜 → 6 个时间锚点,不主动合并相邻镜头(详见 §2.0 与文档顶部说明)。
 
 | 镜号 | 时长 | 景别与视角 | 运镜 | 光影(展示层) | 色彩 | 主体动作 | 道具/环境 | 音频三层(展示层,不入prompt) | 屏显字幕 | 视觉重点 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -32,14 +34,20 @@
 
 合计(展示层): 15.0s / 6 镜(创作规划) / ★ 6/6 / 字幕 0 / 帧数 15×24=360 → 调整为 361 满足 8n+1。
 
-## 3. 视频 prompt(执行层 · 提交给 t2v 模型)
+## 3. Generation
 
-> **执行层规则**(见 [t2v-model-capability.md](t2v-model-capability.md) §2):
-> 1. 6 镜合并为 3 个时间段(M1 防塌缩,单段 ≥4s)
+(交付后由 Step 7 追加:Provider / model / task.id / effective parameters / warnings / timing。此处为示例占位,不预填。)
+
+## 4. 视频 prompt(执行层 · 提交给 t2v 模型)
+
+> **执行层规则**(见 [media-rules.md](media-rules.md) §2):
+> 1. **`Action` 与 `Camera language` 两段都按 §2 表格镜号 1:1 对应**(本例 6 镜 → 6 个时间锚点);**禁止主动合并相邻镜头**(见 [storyboard.md](storyboard.md) §2.0)
 > 2. 数字参数语义化降级:4500K → `soft golden morning backlight`;光比 → 删除;dB/BPM 移出(M4)
 > 3. 音频移出 prompt,放 Notes for downstream audio(M6)
-> 4. 套用八要素骨架 + 角色四层 + 场景三层(见 [prompt-structure-formula.md](prompt-structure-formula.md))
+> 4. 套用八要素骨架 + 角色四层 + 场景三层(见 [prompt-craft.md](prompt-craft.md))
 > 5. 约束块焊死(M3 防变形)
+> 6. 将侧车 `Negative Prompt` 作为 `Negative constraints:` 段并入最终提交 prompt,并与 Hard Constraints 去重
+> 7. **`Final Prompt` 放在文档最后**(本节 §4),便于整段复制提交
 
 ```text
 Vertical 9:16, 15 seconds. Cinematic nature documentary style, in the spirit of BBC Earth and National Geographic, shot on ARRI Alexa with shallow depth of field.
@@ -50,15 +58,21 @@ A mature 5-year-old male red deer with a 9-point antler rack, deep-brown coat, c
 ★ Scene (three layers + atmosphere):
 A misty coniferous forest in the early-morning countryside style, with fern understory, moss-covered fallen logs, and thin drifting mist — soft golden sunrise backlight from a low sun filtering through tree trunks as light shafts (Tyndall effect), with gentle wind in the canopy.
 
-★ Action (slow, continuous, single motion per beat; with micro-actions):
-- 0.0–5.0s: the mature stag steps slowly out of the distant mist, the fawn follows half a step behind, the stag occasionally glances back. Subtle ear twitches on the fawn, soft breathing visible, light tail sway.
-- 5.0–11.0s: the stag pauses, turns its head to look down at the fawn, the fawn looks up to meet its gaze (a tender moment of eye contact). A few fireflies drift in the foreground bokeh.
-- 11.0–15.0s: the stag lowers its head and gently touches the fawn's forehead with its nose; then both walk slowly into the deeper forest. Camera racks focus from the pair to the mist, then slowly pulls out to a wide shot. The two deer become small warm dots in the vast forest.
+★ Action (1:1 mirror of §2 storyboard — slow, continuous, single motion per beat; with micro-actions):
+- 0.0–2.5s (S01-01): the mature stag steps slowly out of the distant mist, the fawn follows half a step behind, the stag occasionally glances back. Subtle ear twitches on the fawn, soft breathing visible, light tail sway.
+- 2.5–5.0s (S01-02): the stag and fawn continue forward at a steady pace, the fawn occasionally nuzzles the stag's front leg, hooves rustle softly through the undergrowth.
+- 5.0–8.0s (S01-03): the stag suddenly pauses, turns its head to look down at the fawn, the fawn looks up to meet its gaze — a tender moment of eye contact. Soft breathing visible, mist drifting between them.
+- 8.0–10.5s (S01-04): close-up of the fawn — eyes widen, ears perk up and tremble slightly, small mouth opens as if softly bleating, an innocent gaze. Soft bokeh and light flecks drift in the background.
+- 10.5–13.0s (S01-05): the stag lowers its head and gently touches the fawn's forehead with its nose; the fawn squints softly. A few fireflies drift in the foreground bokeh.
+- 13.0–15.0s (S01-06): the stag leads the fawn slowly into the deeper forest, becoming two small warm dots in the vast misty forest. Golden sunrise light wraps the canopy.
 
-★ Camera language (≤ 2 moves per segment, from cinematic shot library):
-- Segment 1: low-angle slow dolly-in as the deer approach.
-- Segment 2: static with micro push-in on the eye-contact moment.
-- Segment 3: soft rack focus + slow pull-out to wide.
+★ Camera language (1:1 mirror of §2 storyboard — ≤ 2 moves per segment, from cinematic shot library):
+- 0.0–2.5s: wide establishing shot, slow dolly-in (forward push) as the deer approach out of the mist.
+- 2.5–5.0s: low-angle lateral tracking from left to right, following the deer across the frame.
+- 5.0–8.0s: static + micro push-in on the eye-contact moment, very slight forward push.
+- 8.0–10.5s: static close-up, shallow depth of field isolating the fawn against the soft background.
+- 10.5–13.0s: slow arc shot orbiting the stag from 3/4 rear to side-rear, capturing the forehead touch.
+- 13.0–15.0s: high-angle slow pull-out (dolly-out / zoom-out), rack focus from the deer to the misty distance, framing the two as small warm dots.
 No whip pans, no shaky-cam.
 
 ★ Lighting (mandatory, single source):
@@ -71,15 +85,12 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 4K ultra-high definition, shallow depth of field, soft warm light.
 
 ★ Hard constraints (weld to end):
-— Stable frame, no flicker, natural cervid anatomy, no mutation, no deformed deer, no extra legs.
 — Same deer identities across all frames (no character drift).
-— No text, no logo, no watermark, no on-screen caption.
+— One continuous single take; do not cut or stitch multiple segments (the 6 mirror segments above are action beats, not editorial cuts).
+
+Negative constraints: unstable frame, flicker, unnatural cervid anatomy, mutation, deformed deer, extra legs, text, logo, watermark, on-screen caption.
 ```
 
 Notes for downstream audio(下游音频备注;不要写进视频 prompt — 当前 Agnes 不生成分时音频):
-- BGM 皮肤:温暖钢琴 + 大提琴 + 钟琴,70 BPM,冷启的单个钢琴音符 3s 内渐入,在额头触碰(第 2 段)推到顶点,最后 2s 淡出。
-- 环境音优先级:蹄子踩在软苔上"沙沙",幼鹿轻柔的"唧"哼声,雄鹿平稳的"呼"呼吸声,树冠风声,远处的鸟鸣,以及眼神接触瞬间一声清亮的幼鹿鸣叫。
-
-## 4. Generation
-
-(交付后由 Step 7 追加:Provider / model / task.id / effective parameters / warnings / timing。此处为示例占位,不预填。)
+- BGM 皮肤:温暖钢琴 + 大提琴 + 钟琴,70 BPM,冷启的单个钢琴音符 3s 内渐入,在额头触碰(对应 S01-05)推到顶点,最后 2s 淡出。
+- 环境音优先级:蹄子踩在软苔上"沙沙",幼鹿轻柔的"唧"哼声,雄鹿平稳的"呼"呼吸声,树冠风声,远处的鸟鸣,以及眼神接触瞬间(对应 S01-03 → S01-04 交界)一声清亮的幼鹿鸣叫。
