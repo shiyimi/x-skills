@@ -11,6 +11,21 @@ module.exports = [
       'keyframes-to-video'
     ],
     capability_limits: {
+      'text-to-image': {
+        minWidth: 256,
+        maxWidth: 2048,
+        minHeight: 256,
+        maxHeight: 2048,
+        supportedAspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4']
+      },
+      'image-to-image': {
+        minWidth: 256,
+        maxWidth: 2048,
+        minHeight: 256,
+        maxHeight: 2048,
+        supportedAspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4'],
+        requiresImageInput: true
+      },
       'text-to-video': {
         maxSingleSegmentDuration: 18,
         maxFrames: 441,

@@ -643,6 +643,20 @@ test('manifest rejects unknown fields, wrong types, and undeclared capabilities 
   });
 });
 
+test('live Agnes manifest declares capability_limits for every image capability', () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  const limits = sorted[0].capability_limits;
+  for (const capability of ['text-to-image', 'image-to-image']) {
+    assert.ok(limits?.[capability], `${capability} should declare capability_limits`);
+    assert.equal(limits[capability].minWidth, 256);
+    assert.equal(limits[capability].maxWidth, 2048);
+    assert.equal(limits[capability].minHeight, 256);
+    assert.equal(limits[capability].maxHeight, 2048);
+  }
+  assert.equal(limits['image-to-image'].requiresImageInput, true);
+});
+
 test('live Agnes manifest declares capability_limits for every video capability', () => {
   const manifest = require('../providers/manifest.cjs');
   const sorted = validateManifest(manifest);
@@ -708,6 +722,90 @@ test('Agnes image mapping uses current defaults and converts local PNG input', a
   });
 
   assert.deepEqual(mapped.extra_body.image, ['data:image/png;base64,iVBORw==']);
+});
+
+test('Agnes image mapping enforces size tiers, supported ratios, and rejects negative_prompt', async (t) => {
+  assert.deepEqual(await agnes.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A product shot',
+    parameters: { size: '2K', ratio: '9:16' }
+  }), {
+    model: 'agnes-image-2.1-flash',
+    prompt: 'A product shot',
+    size: '2K',
+    ratio: '9:16',
+    extra_body: { response_format: 'url' }
+  });
+  await assert.rejects(agnes.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A product shot',
+    parameters: { size: '512x512' }
+  }), /size must be one of/);
+  await assert.rejects(agnes.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A product shot',
+    parameters: { ratio: '2:1' }
+  }), /ratio must be one of/);
+  await assert.rejects(agnes.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A product shot',
+    parameters: { negative_prompt: 'blur, watermark' }
+  }), (error) => error.kind === 'invalid_request'
+    && /negative_prompt/.test(error.message)
+    && /no X, no Y/.test(error.message));
+});
+
+test('Agnes image mapping rejects non-positive, fractional, or out-of-range dimensions', async () => {
+  for (const parameters of [
+    { width: 0 },
+    { width: -1 },
+    { height: 1.5 },
+    { width: '1024' },
+    { width: 128 },
+    { height: 4096 }
+  ]) {
+    await assert.rejects(agnes.buildImageRequest({
+      capability: 'text-to-image',
+      prompt: 'A product shot',
+      parameters
+    }), (error) => error.kind === 'invalid_request'
+      && (/positive integer/.test(error.message) || /between 256 and 2048/.test(error.message)));
+  }
+});
+
+test('Agnes image mapping forwards optional width, height, seed, and steps', async () => {
+  const mapped = await agnes.buildImageRequest({
+    capability: 'text-to-image',
+    prompt: 'A studio photo',
+    parameters: {
+      width: 1024,
+      height: 1024,
+      seed: 42,
+      num_inference_steps: 20
+    }
+  });
+  assert.equal(mapped.width, 1024);
+  assert.equal(mapped.height, 1024);
+  assert.equal(mapped.seed, 42);
+  assert.equal(mapped.num_inference_steps, 20);
+});
+
+test('Agnes provider image limits stay consistent with the manifest capability_limits', async () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  const limits = sorted[0].capability_limits['text-to-image'];
+  const request = (parameters) => ({ capability: 'text-to-image', prompt: 'A product shot', parameters });
+
+  await assert.doesNotReject(agnes.buildImageRequest(request({ width: limits.minWidth, height: limits.minHeight })));
+  await assert.doesNotReject(agnes.buildImageRequest(request({ width: limits.maxWidth, height: limits.maxHeight })));
+  await assert.rejects(
+    agnes.buildImageRequest(request({ width: limits.minWidth - 1 })),
+    /between 256 and 2048/
+  );
+  await assert.rejects(
+    agnes.buildImageRequest(request({ height: limits.maxHeight + 1 })),
+    /between 256 and 2048/
+  );
 });
 
 test('Agnes video mapping enforces defaults, frame rule, and public URL inputs', () => {
@@ -794,6 +892,17 @@ test('Agnes provider video limits stay consistent with the manifest capability_l
     () => agnes.buildVideoRequest(request({ frame_rate: limits.maxFrameRate + 1 })),
     /frame_rate/
   );
+});
+
+test('Agnes manifest advertises the five documented image aspect ratios', () => {
+  const manifest = require('../providers/manifest.cjs');
+  const sorted = validateManifest(manifest);
+  for (const capability of ['text-to-image', 'image-to-image']) {
+    assert.deepEqual(
+      sorted[0].capability_limits[capability].supportedAspectRatios,
+      ['16:9', '9:16', '1:1', '4:3', '3:4']
+    );
+  }
 });
 
 test('Agnes manifest advertises the five documented video aspect ratios', () => {

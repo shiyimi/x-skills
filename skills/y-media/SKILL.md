@@ -300,12 +300,66 @@ Skill 拥有创意层:在提交之前把收集到的 brief 变成具体的分镜
 - 生成信息: `provider`、`capability`、规范化 `status`、固定的 `task.id`、返回或选中的 model、生效参数、警告与耗时。
 - 每个产物: 绝对路径、媒体类型(`image` 或 `video`)、检测到的格式或 MIME 类型、字节大小与可用尺寸。视频还要报告可用的时长、画幅比与帧率。
 
-**双文件交付(必报)**:
+**双文件交付(必报 · 强制)**:
 
 - 视频成功 → 必报两条绝对路径:`<name>.mp4`(产物) + `<name>.video-brief.md`(侧车 brief)。
 - 图片成功 → 必报两条绝对路径:`<name>.<ext>`(产物) + `<name>.image-brief.md`(侧车 brief)。
 - brief 文件不存在或追加 Generation 失败 → 报告缺失/失败原因,**不**重新生成视频/图片。
 - 用户必须能直接定位到 brief 与产物两份文件;若只能给出一个,说明侧车失败的事实。
+
+**交付物呈现(强制 · 不可跳过)**:
+
+> 报告阶段必须让用户**无需手动查找文件**即可看到产物。以下两条规则均为强制,不可省略。
+
+1. **产物可直达(链接或嵌入)**:
+   - **图片产物** → 必须用 markdown 图片语法嵌入,让用户直接看到生成结果:
+     ```markdown
+     ![<name>](file:///C:/absolute/path/to/<name>.<ext>)
+     ```
+     若环境不支持 `file://` 图片渲染,则用可点击链接:
+     ```markdown
+     [📷 打开图片 <name>.<ext>](file:///C:/absolute/path/to/<name>.<ext>)
+     ```
+   - **视频产物** → 必须用可点击链接,让用户直接打开播放:
+     ```markdown
+     [🎬 打开视频 <name>.mp4](file:///C:/absolute/path/to/<name>.mp4)
+     ```
+   - 链接路径必须是**绝对路径**,使用 `file:///` 协议(三个斜杠),Windows 路径反斜杠统一转为正斜杠。
+
+2. **Brief 侧车可直达(链接)**:
+   - brief 文件必须同样用可点击链接呈现:
+     ```markdown
+     [📄 查看 Brief <name>.video-brief.md](file:///C:/absolute/path/to/<name>.video-brief.md)
+     ```
+     或
+     ```markdown
+     [📄 查看 Brief <name>.image-brief.md](file:///C:/absolute/path/to/<name>.image-brief.md)
+     ```
+
+3. **报告模板(每次交付必须包含)**:
+   每次成功交付必须按以下结构输出,不可省略任何区块:
+
+   ```markdown
+   ## 交付物
+
+   | 项目 | 文件 |
+   | --- | --- |
+   | 产物 | [📷/🎬 <name>.<ext>/mp4](file:///absolute/path) |
+   | Brief | [📄 <name>.<media>-brief.md](file:///absolute/path) |
+
+   ### 产物预览(仅图片)
+   ![<name>](file:///absolute/path/to/<name>.<ext>)
+
+   ### 生成信息
+   - Provider: ...
+   - Model: ...
+   - 状态: ...
+   - 耗时: ...
+   - 警告: (无 / 列出)
+   ```
+
+   - 视频交付时省略"产物预览"区块(视频无法用 markdown 内嵌预览)。
+   - 若 brief 文件缺失,表格中 brief 行改为 `❌ Brief 文件缺失: <原因>`。
 
 不要从文件名或 Provider 默认值推断缺失的尺寸、时长、画幅比、帧率、model 或 MIME 类型。不可用字段标记为 `unknown` 或省略。
 

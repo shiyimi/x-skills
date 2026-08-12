@@ -8,6 +8,8 @@ const { assertPublicHttpsUrl, withTransientRetry } = require('../../core/artifac
 const API_ROOT = 'https://api.agnes-ai.cn';
 const IMAGE_MODELS = new Set(['agnes-image-2.0-flash', 'agnes-image-2.1-flash']);
 const VIDEO_MODEL = 'agnes-video-v2.0';
+const IMAGE_SIZE_TIERS = new Set(['1K', '2K', '4K']);
+const IMAGE_SUPPORTED_RATIOS = new Set(['16:9', '9:16', '1:1', '4:3', '3:4']);
 const IMAGE_MIME_TYPES = new Map([
   ['.png', 'image/png'],
   ['.jpg', 'image/jpeg'],
@@ -102,6 +104,38 @@ function validateImageShape(request) {
   if (!IMAGE_MODELS.has(model)) {
     throw new ProviderError('invalid_request', `Unsupported Agnes image model: ${model}.`);
   }
+  const size = parameters.size ?? '1K';
+  if (typeof size !== 'string' || !IMAGE_SIZE_TIERS.has(size)) {
+    throw new ProviderError(
+      'invalid_request',
+      `size must be one of: ${[...IMAGE_SIZE_TIERS].join(', ')}.`
+    );
+  }
+  const ratio = parameters.ratio;
+  if (ratio !== undefined && (typeof ratio !== 'string' || !IMAGE_SUPPORTED_RATIOS.has(ratio))) {
+    throw new ProviderError(
+      'invalid_request',
+      `ratio must be one of: ${[...IMAGE_SUPPORTED_RATIOS].join(', ')}.`
+    );
+  }
+  for (const dimension of ['width', 'height']) {
+    const value = parameters[dimension];
+    if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+      throw new ProviderError('invalid_request', `${dimension} must be a positive integer.`);
+    }
+    if (value !== undefined && (value < 256 || value > 2048)) {
+      throw new ProviderError(
+        'invalid_request',
+        `${dimension} must be between 256 and 2048 inclusive.`
+      );
+    }
+  }
+  if (parameters.negative_prompt !== undefined) {
+    throw new ProviderError(
+      'invalid_request',
+      'Agnes image endpoint does not support negative_prompt. Use "no X, no Y" style constraints inside the main prompt instead.'
+    );
+  }
   if (request.capability === 'image-to-image') {
     if (!Array.isArray(request.inputs) || request.inputs.length === 0) {
       throw new ProviderError('invalid_request', 'image-to-image requires at least one image input.');
@@ -171,13 +205,20 @@ async function buildImageRequest(request, { readFile = fs.promises.readFile } = 
   validateImageShape(request);
   const parameters = request.parameters ?? {};
   const model = parameters.model ?? 'agnes-image-2.1-flash';
+  const size = parameters.size ?? '1K';
   const result = {
     model,
     prompt: request.prompt.trim(),
-    size: parameters.size ?? '1K'
+    size
   };
   if (model === 'agnes-image-2.1-flash') result.ratio = parameters.ratio ?? '1:1';
   else if (parameters.ratio !== undefined) result.ratio = parameters.ratio;
+  for (const dimension of ['width', 'height']) {
+    if (parameters[dimension] !== undefined) result[dimension] = parameters[dimension];
+  }
+  for (const key of ['num_inference_steps', 'seed']) {
+    if (parameters[key] !== undefined) result[key] = parameters[key];
+  }
   result.extra_body = { response_format: 'url' };
   if (request.capability === 'image-to-image') {
     result.extra_body.image = await Promise.all(request.inputs.map(async (input) => {
