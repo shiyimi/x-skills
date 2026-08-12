@@ -1,18 +1,18 @@
-# Agnes AI Image And Video API
+# Agnes AI 图片与视频 API
 
-This reference records the `.cn` API contract verified from `https://agnes-ai.cn/en/docs/` on 2026-07-30. Prefer it over older examples that use `.com` hosts.
+本参考记录了 2026-07-30 从 `https://agnes-ai.cn/en/docs/` 验证的 `.cn` API 契约。优先于使用 `.com` 主机的旧示例。
 
-## Credentials And Host
+## 凭证与主机
 
 ```text
-API root: https://api.agnes-ai.cn
-Authentication: Authorization: Bearer <AGNES_API_KEY>
+API 根: https://api.agnes-ai.cn
+认证: Authorization: Bearer <AGNES_API_KEY>
 Content-Type: application/json
 ```
 
-Resolve `AGNES_API_KEY` before `~/.config/agnes/api_key`. Require mode `0600` for the file on POSIX. Never send the bearer header to returned artifact URLs.
+优先解析 `AGNES_API_KEY`，其次读取 `~/.config/agnes/api_key`。POSIX 下该文件要求 `0600` 权限。永远不要把 Bearer 头发送给返回的产物 URL。
 
-POSIX setup:
+POSIX 配置：
 
 ```bash
 umask 077
@@ -21,20 +21,20 @@ printf '%s' 'YOUR_API_KEY' > ~/.config/agnes/api_key
 chmod 600 ~/.config/agnes/api_key
 ```
 
-Avoid literal keys in shell history. On Windows, prefer a secret manager or a session environment variable; restrict the config file ACL to the current account.
+避免在 shell 历史中保留明文密钥。Windows 上优先使用密钥管理器或会话环境变量；将配置文件 ACL 限制为当前账户。
 
-## Images
+## 图片（Images）
 
 ```text
 POST https://api.agnes-ai.cn/v1/images/generations
 ```
 
-| Model | Use |
+| 模型 | 用途 |
 | --- | --- |
-| `agnes-image-2.1-flash` | Default; tier sizes and ratios |
-| `agnes-image-2.0-flash` | Faster model and documented exact sizes |
+| `agnes-image-2.1-flash` | 默认；支持档位尺寸与比例 |
+| `agnes-image-2.0-flash` | 更快的模型，文档化精确尺寸 |
 
-Use `extra_body.image` for image editing and `extra_body.response_format` for `url`/`b64_json`. Do not send obsolete `tags: ["img2img"]`.
+图片编辑使用 `extra_body.image`，输出格式使用 `extra_body.response_format` 的 `url`/`b64_json`。不要发送过时的 `tags: ["img2img"]`。
 
 ```json
 {
@@ -49,20 +49,20 @@ Use `extra_body.image` for image editing and `extra_body.response_format` for `u
 }
 ```
 
-Handle each `data[]` entry as either `url` or `b64_json`. Image inputs may be public HTTPS URLs or local PNG/JPEG/WEBP files; the Provider converts local files to Data URIs.
+每个 `data[]` 条目按 `url` 或 `b64_json` 处理。图片输入可以是公网 HTTPS URL 或本地 PNG/JPEG/WEBP 文件；Provider 将本地文件转换为 Data URI。
 
-**`negative_prompt` is not supported on the image endpoint.** The `/v1/images/generations` request schema does not include a `negative_prompt` field; passing one in the body is ignored or rejected depending on the model. Skill-side, the image path therefore does not maintain a separate `negative_prompt` field — all negative constraints must be written in positive form (`no X, no Y, no Z`) inside the main prompt. See [../../references/image/image-methodology.md](../../references/image/image-methodology.md) §A and [../../references/image/image-example.md](../../references/image/image-example.md) for the image-side convention; the equivalent video-side method is [../../references/video/negative-prompt-methodology.md](../../references/video/negative-prompt-methodology.md).
+**图片端不支持 `negative_prompt`。** `/v1/images/generations` 请求模式没有 `negative_prompt` 字段；传入该字段会依模型被忽略或拒绝。因此 Skill 侧图片路径不维护独立的 `negative_prompt` 字段——所有负面约束必须以正向写法（`no X, no Y, no Z`）写进主 prompt。图片侧约定见 [../../references/image/image-methodology.md](../../references/image/image-methodology.md) §A 与 [../../references/image/image-example.md](../../references/image/image-example.md)；视频侧对应方法是 [../../references/video/negative-prompt-methodology.md](../../references/video/negative-prompt-methodology.md)。
 
-## Videos
+## 视频（Videos）
 
 ```text
 POST https://api.agnes-ai.cn/v1/videos
 Model: agnes-video-v2.0
 ```
 
-Defaults are `1152x768`, `121` frames, and `24` fps. `num_frames` must be at most `441` and satisfy `8n + 1`; `frame_rate` must be `1-60`.
+默认为 `1152x768`、`121` 帧、`24` fps。`num_frames` 必须至多 `441` 且满足 `8n + 1`；`frame_rate` 必须在 `1-60`。
 
-For `image-to-video`, send one public HTTPS URL as `image`. For `keyframes-to-video`, send at least two public HTTPS URLs as `extra_body.image` and set `extra_body.mode` to `keyframes`. Agnes video input does not support local paths or Data URIs.
+`image-to-video` 时发送一个公网 HTTPS URL 作为 `image`。`keyframes-to-video` 时发送至少两个公网 HTTPS URL 作为 `extra_body.image`，并把 `extra_body.mode` 设为 `keyframes`。Agnes 视频输入不支持本地路径或 Data URI。
 
 ```json
 {
@@ -75,43 +75,36 @@ For `image-to-video`, send one public HTTPS URL as `image`. For `keyframes-to-vi
 }
 ```
 
-Use `video_id`, not `task_id`, as the normalized task ID.
+使用 `video_id`（而非 `task_id`）作为规范化任务 ID。
 
-## Video Status
+## 视频状态（Video Status）
 
 ```text
 GET https://api.agnes-ai.cn/agnesapi?video_id=<VIDEO_ID>
 ```
 
-| Agnes | Normalized |
+| Agnes | 规范化 |
 | --- | --- |
 | `queued` | `queued` |
 | `in_progress` | `running` |
 | `completed` | `succeeded` |
 | `failed` | `failed` |
 
-Read the completed artifact from the current official `metadata.url` field. For responses from
-legacy Agnes routes, also accept `video_url`, `url`, `output_url`, and `data[].url`, in that order
-after `metadata.url`; validate every candidate as a public HTTPS URL. Report a warning when a
-legacy field is used.
+从当前官方 `metadata.url` 字段读取完成的产物。对于旧版 Agnes 路由的响应，在 `metadata.url` 之后也依次接受 `video_url`、`url`、`output_url` 与 `data[].url`；每个候选都校验为公网 HTTPS URL。使用旧版字段时报告警告。
 
-Keep the `video_id` returned at creation as the normalized task ID. A later status response may
-return a different `video_id`, `task_id`, or `id`; retain those values as Provider diagnostics but
-never let them replace the pinned task ID. If a completed response contains no supported artifact
-URL, return `invalid_response` with a credential-redacted summary of response keys, metadata keys,
-and identifier changes rather than the raw response.
+保持创建时返回的 `video_id` 为规范化任务 ID。后续状态响应可能返回不同的 `video_id`、`task_id` 或 `id`；保留这些值作为 Provider 诊断，但绝不让它们替换固定的任务 ID。如果完成的响应没有任何受支持的产物 URL，返回 `invalid_response`，附带响应键、metadata 键与标识符变化的脱敏摘要，而不是原始响应。
 
-## Error Boundaries
+## 错误边界（Error Boundaries）
 
-| HTTP | Kind | Generation fallback |
+| HTTP | 类型 | 生成回退 |
 | ---: | --- | --- |
-| `400`, `404`, `405`, `409`, `413`, `415`, `422` | `invalid_request` | allowed only with `accepted: false` |
-| `401` | `authentication` | allowed only with `accepted: false` |
-| `402` | `quota_exhausted` | allowed only with `accepted: false` |
-| `403` | `permission` | allowed only with `accepted: false` |
-| `429` | `rate_limited` | allowed only when rejection is authoritative |
-| `408`, ambiguous `5xx` | `network` / `provider_unavailable` | forbidden; acceptance is unknown |
+| `400`, `404`, `405`, `409`, `413`, `415`, `422` | `invalid_request` | 仅 `accepted: false` 时允许 |
+| `401` | `authentication` | 仅 `accepted: false` 时允许 |
+| `402` | `quota_exhausted` | 仅 `accepted: false` 时允许 |
+| `403` | `permission` | 仅 `accepted: false` 时允许 |
+| `429` | `rate_limited` | 仅当拒绝是权威的时允许 |
+| `408`, 歧义 `5xx` | `network` / `provider_unavailable` | 禁止；接受状态未知 |
 
-Never retry a generation POST. Idempotent status GET and public artifact downloads may use bounded transient retry. Preserve `video_id` across local timeout or download failure.
+绝不重试生成 POST。幂等的状态 GET 与公网产物下载可以使用有界瞬时重试。本地超时或下载失败时保留 `video_id`。
 
-URL validation rejects embedded credentials, localhost names, and private/link-local IP literals and validates each redirect. DNS names are not resolved before fetch, so trusted hostnames remain required against DNS rebinding.
+URL 校验拒绝内嵌凭证、localhost 名称与私有/链路本地 IP 字面量，并校验每个重定向。fetch 之前不解析 DNS 名称，因此可信主机名对于抵御 DNS 重绑定仍是必需的。

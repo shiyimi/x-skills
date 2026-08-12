@@ -1,6 +1,6 @@
 # 视频生成影响因子与要素清单 · Influence Factors
 
-> 本文件定义"一个视频生成 prompt 的质量由哪些因子决定",以及每个因子的**权重**、**有效填写阈值**和**失控修复**。当 [storyboard-methodology.md](storyboard-methodology.md) 要求"填满 11 列"时,本文件解释"为什么填、填到什么程度模型才听话、填错会出什么问题"。
+> 本文件定义"一个视频生成 prompt 的质量由哪些因子决定",以及每个因子的**权重**、**有效填写阈值**和**失控修复**。当 [video/storyboard-methodology.md](video/storyboard-methodology.md) 要求"填满 11 列"时,本文件解释"为什么填、填到什么程度模型才听话、填错会出什么问题"。
 >
 > 核心升级:F1-F12 **带权重评分卡**(满分 100),新增 F11 关键帧/参考图、F12 风格母题。与 [video/t2v-model-capability.md](video/t2v-model-capability.md) 配合:那里讲"模型限制",这里讲"因子权重"。
 
@@ -164,7 +164,7 @@
 | 动作僵硬 | 动作与摄影参数混写 | 动作段只写动作+micro-action |
 | 反物理 | 物理未约束 | 加 `natural motion, gravity correct` |
 
-详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M3、[prompt-structure-formula.md](prompt-structure-formula.md) §6.2 静止动词陷阱。
+详见 [video/t2v-model-capability.md](video/t2v-model-capability.md) M3、[video/prompt-structure-formula.md](video/prompt-structure-formula.md) §6.2 静止动词陷阱。
 
 ---
 
@@ -232,7 +232,7 @@
 | 晕 | 全环绕 360° | 改 arc shot 45° |
 | 廉价感 | 用 zoom 而非 dolly | 改 dolly-in/out |
 
-详见 [prompt-structure-formula.md](prompt-structure-formula.md) §5 14 镜头库。
+详见 [video/prompt-structure-formula.md](video/prompt-structure-formula.md) §5 14 镜头库。
 
 ---
 
@@ -250,7 +250,7 @@
 | `no text, no logo, no watermark` | `画质要好` |
 | `stable frame, no flicker` | `自然一点` |
 
-详见 [prompt-structure-formula.md](prompt-structure-formula.md) §6 避坑三陷阱、§7 5 铁律。
+详见 [video/prompt-structure-formula.md](video/prompt-structure-formula.md) §6 避坑三陷阱、§7 5 铁律。
 
 ---
 

@@ -76,9 +76,9 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 — No text, no logo, no watermark, no on-screen caption.
 ```
 
-Notes for downstream audio (do NOT include in the video prompt — t2v models do not generate timed audio):
-- BGM skin: tender piano + cello + glockenspiel, 70 BPM, cold-start single piano note fades up over 3s, peaks at the forehead touch (segment 2), fades out over the last 2s.
-- Ambient priorities: hooves on soft moss "shā-shā", the fawn's soft "jī" hum, the stag's calm breathing "hū", wind in the canopy, distant birds, a single bright young bleat near the eye-contact moment.
+Notes for downstream audio(下游音频备注;不要写进视频 prompt — t2v 模型不生成分时音频):
+- BGM 皮肤:温暖钢琴 + 大提琴 + 钟琴,70 BPM,冷启的单个钢琴音符 3s 内渐入,在额头触碰(第 2 段)推到顶点,最后 2s 淡出。
+- 环境音优先级:蹄子踩在软苔上"沙沙",幼鹿轻柔的"唧"哼声,雄鹿平稳的"呼"呼吸声,树冠风声,远处的鸟鸣,以及眼神接触瞬间一声清亮的幼鹿鸣叫。
 
 ## 4. Generation
 

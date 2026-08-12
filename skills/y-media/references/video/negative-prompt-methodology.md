@@ -1,6 +1,6 @@
-# Negative Prompt Methodology — 视频路径
+# Negative Prompt 方法论 — 视频路径
 
-> 本文件定义 `<name>.video-brief.md` 侧车里 **Negative Prompt 字段** 的填写方法。规则在 [storyboard-methodology.md](storyboard-methodology.md) 与 [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md);`negative_prompt` 在 [influence-factors.md](../../influence-factors.md) F9 的旧定义是"写在主 prompt 里的负向约束",**本文件定义的是它的孪生概念**——作为独立字段透传到 Provider 的 `parameters.negative_prompt`。
+> 本文件定义 `<name>.video-brief.md` 侧车里 **Negative Prompt 字段** 的填写方法。规则在 [storyboard-methodology.md](storyboard-methodology.md) 与 [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md);`negative_prompt` 在 [influence-factors.md](../influence-factors.md) F9 的旧定义是"写在主 prompt 里的负向约束",**本文件定义的是它的孪生概念**——作为独立字段透传到 Provider 的 `parameters.negative_prompt`。
 >
 > **作用域**:仅 video capability(`text-to-video` / `image-to-video` / `keyframes-to-video`)。image capability 不独立维护 Negative Prompt 字段,见 [image-methodology.md §A](../image/image-methodology.md) 的图像侧声明。
 
@@ -107,7 +107,7 @@
 
 | 文件 | 与本文件的关系 |
 | --- | --- |
-| [influence-factors.md](../../influence-factors.md) F9 | F9 定义"主 prompt 末尾的负面约束"语义;本文件定义"独立 `negative_prompt` 字段"语义。两者互补,不是替代 |
+| [influence-factors.md](../influence-factors.md) F9 | F9 定义"主 prompt 末尾的负面约束"语义;本文件定义"独立 `negative_prompt` 字段"语义。两者互补,不是替代 |
 | [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) §2.3 | 5 铁律之"约束焊死"是 F9 的执行版;本文件不重写它,只把可以独立出去的 token 抽出到 `negative_prompt` |
 | [prompt-structure-formula.md](prompt-structure-formula.md) §9 拼接模板 | 拼接模板里 Hard Constraints 块保持原样,不变;`negative_prompt` 作为新独立字段附在 Final Prompt 之后 |
 | [../image/image-methodology.md](../image/image-methodology.md) §A | 图像路径不独立维护 Negative Prompt;本文件不适用,不要把视频的负面词表照搬到 image-brief |

@@ -45,13 +45,23 @@ y-media/
 |   |   |-- prompt-structure-formula.md      (八要素+五定法骨架)
 |   |   |-- cinematic-shot-library.md        (14 镜头库)
 |   |   |-- pitfalls-and-iron-rules.md       (避坑+铁律)
-|   |   |-- storyboard-reality-calculator.md (镜头现实性+帧数校验)
-|   |   |-- t2v-model-capability.md        (模型能力边界 M1-M6)
-|   |   |-- scenes/                          (4 类场景模板)
+|   |   |-- storyboard-reality-calculator.md (镜头现实性+Node 帧数校验)
+|   |   |-- t2v-model-capability.md          (模型能力边界 M1-M6)
+|   |   |-- negative-prompt-methodology.md   (视频 negative_prompt 方法论)
+|   |   |-- scenes/                          (5 类场景模板)
+|   |   |   |-- scene-nature-animal.md
+|   |   |   |-- scene-lifestyle-aesthetic.md
+|   |   |   |-- scene-portrait-fashion.md
+|   |   |   |-- scene-food-asmr.md
+|   |   |   `-- scene-commerce-product.md    (电商专属)
 |   |   `-- templates/                       (3 套模板+速配表)
+|   |       |-- templates-3-sets.md
+|   |       `-- scene-quick-match.md
 |   |-- cinematography-reference.md
 |   |-- influence-factors.md
-|   `-- image-prompt-example.md
+|   `-- image/
+|       |-- image-methodology.md
+|       `-- image-example.md
 |-- core/
 |   |-- orchestrator.cjs
 |   |-- contract.cjs

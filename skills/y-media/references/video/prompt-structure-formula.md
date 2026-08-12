@@ -1,6 +1,6 @@
 # Prompt 结构公式 · Structure Formula
 
-> 本文件是**提交给 t2v 模型的 prompt 的写作骨架**。规则在 [storyboard-methodology.md](storyboard-methodology.md),术语在 [cinematography-reference.md](cinematography-reference.md),模型限制在 [t2v-model-capability.md](t2v-model-capability.md);本文件定义"一段 prompt 应该按什么顺序、什么结构拼接"。
+> 本文件是**提交给 t2v 模型的 prompt 的写作骨架**。规则在 [storyboard-methodology.md](storyboard-methodology.md),术语在 [cinematography-reference.md](../cinematography-reference.md),模型限制在 [t2v-model-capability.md](t2v-model-capability.md);本文件定义"一段 prompt 应该按什么顺序、什么结构拼接"。
 >
 > 核心原则:**八要素不可省略,五定法定维度,角色四层/场景三层定颗粒度,14 镜头库选运镜,避坑三陷阱防翻车,5 铁律做最终校验。**
 
@@ -222,6 +222,6 @@
 — No text, no logo, no watermark, no on-screen caption.
 ```
 
-Notes for downstream audio (do NOT include in the video prompt):
-- BGM skin: [音频皮肤].
-- Ambient priorities: [环境音优先级].
+Notes for downstream audio(下游音频备注,不要写进视频 prompt):
+- BGM 皮肤: [音频皮肤]。
+- 环境音优先级: [环境音优先级]。

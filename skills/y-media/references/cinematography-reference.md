@@ -1,6 +1,6 @@
 # 影视要素词典 · Cinematography Reference
 
-> 本文件是分镜表每一列的**参数化填写词典**。当 [storyboard-methodology.md](storyboard-methodology.md) §3 要求"方向 + 色温 + 光比 + 光质"时,从这里取具体数值与术语,不要写"暖光""柔和"这种无参数形容词。与 [influence-factors.md](influence-factors.md) 配合使用:本词典定义"填什么",影响因子定义"填到什么程度才有效"。
+> 本文件是分镜表每一列的**参数化填写词典**。当 [video/storyboard-methodology.md](video/storyboard-methodology.md) §3 要求"方向 + 色温 + 光比 + 光质"时,从这里取具体数值与术语,不要写"暖光""柔和"这种无参数形容词。与 [influence-factors.md](influence-factors.md) 配合使用:本词典定义"填什么",影响因子定义"填到什么程度才有效"。
 
 ---
 

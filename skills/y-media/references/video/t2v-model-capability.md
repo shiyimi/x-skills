@@ -136,7 +136,7 @@
 
 ## 5. Agnes video v2.0 关键参数(真相源 = `capability_limits`)
 
-下表的数值仅作 **当前快照**,**权威值**来自 `listCapabilities` 输出中的 `providers[].capability_limits[capability]` 字段(注册在 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段)。**禁止把表里的数字硬编码到 prompt / storyboard / 决策树中**。
+下表的数值仅作 **当前快照**,**权威值**来自 `listCapabilities` 输出中的 `providers[].capability_limits[capability]` 字段(注册在 [providers/manifest.cjs](../../providers/manifest.cjs) 的 `capability_limits` 段)。**禁止把表里的数字硬编码到 prompt / storyboard / 决策树中**。
 
 | 项 | 值(快照) | 权威源 |
 | --- | --- | --- |

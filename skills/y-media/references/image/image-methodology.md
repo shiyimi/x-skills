@@ -1,37 +1,37 @@
-# Image Methodology — Creative Layer
+# 图片方法论 — 创意层
 
 > Image 路径的方法论主文件。**平级于** [../video/storyboard-methodology.md](../video/storyboard-methodology.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
 >
 > Core 永不消费本文件。Skill 在 Step 3 (Plan) 时为图片工作读取本文件,产出 `<name>.image-brief.md`,再抽取 prompt 通过 core 提交。
 
-## Five Core Principles (R1-R5) — read first
+## 五条核心原则 (R1-R5) — 先读
 
 这五条原则是 R1-R5 视频版的**单帧降维版**。R2/R3/R5 直接沿用;R1/R4 重写以适配单帧。
 
-| # | Principle | Expansion |
+| # | 原则 | 展开说明 |
 | --- | --- | --- |
-| **R1** | **Decide the route once, then commit**: choose 路线 (text-to-image / image-to-image / 多图拼贴) early;do not switch mid-prompt。一次性写完一种路线,不要"既要从头生成又要保留参考图";若必须混合,按"路线分段"标记,每段独立决策 | §1.2 |
-| **R2** | **Visual-driven, not bullet-list**: pack parameters into一帧的设计骨架;1 张图 ≤ 1-3 个视觉重点(★),不要塞 5 个产品 + 3 段文字 | §3, §6 |
-| **R3** | **Layer discipline (前景/中景/背景 + 文字层)**: ① 视觉三层(前景/中景/背景)必须有可命名元素,1 个光源;② 文字层如有,锁定字体/色板/位置/动画四件套;③ 不依赖模型随机补细节 | §3, §4 |
-| **R4** | **First-glance hook within 1 second**: 用户扫图平均 < 1s 决定是否停留,首屏视觉冲击(对比/构图/色彩锚)必须在前 1/3 画面 | §2.3 |
-| **R5** | **Zero typos, verbatim brand names**: 品牌名/型号/成分名/数字/日期逐字核对;若用户给了官方写法,大小写·空格·标点全部照搬 | §4, §6 |
+| **R1** | **一次定路径,坚持到底**:尽早选择路线 (text-to-image / image-to-image / 多图拼贴);prompt 中途不要切换。一次性写完一种路线,不要"既要从头生成又要保留参考图";若必须混合,按"路线分段"标记,每段独立决策 | §1.2 |
+| **R2** | **视觉驱动,而非罗列要点**:把参数打包进一帧的设计骨架;1 张图 ≤ 1-3 个视觉重点(★),不要塞 5 个产品 + 3 段文字 | §3, §6 |
+| **R3** | **图层纪律 (前景/中景/背景 + 文字层)**: ① 视觉三层(前景/中景/背景)必须有可命名元素,1 个光源;② 文字层如有,锁定字体/色板/位置/动画四件套;③ 不依赖模型随机补细节 | §3, §4 |
+| **R4** | **1 秒内首眼钩子**: 用户扫图平均 < 1s 决定是否停留,首屏视觉冲击(对比/构图/色彩锚)必须在前 1/3 画面 | §2.3 |
+| **R5** | **零错字,品牌名逐字照搬**: 品牌名/型号/成分名/数字/日期逐字核对;若用户给了官方写法,大小写·空格·标点全部照搬 | §4, §6 |
 
 > **为什么这五条**:图片任务和视频一样,90% 的失败源自"丢锚点"。R1 防止路线漂移;R2 防止元素过载;R3 防止图层混乱;R4 防止首屏没冲击力;R5 防止品牌错字。
 
-## 0. Companion References
+## 0. 配套参考文档
 
-本方法论定义规则;companion references 给出具体参数、场景模板、prompt 模板、工具。
+本方法论定义规则;配套参考文档给出具体参数、场景模板、prompt 模板、工具。
 
 ### 0.1 顶层(cross-cutting,跨模块通用)
 
-| Companion | Purpose |
+| 配套参考 | 用途 |
 | --- | --- |
 | [../cinematography-reference.md](../cinematography-reference.md) | 影视要素词典:景别/光影/色彩/焦段/构图;image 路径**只取静态部分**(光影/色彩/焦段/构图),不取运镜/剪辑 |
 | [../influence-factors.md](../influence-factors.md) | 视频生成影响因子 F1-F12;image 路径**降维**为 F1(主体)/F3(光影)/F4(色彩)/F5(焦段)/F10(约束),其余维度(time/audio/motion)不适用 |
 
 ### 0.2 image/ (image 模块)
 
-| Companion | Purpose |
+| 配套参考 | 用途 |
 | --- | --- |
 | [image-example.md](image-example.md) | 完整填好示例(咖啡海报),image-brief.md 写作的颗粒度校准锚 |
 | (本文件 §6) | 七维度写作骨架 + t2i / i2i / 多图分区的写法差异 |
@@ -40,7 +40,7 @@
 
 > 当前为预留;按需扩展。起步路由见本文件 §3.2。
 
-| Companion | Subject type |
+| 配套参考 | 主体类型 |
 | --- | --- |
 | scene-product-shot.md (未来) | 产品图/商业摄影 |
 | scene-poster-collage.md (未来) | 海报/拼贴/编辑设计 |
@@ -50,17 +50,17 @@
 
 ### 0.4 image/templates/ (模板与速配 · 预留)
 
-| Companion | Purpose |
+| 配套参考 | 用途 |
 | --- | --- |
 | templates-3-sets.md (未来) | 3 套即用 prompt 模板(产品图/海报/人像) |
 
-## 1. Brief And Image Document
+## 1. Brief 与图片文档
 
-把 brief 解析为 3 个 slot,缺位用 stated defaults 填(在表头标 `默认假设`):
+把 brief 解析为 3 个槽位,缺位用既定默认值(stated defaults)填(在表头标 `默认假设`):
 
-| Slot | 必填字段 | 缺位默认 |
+| 槽位 | 必填字段 | 缺位默认 |
 | --- | --- | --- |
-| 主题/产品 | subject, 1-3 个视觉重点/selling points, 素材(参考图/品牌色) | from the request; 真缺失就 1 轮追问 |
+| 主题/产品 | subject, 1-3 个视觉重点/卖点, 素材(参考图/品牌色) | 来自 request; 真缺失就 1 轮追问 |
 | 人群/受众 | 目标用户,使用场景(头像/朋友圈/详情页/广告) | 通用 9:16 信息流素材 |
 | 目标 | 认知(品牌)/ 兴趣(种草)/ 转化(带货)/ 实用(教程/标识) | 按 request 判断,无固定默认 |
 
@@ -72,9 +72,9 @@
 <name>.image-brief.md
 ```
 
-`<name>` 与 `output.filename` stem 一致。文档同时是创意计划 + 交付 sidecar:开始是创意方案,生成后追加 `Generation` section(由 Step 7 完成)。一份完整、spec-conformant 的示例见 [image-example.md](image-example.md),写新 brief 之前先看。
+`<name>` 与 `output.filename` 的文件名主干一致。文档同时是创意计划 + 交付 sidecar:开始是创意方案,生成后追加 `Generation` 部分(由 Step 7 完成)。一份完整、符合规范的示例见 [image-example.md](image-example.md),写新 brief 之前先看。
 
-一份 image-brief 至少含 3 个 section:
+一份 image-brief 至少含 3 个部分:
 
 1. **图片主要目标** — 一行: `产品/主题 × 人群 × 目标(认知/兴趣/转化/实用) × 视觉骨架(见 §2) × 画幅 × 用途`.
 2. **视觉规范表** — 一行(或多行,如果图层复杂),列定义见 §3;表头锁定:
@@ -118,7 +118,7 @@ R1 要求"早定路径,不混线"。image 路径有三个选项,选前先问两�
 
 H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标子路径;拼接菜谱按分区写法 §4。
 
-## 2. Composition Skeleton (视觉骨架)
+## 2. 视觉骨架 (Composition Skeleton)
 
 > image 的"骨架"对应 video 的"叙事骨架":锁结构、锁元素位置、锁视觉重点。
 
@@ -146,7 +146,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 | D 场景叙事 | 1-2 ★(主体 + 氛围锚) | 1 主体 + 1 锚点(光斑/远景) | 氛围是不是"一秒入戏"? |
 | E 极简符号 | 1 ★(符号本体) | 中心 | 是不是"高识别度"? |
 
-### 2.3 R4 · First-glance hook(单图 1 秒钩子)
+### 2.3 R4 · 首眼钩子(单图 1 秒钩子)
 
 单图无时间轴,钩子必须**首屏视觉冲击**。三种钩子任选一种:
 
@@ -169,12 +169,12 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 | 区域 ID | `Z01`(分区时用 Z01/Z02/...) | Z01 |
 | 用途 | 该区域在本图中的功能 | 产品主体 |
 | 主体 | ≥3 特征 + 材质/状态 | 哑光黑色蓝牙耳机,充电盒,金属铰链 |
-| 景别与视角 | 景别 + 机位 + composition | 中近景,平视,中心构图 |
+| 景别与视角 | 景别 + 机位 + 构图 | 中近景,平视,中心构图 |
 | 光影 | 方向 + 色温 + 光比 + 光质 | 顶光 45°,5000K,光比 2:1,柔光 |
 | 色彩 | 主色 + 辅色 + 色调 | 哑光黑+冷灰,中低饱和冷调 |
 | 前景/中景/背景 | 3+1 规则(可命名道具 + 光源) | 前景:耳机/中景:充电盒/背景:米白窗帘虚化+侧窗光 |
 | 文字层 | §4(无文字则 —) | 主标题"BlackBeats X1"中下,黑字白边 |
-| 视觉重点 | ★ = cover-grade | ★ |
+| 视觉重点 | ★ = 封面级(cover-grade) | ★ |
 | 视觉重点 2 | 二级 ★(可选) | — |
 | 风格 | 摄影类型 + 美学基调 + 负向 | 产品摄影,Apple 极简,no reflections on metal,no extra accessories |
 
@@ -195,7 +195,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 > **不适用字段**(image 路径直接删):运镜·速度、音频·音量、音频·BPM、音频·音效、时间锚——单图无这些维度。
 
-### 3.2 Scene Routing(image 版)
+### 3.2 场景路由(image 版)
 
 填完 brief(§1)后,根据主体类型路由到 image 场景模板。当前 image/scenes/ 目录为预留,默认走以下通用路由:
 
@@ -213,7 +213,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 > **未来扩展**:image/scenes/ 目录会按需补充独立 image 场景模板(产品图/海报/人像/美食静态/质感)。当前借用 video 场景模板的产品摄影部分,够用。
 
-## 4. Layer And Typography(文字版式设计)
+## 4. 图层与文字版式 (Layer And Typography)
 
 > 文字是**设计层**,不是事后补的。从一开始就规划主标题/副标题/角标三层。
 
@@ -221,11 +221,11 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 | 层 | 视觉大小 | 用途 | 范式 |
 | --- | --- | --- | --- |
-| **主标题** (primary) | 画面占比 5-15% | 核心信息(产品名/slogan/日期) | 中文手写衬线/宋体,大且清晰,readable;英文可选 uppercase 宽字距 |
-| **副标题** (secondary) | 画面占比 1-3% | 辅助信息(场景/特征/英文译注) | 较小,uppercase English 宽字距,例如 `AFTERNOON · COFFEE · GREEN` |
+| **主标题** (primary) | 画面占比 5-15% | 核心信息(产品名/slogan/日期) | 中文手写衬线/宋体,大且清晰,易读;英文可选大写宽字距 |
+| **副标题** (secondary) | 画面占比 1-3% | 辅助信息(场景/特征/英文译注) | 较小,英文大写宽字距,例如 `AFTERNOON · COFFEE · GREEN` |
 | **角标** (corner) | 画面占比 0.5-1% | 日期/编号/小标识 | 最小最安静,例如 `2026.08` 在右上角 |
 
-> **锁 4 件套**:字体族(一个族)/ 色板(≤2 色)/ 位置(per type)/ 描边或阴影(统一)。
+> **锁 4 件套**:字体族(一个族)/ 色板(≤2 色)/ 位置(按类型)/ 描边或阴影(统一)。
 
 ### 4.2 R5 · 文字零错字铁律
 
@@ -247,7 +247,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 | **边界过渡** | 边缘处理 | 不规则手撕水平边,粗糙纤维;硬线;自然渐隐 |
 | **区域编辑** | i2i 路径下说明 | "原图上半天空被移除,替换为牛皮纸" |
 
-完整 bleed:声明"照片区域是否延伸到所有边缘"(full bleed / 有 margin)。
+完整出血(bleed):声明"照片区域是否延伸到所有边缘"(full bleed / 有 margin)。
 
 ### 4.4 点缀元素(accent)
 
@@ -255,7 +255,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 > ❌ 不要堆多个 accent,会显廉价。
 
-## 5. Constraint Block(约束收尾)
+## 5. 约束块 (Constraint Block)
 
 每个 prompt 必须以约束块收尾,确保模型不漏不漂:
 
@@ -271,7 +271,7 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 - 海报/拼贴类额外加 `分区边界自然过渡,不要有硬接缝`
 - 商业类额外加 `品牌元素真实可信,符合产品品类常识,无虚构资质`
 
-## 6. Image Prompt
+## 6. 图片 Prompt
 
 ### 6.1 七维度写作骨架
 
@@ -283,14 +283,14 @@ H 路径额外在视觉规范表前加 `区域-1/区域-2/...` 分组,每组标�
 
 | 维度 | 规则 | 示例 |
 | --- | --- | --- |
-| 风格总领句 | style type + ratio + aesthetic basis in one line | Lifestyle collage poster, vertical 3:4, warm indie zine aesthetic |
-| 主体 | concrete, single subject with material/state | 一只大号南美白虾仁,表面冷凝水珠 |
-| 动作/状态 | one static pose or frozen instant | 从冰水中捞起的瞬间,水珠滑落 |
-| 场景/环境 | §3 `3+1` element rule, front/mid/back layers | 大理石台面+木铲+几片绿叶,背景虚化 |
-| 光线/色调 | direction + color temperature + contrast + quality | 45°侧光,6000K,柔光高对比,青白+冰蓝冷调 |
-| 视角/构图 | 景别 + 机位 + composition(中心/三分法/留白) | 微距特写,低角度仰拍,主体居中 |
-| 视觉风格/画质 | photography style + fidelity cues | 食物摄影,浅景深,超清细节 |
-| 约束 | anti-AI-synthetic, text, negative | 避免纯色渐变背景,避免过度 AI 合成感 |
+| 风格总领句 | 一行内给出风格类型 + 画幅比例 + 美学基调 | Lifestyle collage poster, vertical 3:4, warm indie zine aesthetic |
+| 主体 | 具体、单一主体,带材质/状态 | 一只大号南美白虾仁,表面冷凝水珠 |
+| 动作/状态 | 一个静态姿势或冻结瞬间 | 从冰水中捞起的瞬间,水珠滑落 |
+| 场景/环境 | §3 的 `3+1` 元素规则,前景/中景/背景三层 | 大理石台面+木铲+几片绿叶,背景虚化 |
+| 光线/色调 | 方向 + 色温 + 对比度 + 光质 | 45°侧光,6000K,柔光高对比,青白+冰蓝冷调 |
+| 视角/构图 | 景别 + 机位 + 构图(中心/三分法/留白) | 微距特写,低角度仰拍,主体居中 |
+| 视觉风格/画质 | 摄影风格 + 保真线索 | 食物摄影,浅景深,超清细节 |
+| 约束 | 防 AI 合成感 / 文字 / 负向 | 避免纯色渐变背景,避免过度 AI 合成感 |
 
 ### 6.2 text-to-image vs image-to-image 写法差异
 
@@ -308,7 +308,7 @@ Do not replace the cup or change the real-life scene.
 
 > 不列清单的 i2i,模型会重画/重塑参考主体,失去"参考"意义。
 
-### 6.3 Aspect Ratio As A Creative Decision
+### 6.3 画幅比作为创意决策
 
 按用途选画幅,不要默认:
 
@@ -323,7 +323,7 @@ Do not replace the cup or change the real-life scene.
 
 > 在 `parameters` 中显式给 ratio,验证所选 Provider 是否支持;若比例特殊,在 prompt 中加构图方向说明(如"主体居左,右侧留白")。
 
-### 6.4 Prompt Assembly Example(七维度 + 约束块)
+### 6.4 Prompt 拼装示例(七维度 + 约束块)
 
 下面是 [image-example.md](image-example.md) 的完整 prompt 拼装示例,逐项对应 §3 视觉规范表:
 
@@ -374,7 +374,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 
 > **image 与 video 的关键差异**:image 路径**不必做"数字 → 方向"的语义化降级**(K 值/光比保留),因为单图无时间轴压力,模型对单帧数字参数有更高遵从度。但 audio/速度/dB/BPM 仍不进 prompt。
 
-## 7. Aspect Ratio And Resolution
+## 7. 画幅与分辨率
 
 按 §6.3 选画幅,通过 `parameters.size` / `parameters.ratio` 显式给,验证所选 Provider 支持。`size` 优先选 Provider 默认推荐分辨率(如 1024x1024 / 2048x2048),避免触发再缩放损失。
 
@@ -390,7 +390,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 
 > 表中数字仅作参考,实际值以 Provider 的 `capability_limits[capability].supportedAspectRatios` 为准。
 
-## 8. Image Series Consistency(系列图一致性)
+## 8. 系列图一致性 (Image Series Consistency)
 
 > 当一次出 3 张以上共享同一主体的图(详情页主图/sku 系列/品牌系列),**必须先锁主体描述符 + 美学母体**,再变化场景/动作/视角。
 
@@ -405,7 +405,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 
 > **变体法则**:每张图只换 ≤3 个变量(场景/动作/视角/文字);**一次换太多 = 主体漂移**。
 
-## 9. Images As Video Inputs
+## 9. 图片作为视频输入
 
 生成的图可作为 `image-to-video` / `keyframes-to-video` 的输入。**image 路径的 prompt 与 video 路径的 prompt 在 i2v 场景下要协同**:
 
@@ -413,15 +413,15 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 - **风格参考**: `参考 <图片1> 的色调与光影`
 - **主体一致**: `以 <图片1> 为主体,保持产品外观/logo/配色一致`
 
-复用 [../video/storyboard-methodology.md](../video/storyboard-methodology.md) §6.1 input binding 语法。
+复用 [../video/storyboard-methodology.md](../video/storyboard-methodology.md) §6.1 的输入绑定(input binding)语法。
 
 > **i2v 的 image 准备自检**:① 主体在画面内完整(留出运镜空间)?② 第一帧/末帧的构图与 video 段的运镜匹配?③ 主体与背景对比度足够,运镜不会丢焦?
 
-## 10. Image Anti-Patterns
+## 10. 图片反模式
 
 | 反模式 | 症状 | 修复 |
 | --- | --- | --- |
-| 抽象堆砌 | "高级感" without parameters | 给具体数字/术语(光比/饱和度/材质) |
+| 抽象堆砌 | "高级感" 但没有参数 | 给具体数字/术语(光比/饱和度/材质) |
 | 多主体混淆 | 1 图 >1 主体 | 锁 1 主体,1 动作/状态 |
 | 一图多个冲突动作 | 主体既"飞"又"坐" | 1 图 1 静态动作 |
 | 文字错字 | 品牌/数字写错 | R5 铁律,引号 + verbatim |
@@ -450,7 +450,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 - 现代 t2i 模型(DALL·E、GPT-image、Agnes flash 系列)对独立 `negative_prompt` 遵从度低,`no X` 写在主 prompt 末尾比独立字段更可靠
 - 独立字段会增加侧车维护成本,但不会带来实际质量收益
 
-**侧车字段处理**:即便不填,image-brief.md 也要保留 `## Negative Prompt` section,内容写一行占位:
+**侧车字段处理**:即便不填,image-brief.md 也要保留 `## Negative Prompt` 部分,内容写一行占位:
 
 ```text
 ## Negative Prompt
