@@ -43,7 +43,7 @@ For images, this step is simplified: determine the subject, style, and purpose o
 
 ### 3b. 执导筒 — Visual Direction & Shot Execution
 
-Design how each shot looks and moves. Follow §3 (导演) of the methodology to fill all 11 columns of the shot table: shot type, perspective, camera movement, lighting, color, subject action, and environment. Every shot answers one visual question.
+Design how each shot looks and moves. Follow §3 (导演) of the methodology to fill all 12 columns of the shot table: shot type, perspective, camera movement, lighting, color, subject action, environment, audio, subtitles, and transitions. Lock the segment's default transition strategy in the header; override per-shot in the table. Every shot answers one visual question.
 
 For images, this produces the visual composition: subject, scene, lighting, color, perspective, and composition per §7.
 
@@ -67,7 +67,7 @@ For videos, generate a storyboard document per §5 (分镜文档结构) of the m
 
 For images, produce one final prompt per §7 of the methodology and select `text-to-image` or `image-to-image`. Review the complete example in [references/image-prompt-example.md](references/image-prompt-example.md) before writing an image prompt with layered layout or typography. For `image-to-image`, state explicitly what to preserve and what to change. Pick the aspect ratio by intended use and put `size`/`ratio` in `parameters`.
 
-Before submitting, verify the storyboard: all 11 columns filled, shot durations sum to the target, `★` ≥ 5 per 15s, subtitle copy free of typos with brand names verbatim, and the frame count satisfies the `8n + 1` rule.
+Before submitting, verify the storyboard: all 12 columns filled, shot durations sum to the target, `★` ≥ 5 per 15s, transitions logically consistent (no conflict with camera movement), subtitle copy free of typos with brand names verbatim, and the frame count satisfies the `8n + 1` rule.
 
 Build the public request defined in [core/provider-contract.md](core/provider-contract.md). Set `prompt` to the storyboard document content (per §5). The negative prompt is inside the `prompt` text, not in `parameters`. Keep other Provider-specific controls in `parameters` and verify them against the selected Provider reference.
 
