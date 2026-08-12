@@ -2,7 +2,7 @@
 
 > 本文件记录 t2v(text-to-video)模型的**已知能力限制**,以及这些限制如何改变 prompt 的写法。写 prompt 前必读,否则精心设计的参数会被模型直接忽略。
 >
-> 核心结论:**分镜表用数字(展示层),prompt 用语义化(执行层),音频移出 prompt。**
+> 核心结论:**分镜表用数字(展示层),prompt 用语义化(执行层),音频移出 prompt(仅对不支持音频的 Provider,见 M6 边界)。**
 
 ---
 
@@ -65,9 +65,9 @@
 
 **症状**: prompt 里写了 BGM 节奏、环境音拟声词、dB 值,生成的视频没有任何对应音频。
 
-**根因**: 主流 t2v 模型(Agnes video v2.0 / Seedance 2.0 / Wan2.x / Sora / Veo)不生成分时音频。BPM/dB/拟声词对视频画面生成无效。
+**根因**: 当前已注册的 Provider(Agnes video v2.0)不生成分时音频,BPM/dB/拟声词对画面生成无效。**边界**:该限制只对不支持音频的模型成立——Seedance 1.5 Pro/2.5、Wan3.0 等新模型已支持音画同出(方言/音效/对白),未来接入此类 Provider 时须重新评估音频策略,不能套用本节"音频移出 prompt"的普适写法。
 
-**修复**: 音频信息从 prompt 中移出,放到 `Notes for downstream audio` 段,供后期音频制作参考。
+**修复**: 音频信息从 prompt 中移出,放到 `Notes for downstream audio` 段,供后期音频制作参考。(若 Provider 支持音画同出,音频可写回 prompt,并按 Provider 参考文档的音频参数传递)
 
 ---
 
@@ -184,16 +184,17 @@
 }
 ```
 
-### 5.2 未来 Provider 的注册样板(Seedance 2.0 / Sora 1.0 / Veo 2.0)
+### 5.2 未来 Provider 的注册样板(Seedance 2.5 / Wan3.0 / Sora 1.0 / Veo 2.0)
 
 | Provider | maxSingleSegmentDuration | maxFrames | frameCountRule |
 | --- | --- | --- | --- |
-| Agnes video v2.0 | 18s | 441 | 8n+1 |
-| Seedance 2.0(强 i2v) | 15s | 361 | 8n+1 |
+| Agnes video v2.0(已注册) | 18s | 441 | 8n+1 |
+| Seedance 2.5(强 i2v,音画同出) | 30s | 721(推算) | 8n+1(推算) |
+| Wan3.0(多模态参考,4K 直出) | 30s | 721(推算) | 8n+1(推算) |
 | Sora 1.0(长段支持好) | 20s | 481 | 8n+1 |
 | Veo 2.0(短段细节好) | 8s | 193 | 8n+1 |
 
-这些数**不写进文档**,只作为新 Provider 注册到 `manifest.cjs` 的 `capability_limits` 时的参考值。
+这些数**不写进文档**,只作为新 Provider 注册到 `manifest.cjs` 的 `capability_limits` 时的参考值。标注"(推算)"的值(Seedance 2.5 / Wan3.0)基于公开能力信息估算,注册前须以官方 API 文档核实。
 
 ---
 
@@ -204,7 +205,7 @@
 - [ ] **M3 防僵硬**: 动作段含 micro-action(耳朵/眼睛/尾巴/呼吸)?
 - [ ] **M4 防数字噪声**: prompt 中无 K/dB/BPM/光比数字?
 - [ ] **M5 防平淡开场**: 前 3s 有视觉钩子?
-- [ ] **M6 防音频无效**: prompt 中无 BGM/音效/dB/BPM 描述?
+- [ ] **M6 防音频无效**(对不支持音频的 Provider,如已注册的 Agnes): prompt 中无 BGM/音效/dB/BPM 描述?若 Provider 支持音画同出,音频可回写 prompt
 - [ ] **展示层 vs 执行层**: 分镜表用数字,prompt 用语义化?
 - [ ] **音频分离**: 音频信息在 `Notes for downstream audio` 段?
 - [ ] **多段 split-or-merge**: `target_duration > capability_limits[<capability>].maxSingleSegmentDuration` 时,**生成前已问用户** ① 分开 / ② 合并+菜谱?(不能默默拆)

@@ -2,7 +2,7 @@
 
 > 本文件是 [storyboard-methodology.md](storyboard-methodology.md) §1-§3、§6 的**完整填好示例**,对应一次 15s 视频生成的最终交付。题材选**晨雾森林雄鹿与幼鹿**,展示**成兽+幼兽+关系**类主体类型的写法。
 >
-> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对 t2v 模型无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) 与 [prompt-structure-formula.md](prompt-structure-formula.md)。
+> **⚠️ 关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于人理解与归档;但**提交给 t2v 模型的 prompt 必须降级为执行层语义化**——模型读不懂 4500K/-18dB/95BPM,会直接忽略(M4),且音频描述对**不支持音频的模型**(当前 Agnes)无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) 与 [prompt-structure-formula.md](prompt-structure-formula.md)。
 >
 > **⚠️ 镜头数修正(M1)**:t2v 模型在 15s 内塞 6 镜会塌缩成 1-2 景别,应 ≤3 镜、单镜 ≥4s。本示例分镜表保留 6 镜做**创作规划展示**,但 prompt 合并为 3 个时间段执行。
 
@@ -13,7 +13,7 @@
 `成年雄鹿 + 幼鹿 × 全龄(自然/治愈/亲子观众) × 兴趣-种草(情绪治愈,温情守护) × 骨架B(情感叙事·线性起承转合) × 15s × 竖屏9:16`
 
 - 默认假设: 纯生成(无实拍素材);无真人出镜;无对白;单段直出(不走剪辑拼接);画幅竖屏 9:16 @ 720×1280。
-- 音频策略: 目标=兴趣/种草[情绪治愈] · query="温情守护" → 钢琴+大提琴+钟琴 70 BPM,钢琴冷启渐入,无对白,环境音(蹄声/雾气/鸟鸣/树叶沙沙/小鹿鸣)为信息主体。**⚠️ 此行仅供下游音频制作参考,t2v 模型不生成分时音频(M6),不写进 prompt。**
+- 音频策略: 目标=兴趣/种草[情绪治愈] · query="温情守护" → 钢琴+大提琴+钟琴 70 BPM,钢琴冷启渐入,无对白,环境音(蹄声/雾气/鸟鸣/树叶沙沙/小鹿鸣)为信息主体。**⚠️ 此行仅供下游音频制作参考,当前 Agnes 不生成分时音频(M6),不写进 prompt。**
 - 美学母体: 雾白+暖金+苔绿+深棕,自然治愈自然纪录片质感;色温全程 4500-5200K 区间(展示层);浅景深,16mm 广角→85mm 中焦自然切换。
 - 视听路线: 无字幕(画面+BGM+环境音承担 100% 信息)。
 
@@ -76,7 +76,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 — No text, no logo, no watermark, no on-screen caption.
 ```
 
-Notes for downstream audio(下游音频备注;不要写进视频 prompt — t2v 模型不生成分时音频):
+Notes for downstream audio(下游音频备注;不要写进视频 prompt — 当前 Agnes 不生成分时音频):
 - BGM 皮肤:温暖钢琴 + 大提琴 + 钟琴,70 BPM,冷启的单个钢琴音符 3s 内渐入,在额头触碰(第 2 段)推到顶点,最后 2s 淡出。
 - 环境音优先级:蹄子踩在软苔上"沙沙",幼鹿轻柔的"唧"哼声,雄鹿平稳的"呼"呼吸声,树冠风声,远处的鸟鸣,以及眼神接触瞬间一声清亮的幼鹿鸣叫。
 

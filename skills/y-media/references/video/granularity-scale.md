@@ -2,7 +2,7 @@
 
 > 本文件是 [storyboard-methodology.md](storyboard-methodology.md) 的**核心独立参考**。定义"展示层 vs 执行层"的分工,以及每一字段"填到什么颗粒度才有效"。
 >
-> **核心区分**:分镜表(展示层)用具体数字(K/dB/BPM/焦段/月龄)做**人可读记录**;prompt(执行层)用**语义化降级**,因为 t2v 模型读不懂这些数字(M4),且音频描述对模型无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) §2。
+> **核心区分**:分镜表(展示层)用具体数字(K/dB/BPM/焦段/月龄)做**人可读记录**;prompt(执行层)用**语义化降级**,因为 t2v 模型读不懂这些数字(M4),且音频描述对**不支持音频的模型**(如已注册的 Agnes)无效(M6)。详见 [t2v-model-capability.md](t2v-model-capability.md) §2。
 >
 > 影视要素词典见 [cinematography-reference.md](../cinematography-reference.md);影响因子与权重见 [influence-factors.md](../influence-factors.md)。
 

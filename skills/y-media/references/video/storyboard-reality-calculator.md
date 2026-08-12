@@ -136,17 +136,19 @@ console.log(validateFrames(20.0, { capabilityLimits: limits })); // 原始 480, 
 
 | Provider | Model | 默认尺寸 | 默认 fps | 单段最长 (`maxSingleSegmentDuration`) | 帧数上限 (`maxFrames`) | 音频生成 | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Agnes** | agnes-video-v2.0 | 1152×768 横 / 720×1280 竖 | 24 | 18s | 441 | ✗ | y-media 默认 |
-| **Seedance** | seedance-2.0 | 1024×1024 / 720×1280 | 24 | 15s | 361 | ✗ | 强 i2v,识别低角度精准 |
-| **Wan** | wan-2.x | 1280×720 / 720×1280 | 24 | 15s | 361 | ✗ | 中文友好 |
+| **Agnes** | agnes-video-v2.0 | 1152×768 横 / 720×1280 竖 | 24 | 18s | 441 | ✗ | y-media 默认(已注册) |
+| **Seedance** | seedance-2.5 | 1024×1024 / 720×1280 | 24 | 30s | 721(推算) | ✓(1.5 Pro 起音画同出) | 强 i2v,识别低角度精准;支持方言/音效 |
+| **Wan** | wan-3.0 | 1280×720 / 720×1280 | 24 | 30s | 721(推算) | ✗ | 中文友好,多模态参考,4K 原生直出 |
 | **Sora** | sora-1.0 | 1920×1080 / 1080×1920 | 24 | 20s | 481 | ✗ | 长段支持好 |
 | **Veo** | veo-2.0 | 1920×1080 / 1080×1920 | 24 | 8s | 193 | ✗ | 8s 限制 |
+
+> 注:Seedance 2.5 / Wan3.0 的 30s 与帧数上限为**推算参考值**(按 8n+1),注册到 manifest 时以官方文档为准;`maxFrames` 权威值来自 `capability_limits`。
 
 ### 3.2 关键限制
 
 | 限制 | 所有 Provider 共性 |
 | --- | --- |
-| **音频生成** | 都不生成分时音频 → 全部进 `Notes for downstream audio` |
+| **音频生成** | 仅对不支持音频的 Provider 成立(Agnes 当前如此)→ 音频进 `Notes for downstream audio`;Seedance 1.5 Pro/2.5 等支持音画同出,接入时重新评估 |
 | **本地路径** | 不支持,必须公网 HTTPS URL |
 | **Data URI** | 不支持 |
 | **单段 6 镜塌缩** | 全行业现象 → 限 ≤3 镜 |
@@ -158,8 +160,9 @@ console.log(validateFrames(20.0, { capabilityLimits: limits })); // 原始 480, 
 | 需求 | 首选 Provider | 理由 |
 | --- | --- | --- |
 | 中文 prompt 友好 | Wan / Seedance | 训练语料中文占比高 |
-| 长段(>15s) | Sora | 单段可达 20s |
+| 长段(>15s) | Seedance 2.5 / Wan3.0 | 单段可达 30s |
 | 强 i2v 锁定 | Seedance | i2v 精度高,识别低角度 |
+| 音画同出 | Seedance 1.5 Pro+ | 支持方言/音效/对白 |
 | 短段 8s 极致 | Veo | 8s 段细节好 |
 | y-media 默认 | Agnes | 已注册,即用 |
 
