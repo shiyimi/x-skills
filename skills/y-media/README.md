@@ -53,7 +53,6 @@ y-media/
 |   |-- influence-factors.md
 |   `-- image-prompt-example.md
 |-- core/
-|   |-- media.cjs
 |   |-- orchestrator.cjs
 |   |-- contract.cjs
 |   |-- artifacts.cjs
