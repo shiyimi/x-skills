@@ -2,7 +2,7 @@
 
 > 与 [scene-nature-animal.md](scene-nature-animal.md)、[scene-lifestyle-aesthetic.md](scene-lifestyle-aesthetic.md) 平级。本文件覆盖**人物出镜/穿搭展示/时尚街拍/美妆**类场景,涉及真人或人像化主体。
 >
-> 重要约束:本场景 t2v 模型对**真人脸生成有风险**(参见 [t2v-model-capability.md](t2v-model-capability.md))。**强烈建议优先用 i2v(图生视频)以参考图锚定人脸**,不要纯 t2v 生成陌生人脸。
+> 重要约束:本场景 t2v 模型对**真人脸生成有风险**(参见 [../t2v-model-capability.md](../t2v-model-capability.md))。**强烈建议优先用 i2v(图生视频)以参考图锚定人脸**,不要纯 t2v 生成陌生人脸。
 
 ---
 
@@ -104,7 +104,7 @@
 
 ## 6. 主体描述模板(角色四层 · 强 i2v 优先)
 
-⚠️ **人像必填 i2v**: 真人脸模型 t2v 风险高,见 [t2v-model-capability.md](t2v-model-capability.md)。用参考图锁定人脸。
+⚠️ **人像必填 i2v**: 真人脸模型 t2v 风险高,见 [../t2v-model-capability.md](../t2v-model-capability.md)。用参考图锁定人脸。
 
 | 主体 | 角色四层模板(执行层) |
 | --- | --- |
@@ -124,7 +124,7 @@
 | 6 指/多肢 | 手部畸形 | 加 `anatomically correct hands, five fingers each hand` |
 | 服装穿模 | 服装花纹错乱/穿模 | 简化服装描述,避免繁复花纹 |
 | 鞋底悬浮 | 走路不沾地 | 加 `gravity correct, feet on ground` |
-| 步态僵硬 | 走路像 3D 平移 | 慢动作,加 micro-action(头摆/臂摆) |
+| 步态僵硬 | 走路像 3D 平移 | 慢动作,加 微动作(头摆/臂摆) |
 | 脸崩 | 跨镜脸变形 | i2v + `same face across all frames` |
 | 头发穿模 | 头发穿肩/穿衣 | 短发优先,长发需多段拼接 |
 
@@ -139,4 +139,4 @@ i2v 输入时,prompt 必须显式声明:
 keep the same facial features, hairstyle, and clothing across all frames (no character drift).
 ```
 
-详见 [t2v-model-capability.md](t2v-model-capability.md) F11 关键帧/参考图。
+详见 [../t2v-model-capability.md](../t2v-model-capability.md) F11 关键帧/参考图。

@@ -1,50 +1,50 @@
-# Storyboard Methodology — Creative Layer
+# 分镜方法论 · Storyboard Methodology — Creative Layer
 
-This reference defines the Skill-owned creative layer: how to turn a collected brief into a concrete storyboard document and a submission-ready video prompt. It is a generic, category-agnostic methodology for short-form video (selling, seeding, brand storytelling, product demos, tutorials, ASMR, emotional narratives, and similar). It is inspired by the shopping-video planning method used in the `ecom-video-generation` plugin; it is rewritten and simplified for the y-media workflow, its registered Providers, and its non-commerce uses.
+本参考文档定义 Skill 自有的创作层:如何把收集到的 brief 变成一份具体的分镜文档和可直接提交的视频 prompt。它是一套通用的、与品类无关的短视频方法论(带货、种草、品牌故事、产品演示、教程、ASMR、情感叙事等)。它受 `ecom-video-generation` 插件所用的带货视频规划方法启发;针对 y-media 工作流、其已注册的 Providers 及其非商业用途做了重写和简化。
 
-Core never consumes this file. The Skill reads it during Step 3 (Plan), produces a storyboard document, then extracts the prompt and submits through the core.
+Core 永远不会消费本文件。Skill 在 Step 3(Plan,规划)读取它,产出分镜文档,然后抽取 prompt 并通过 core 提交。
 
-## Five Core Principles (R1-R5) — read first
+## 五条核心原则 (R1-R5) — 先读
 
-These five principles distill the experience of e-commerce short-video planning into sharp decision rules. They apply to **every** video y-media produces, commerce or not — they are how the Skill avoids the most common failure modes.
+这五条原则把电商短视频规划的经验浓缩成锋利的决策规则。它们适用于 y-media 产出的**每一支**视频,无论是否商业 — 这就是 Skill 避开最常见失败模式的方式。
 
-| # | Principle | Expansion |
+| # | 原则 | 展开 |
 | --- | --- | --- |
-| **R1** | **Decide the path once, then commit**: choose 剪辑 vs 生成 early; do not switch mid-segment (生→剪→生 = 主体漂移 + 成本翻倍) | §1.2 |
-| **R2** | **Story-driven, not bullet-list**: pack parameters into a Skeleton A/B/C and ship as a narrative; 1 segment ≤ 1-3 key points | §2, §6 |
-| **R3** | **Audio-visual dual track**: ① Subtitle optional (skip for 质感/ASMR/情感 if the picture carries 70% of the message); if used, lock one style set; ② All three audio layers (人声 · 环境音 · BGM) must be designed, never rely on the model's default background | §4, §5 |
-| **R4** | **Recover the hook within 7 seconds**: visual burst or emotional burst, two-choose-one; after 7s the completion rate drops | §2 |
-| **R5** | **Zero typos, verbatim brand names**: 品牌名/型号/成分名逐字核对; if the user gave an official spelling, use it exactly (大小写·空格·标点) | §5 copy rules |
+| **R1** | **一次定路径,然后坚定执行**:尽早选剪辑 vs 生成;不要在段中切换(生→剪→生 = 主体漂移 + 成本翻倍) | §1.2 |
+| **R2** | **故事驱动,而非清单罗列**:把参数装进骨架 A/B/C,以叙事方式交付;1 段 ≤ 1-3 个关键点 | §2, §6 |
+| **R3** | **视听双轨**:① 字幕可选(若画面承载 70% 的信息,质感/ASMR/情感类可省略);若使用,锁定一套风格;② 三层音频(人声 · 环境音 · BGM)必须全部设计,绝不依赖模型的默认背景 | §4, §5 |
+| **R4** | **7 秒内回收钩子**:视觉爆发或情绪爆发,二选一;7 秒后完播率下降 | §2 |
+| **R5** | **零错字、品牌名逐字**:品牌名/型号/成分名逐字核对;若用户给了官方拼写,必须原样使用(大小写·空格·标点) | §5 文案规则 |
 
-> **Why these five**: they are the rules that turn a generic 视频生成 into a 视频 that 有人看完、有人下单. Each is a single binary decision the Skill must make explicitly, not absorb by accident.
+> **为什么是这五条**:它们是把泛泛的 视频生成 变成 有人看完、有人下单 的视频 的规则。每一条都是 Skill 必须显式做出的单一二元决策,而不是顺带吸收的默认行为。
 
-## 0. Companion References
+## 0. 配套参考
 
-This methodology defines the rules; companion references supply concrete parameters, factor thresholds, scene templates, and tools. Read the relevant companion before filling any column.
+本方法论定义规则;配套参考提供具体参数、因子阈值、场景模板和工具。填写任何一列之前,先读相关的配套参考。
 
-### 0.1 Top-level (通用,跨模块)
+### 0.1 顶层(通用,跨模块)
 
-| Companion | Purpose | When to read |
+| 配套参考 | 用途 | 何时读 |
 | --- | --- | --- |
 | [../cinematography-reference.md](../cinematography-reference.md) | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值 | 填写分镜表每一列时取词 |
 | [../influence-factors.md](../influence-factors.md) | 视频生成影响因子 F1-F12(带权重评分卡):每个因子的有效填写阈值与失控修复 | 判断"填到什么程度才有效"时查 |
 | [t2v-model-capability.md](t2v-model-capability.md) | t2v 模型能力边界 M1-M6 + 展示层vs执行层对照表 + 时间表达方式 | 写 prompt 前必读,决定哪些参数进 prompt、哪些移出 |
 
-### 0.2 video/ (分镜模块)
+### 0.2 video/(分镜模块)
 
-| Companion | Purpose | When to read |
+| 配套参考 | 用途 | 何时读 |
 | --- | --- | --- |
 | [granularity-scale.md](granularity-scale.md) | 颗粒度标尺:展示层/执行层分工 + 12字段抽象→具体对照 | 判断"填到什么颗粒度"时查 |
 | [prompt-structure-formula.md](prompt-structure-formula.md) | prompt 写作骨架:八要素+五定法+角色四层+场景三层+拼接顺序模板 | 拼接 prompt 时按此结构 |
 | [cinematic-shot-library.md](cinematic-shot-library.md) | 14 镜头库(6 运镜组合+4 高级术语+4 构图技法)+ 镜头选择决策表 | 选运镜时查 |
 | [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) | 避坑三陷阱(物理互斥/静止动词/光影缺失)+ 5 铁律 | 写完后自检 |
 | [negative-prompt-methodology.md](negative-prompt-methodology.md) | `negative_prompt` 字段方法论:与 Hard Constraints 的分工、何时必填、内容来源、提交前自检 | 视频侧车有 `## Negative Prompt` 字段时查 |
-| [storyboard-reality-calculator.md](storyboard-reality-calculator.md) | 镜头现实性决策 + Python 帧数校验 + Provider 能力速查 | 提交前用 |
+| [storyboard-reality-calculator.md](storyboard-reality-calculator.md) | 镜头现实性决策 + Node 帧数校验 + Provider 能力速查 | 提交前用 |
 | [storyboard-example.md](storyboard-example.md) | 完整填好示例(晨雾森林雄鹿与幼鹿) | 颗粒度校准锚,写新分镜前必读 |
 
-### 0.3 video/scenes/ (场景矩阵)
+### 0.3 video/scenes/(场景矩阵)
 
-| Companion | Subject type |
+| 配套参考 | 主体类型 |
 | --- | --- |
 | [scenes/scene-nature-animal.md](scenes/scene-nature-animal.md) | 自然/动物/治愈 |
 | [scenes/scene-lifestyle-aesthetic.md](scenes/scene-lifestyle-aesthetic.md) | 生活/质感/氛围 |
@@ -52,40 +52,40 @@ This methodology defines the rules; companion references supply concrete paramet
 | [scenes/scene-food-asmr.md](scenes/scene-food-asmr.md) | 美食/ASMR(声音密集) |
 | [scenes/scene-commerce-product.md](scenes/scene-commerce-product.md) | 商业带货/产品演示(6 大品类) |
 
-### 0.4 video/templates/ (模板与速配)
+### 0.4 video/templates/(模板与速配)
 
-| Companion | Purpose |
+| 配套参考 | 用途 |
 | --- | --- |
 | [templates/templates-3-sets.md](templates/templates-3-sets.md) | 3 套即用 prompt 模板(人像/风景/i2v)+ 多镜头示例 |
 | [templates/scene-quick-match.md](templates/scene-quick-match.md) | 场景速配表 + 主体描述速查 + 钩子速查 |
 
-## 1. Brief And Storyboard Document
+## 1. Brief 与分镜文档
 
-Parse the brief into three slots and fill gaps with stated defaults (record them under a `默认假设` line in the document header):
+把 brief 解析为三个槽位,并用明确的默认值补缺(在文档表头的 `默认假设` 行记录):
 
-| Slot | What to determine | Default when unknown |
+| 槽位 | 需要确定什么 | 未知时的默认值 |
 | --- | --- | --- |
-| 主题/产品 | subject, 1-3 key points or selling points, materials available | from the request; ask once if truly missing |
-| 人群/受众 | audience, their pain point or interest | common audience for the subject type |
-| 目标 | 认知(brand) / 兴趣(seeding) / 转化(conversion) | decide from the request, no fixed default |
+| 主题/产品 | 主体,1-3 个关键点或卖点,可用的素材 | 取自请求;确实缺失时问一次 |
+| 人群/受众 | 受众,他们的痛点或兴趣 | 该主体类型的常见受众 |
+| 目标 | 认知(brand) / 兴趣(seeding) / 转化(conversion) | 根据请求决定,无固定默认值 |
 
-The goal drives tone, pacing, and subtitle route. All three goals are equal choices; nothing here assumes commerce.
+目标决定基调、节奏和字幕路线。三种目标地位平等;这里不预设商业场景。
 
-Produce one Markdown file per video segment, saved next to the intended output:
+每段视频产出一个 Markdown 文件,保存在预期输出旁边:
 
 ```text
 <name>.video-brief.md
 ```
 
-where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. It contains exactly three sections:
+其中 `<name>` 与视频的 `output.filename` 主干一致。该文档兼作交付侧车:它从创作计划开始,视频交付后追加 `Generation` 段。完整的、符合规范的示例见 [storyboard-example.md](storyboard-example.md) — 产出新分镜前先复习它。它恰好包含三个部分:
 
-1. **视频主要目标** — one line: `产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`.
-2. **分镜表格** — one row per shot, columns defined in §3. Lock the following decisions in the header before the table:
-   - `默认假设`: filled defaults the user did not provide (no real person on camera, no existing footage → pure generation, etc.).
-   - `音频策略`: one line derived from §4.
-   - `美学母体`: the palette/material/lighting basis that every shot anchors to (e.g. 冰蓝冷调 → 暖色烹饪光 → 品牌红白).
-   - `视听路线`: subtitle route, `含字幕` or `无字幕`, locked for the whole segment (§5).
-3. **视频 prompt** — the full multi-shot prompt in one block plus BGM notes (§6).
+1. **视频主要目标** — 一行:`产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`。
+2. **分镜表格** — 每镜一行,列定义见 §3。表格前在表头锁定以下决策:
+   - `默认假设`:用户未提供时填写的默认值(无人出镜、无现有素材 → 纯生成,等等)。
+   - `音频策略`:按 §4 推导出的一行。
+   - `美学母体`:每镜都锚定的色彩/材质/光影基底(例如 冰蓝冷调 → 暖色烹饪光 → 品牌红白)。
+   - `视听路线`:字幕路线,`含字幕` 或 `无字幕`,整段锁定(§5)。
+3. **视频 prompt** — 一个代码块中的完整多镜 prompt,外加 BGM 备注(§6)。
 
 ### 1.2 路径判定:剪辑 vs 生成(规划阶段必做 · 决策一次后贯穿整片)
 
@@ -124,45 +124,45 @@ Brief header 必填一行 `生成路径`,三选一:
 
 H 路径额外在分镜表前加 `段-1/段-2/...` 分组,每组标子路径;拼接菜谱按 §7.1 split-or-merge 流程走。
 
-## 2. Narrative Skeleton
+## 2. 叙事骨架(Narrative Skeleton)
 
-Pick one skeleton first; the skeleton determines shot count, pacing, and subtitle route.
+先选一个骨架;骨架决定镜头数、节奏和字幕路线。
 
-| Skeleton | Use | Shots | Shot length | Subtitle |
+| 骨架 | 用途 | 镜头数 | 单镜时长 | 字幕 |
 | --- | --- | --- | --- | --- |
-| **A: showcase** (测评/利益/ASMR/变装/演示) | dense information, fast rhythm | 9-12 | 1.0-2.5s | 含字幕 |
-| **B: narrative** (情感/故事/溯源/品牌) | emotional arc, slower pace | 5-8 | 2.0-5.0s | 无字幕或极简 |
-| **C: 共鸣叙事** (共情/自嘲/治愈/打工人式) | emotional resonance; 共情→自嘲→转折→金句 | 6-10 | 2.0-4.0s | 含字幕 |
+| **A: showcase** (测评/利益/ASMR/变装/演示) | 信息密集、节奏快 | 9-12 | 1.0-2.5s | 含字幕 |
+| **B: narrative** (情感/故事/溯源/品牌) | 情绪弧线、节奏较慢 | 5-8 | 2.0-5.0s | 无字幕或极简 |
+| **C: 共鸣叙事** (共情/自嘲/治愈/打工人式) | 情绪共鸣;共情→自嘲→转折→金句 | 6-10 | 2.0-4.0s | 含字幕 |
 
-Rules that apply to all skeletons:
+适用于所有骨架的规则:
 
-- Keep **1-3 key points per 15s**; more requires splitting segments (§7).
-- **Recover the hook within the first 7 seconds** (visual burst or emotional burst) or completion rate drops.
-- Mark `★` on cover-grade shots; a 15s segment should have at least 5, one every 3s at minimum.
+- 每 15s 保持 **1-3 个关键点**;再多就需要拆段(§7)。
+- **前 7 秒内回收钩子**(视觉爆发或情绪爆发),否则完播率下降。
+- 在封面级镜头上标 `★`;一个 15s 段至少 5 颗,最少每 3s 一颗。
 
-### 2.0 Shot Count: Planning vs Execution (⚠️ critical)
+### 2.0 镜头数:规划层 vs 执行层(⚠️ 关键)
 
-The shot counts above (5-12) are **planning-layer** numbers for the storyboard table and human review. The **execution-layer** shot count — what the t2v model can actually render in a single straight-out generation — is much smaller. See [t2v-model-capability.md](t2v-model-capability.md) M1.
+上面的镜头数(5-12)是**规划层**数字,用于分镜表和人工评审。**执行层**镜头数 — t2v 模型在一次直出生成中实际能渲染的镜头数 — 要小得多。见 [t2v-model-capability.md](t2v-model-capability.md) M1。
 
-| Generation mode | Max shots in 15s | Min shot length | Time expression |
+| 生成模式 | 15s 内最大镜头数 | 最短单镜时长 | 时间表达 |
 | --- | --- | --- | --- |
-| **Single straight-out t2v** (default for y-media) | 3-4 | ≥4s | Precise time anchors (`0.0-5.0s`) |
-| **Multi-segment + edit** (split + concat) | per segment ≤3 | per segment ≥4s | Each segment independent |
-| **Clip-style dense cut** (骨架A 带货) | 9-12 (planning only) | 1.0-2.5s | Requires multi-segment generation + manual edit |
+| **单段直出 t2v**(y-media 默认) | 3-4 | ≥4s | 精确时间锚点(`0.0-5.0s`) |
+| **多段生成 + 剪辑**(拆段 + 拼接) | 每段 ≤3 | 每段 ≥4s | 每段独立 |
+| **剪辑式密集切**(骨架A 带货) | 9-12(仅规划层) | 1.0-2.5s | 需要多段生成 + 人工剪辑 |
 
-**Rule**: For a 15s single straight-out generation, write 5-8 shots in the storyboard table (planning), but **merge them into 3 time-anchored segments in the prompt** (execution). Writing 6 shots directly into the prompt causes shot collapse (M1) — the model renders only 1-2 shot sizes.
+**规则**:对 15s 单段直出,在分镜表里写 5-8 镜(规划层),但在 prompt 中**把它们合并为 3 个时间锚段**(执行层)。直接把 6 镜写进 prompt 会导致镜头塌缩(M1)— 模型只渲染 1-2 个景别。
 
-Three time-expression modes (see [t2v-model-capability.md](t2v-model-capability.md) §3):
+三种时间表达方式(见 [t2v-model-capability.md](t2v-model-capability.md) §3):
 
-| Mode | Strength | Writing | Use when |
+| 方式 | 强度 | 写法 | 适用 |
 | --- | --- | --- | --- |
-| Precise time anchor | Strongest | `0.0-5.0s: ...` | 10-15s, 3-4 shots |
-| Scene numbering | Medium | `Scene 1: ...` | 5-10s, 2-3 shots |
-| Action-flow connectors | Weak/natural | `then` / `suddenly` / `as` | ≤5s, 1-2 shots |
+| 精确时间锚点 | 最强 | `0.0-5.0s: ...` | 10-15s,3-4 镜 |
+| 画面编号 | 中等 | `Scene 1: ...` | 5-10s,2-3 镜 |
+| 动作流连接词 | 弱/自然 | `then` / `suddenly` / `as` | ≤5s,1-2 镜 |
 
-Hook templates (mirror on the top of the shot table):
+钩子模板(置于镜头表顶部作对照):
 
-| Scene | Opening visual | Text/SFX |
+| 场景 | 开场视觉 | 文字/音效 |
 | --- | --- | --- |
 | 测评/演示 | 疑问前置字幕 + 产品全景 | "这个很火的到底好不好用?" |
 | 利益/转化 | 价格锚点 + 产品硬切 | 大字幕 "3.9元包邮" |
@@ -243,38 +243,38 @@ Step 2: 主体是否有"人物/故事/情绪弧"?
 
 > 超过 Provider 单段硬上限时(查 `capability_limits[<capability>].maxSingleSegmentDuration`),走 §7.1 split-or-merge 流程,不要靠堆 30s 段实现。
 
-## 3. Shot Table Columns
+## 3. 分镜表列(Shot Table Columns)
 
-Fill every column for every shot. Precision beats prose; each column answers one question.
+每一镜都要填满每一列。精确胜过散文;每列回答一个问题。
 
-| Column | Rule | Example |
+| 列 | 规则 | 示例 |
 | --- | --- | --- |
-| 镜号 | `S01-01` onwards | S01-03 |
-| 时长 | exact to 0.1s; the segment total matches the target duration | 1.8s |
+| 镜号 | 从 `S01-01` 起 | S01-03 |
+| 时长 | 精确到 0.1s;段总和与目标时长一致 | 1.8s |
 | 景别与视角 | 景别 + 机位角度 | 微距特写,低角度仰拍 |
-| 运镜 | 运镜 + 速度 + 方向; one shot, at most 2 moves | 缓推,跟随虾仁滑落 |
+| 运镜 | 运镜 + 速度 + 方向;一镜至多 2 个动作 | 缓推,跟随虾仁滑落 |
 | 光影 | 方向 + 色温 + 光比 + 光质 | 45°侧光,6000K,柔光高对比 |
 | 色彩 | 主色 + 辅色 + 色调 | 青白+冰蓝,冷调 |
-| 主体动作 | concrete, single action | 手撕开冷冻包装袋,冰块碎粒滑落 |
+| 主体动作 | 具体、单一的动作 | 手撕开冷冻包装袋,冰块碎粒滑落 |
 | 道具/环境 | 前景/中景/背景 三层; ≥3 可命名元素; 1 个光源; 背景加 1-2 个低速动态元素 | 前景冰块碎粒/中景包装袋/背景厨房台面虚化+水珠 |
 | 音频三层 | ① 人声(有对白/OS心声/无对白) ② 环境音+关键音效点(镜次+时机+音效名) ③ BGM 节点 | (环境)撕包装"嘶啦"+冰块碰撞"咔啦"/(BGM)木吉他扫弦淡入 |
-| 屏显字幕 | §5; empty only on the 无字幕 route | ①"这虾仁,也太鲜了!"·上1/3·弹入放大 |
-| 视觉重点 | `★` = cover-grade | ★ |
+| 屏显字幕 | §5;仅在无字幕路线留空 | ①"这虾仁,也太鲜了!"·上1/3·弹入放大 |
+| 视觉重点 | `★` = 封面级 | ★ |
 
-Environment realism (`3+1` rule for any on-camera environment): `[具体场所] + [3 个可命名道具/纹理] + [1 个光源方向色温]`. Avoid pure-gradient or studio-empty backgrounds; add life traces so the frame does not freeze. Pick **1-2 slow, local dynamic elements** per scene from four kinds:
+环境真实感(任何上镜环境都适用 `3+1` 规则):`[具体场所] + [3 个可命名道具/纹理] + [1 个光源方向色温]`。避免纯渐变或空棚背景;加入生活痕迹,画面才不会冻住。每个场景从四种动态中选 **1-2 个缓慢的局部动态元素**:
 
-| Dynamic kind | Examples |
+| 动态类型 | 示例 |
 | --- | --- |
 | 人物动态 | 背景虚化人流走动 / 邻桌客人交谈 |
 | 自然动态 | 纱帘轻飘 · 树影摇曳 · 水面波光 |
 | 光影动态 | 光斑缓移 · 明暗呼吸 · 屏幕微闪 |
 | 粒子动态 | 蒸汽升腾 · 尘埃浮动 · 水汽 |
 
-### 3.1 Granularity Scale (颗粒度标尺)
+### 3.1 颗粒度标尺(Granularity Scale)
 
-Each column must be filled to the level below. Abstract adjectives ("暖光""柔和""自然") fail because the model has no parameter to lock onto. Concrete values ("4500K""光比2:1""-18dB") succeed because they pin the model's output. When unsure how具体 a field should be, cross-check [granularity-scale.md](granularity-scale.md) for the full scale and [../influence-factors.md](../influence-factors.md) for the threshold.
+每一列都必须填到下面的颗粒度。抽象形容词("暖光""柔和""自然")会失败,因为模型没有可锁定的参数。具体数值("4500K""光比2:1""-18dB")会成功,因为它们钉住了模型的输出。拿不准字段该多具体时,对照 [granularity-scale.md](granularity-scale.md) 看完整标尺,[../influence-factors.md](../influence-factors.md) 看阈值。
 
-| Field | Abstract (reject) | Concrete (accept) | Threshold source |
+| 字段 | 抽象(拒绝) | 具体(接受) | 阈值来源 |
 | --- | --- | --- | --- |
 | 光影·色温 | "暖光" | `4500K` (具体K值) | F3 |
 | 光影·光比 | "柔和" | `2:1` (数字比) | F3 |
@@ -289,7 +289,7 @@ Each column must be filled to the level below. Abstract adjectives ("暖光""柔
 | 焦段 | "广角" | `16mm广角` / `85mm中焦` (等效mm) | F5 |
 | 约束 | "要有高级感" | `24fps,快门180°,禁止文字` (可执行) | F10 |
 
-#### 3.1.1 Shot Table In-Line Example (11 列填好的参考行)
+#### 3.1.1 分镜表行内示例(11 列填好的参考行)
 
 下面是分镜表一行填好后的样子(完整 6 镜见 [storyboard-example.md](storyboard-example.md) §2):
 
@@ -299,9 +299,9 @@ Each column must be filled to the level below. Abstract adjectives ("暖光""柔
 
 每一列都填了具体值:时长 0.1s 精度、景别+机位+角度、运镜英文+速度、光影四要素(光位+色温+光比+光质)、主色+辅色、慢动作连续动作、前/中/背景三层、音频三层+dB+BPM、无字幕(—)、视觉重点(★)。
 
-Rule of thumb: if a field can be replaced by "etc." without losing information, it is too abstract. Rewrite it with a number or a named term.
+经验法则:如果一个字段换成"等等"也不丢失信息,那它就太抽象了。用数字或具名术语重写。
 
-#### 3.1.2 Display layer vs Execution layer (展示层 vs 执行层)
+#### 3.1.2 展示层 vs 执行层(Display layer vs Execution layer)
 
 | 字段 | 展示层(分镜表,人读) | 执行层(prompt,模型读) | 降级规则 |
 | --- | --- | --- | --- |
@@ -319,7 +319,7 @@ Rule of thumb: if a field can be replaced by "etc." without losing information, 
 | **帧数** | 361 (8n+1,默认 15s) / 433 (8n+1,封顶 18s) | (不写进 prompt,进 API 参数) | 数字 → API参数 |
 | **镜头数** | 6镜(规划) | 3时间段(执行) | 合并压缩 |
 
-#### 3.1.3 Execution layer 降级范例
+#### 3.1.3 执行层降级范例
 
 | 展示层(分镜表) | 执行层(prompt) |
 | --- | --- |
@@ -350,11 +350,11 @@ Rule of thumb: if a field can be replaced by "etc." without losing information, 
 - [ ] 主体月龄/数字描述在 prompt 中保留?
 - [ ] 焦段/速度数字已降级为语义词?
 
-### 3.2 Scene Routing
+### 3.2 场景路由(Scene Routing)
 
-After filling the brief (§1), route to a scene template before writing the shot table. Scene templates supply pre-built lighting palettes, audio skins, 7s climax patterns, and AI generation禁区 for common non-commerce subjects. If no template matches, fall back to the generic §2-§6 flow.
+填写完 brief(§1)后,在写分镜表之前先路由到场景模板。场景模板为常见非商业主体提供预制光影色板、音频皮肤、7s 高潮模式和 AI 生成禁区。若没有模板匹配,回退到通用 §2-§6 流程。
 
-| Subject type | Template | Key takeaway |
+| 主体类型 | 模板 | 关键要点 |
 | --- | --- | --- |
 | 自然 / 动物 / 治愈系 | [scenes/scene-nature-animal.md](scenes/scene-nature-animal.md) | 骨架B慢切 + 无字幕 + 黄金时刻光 + 清新民谣BGM |
 | 生活 / 质感 / 氛围 | [scenes/scene-lifestyle-aesthetic.md](scenes/scene-lifestyle-aesthetic.md) | 骨架B慢切 + 暖光系 + 暖民谣/钢琴 |
@@ -363,17 +363,17 @@ After filling the brief (§1), route to a scene template before writing the shot
 | **商业带货 / 产品演示(6 大品类)** | [scenes/scene-commerce-product.md](scenes/scene-commerce-product.md) | **骨架A showcase + 含字幕 6 类全用 + R5 零错字铁律 + 合规清单**;美妆个护/服饰/家居/数码/母婴/通用 |
 | 其他(科技/产品/抽象) | — | 按本文件通用流程,未来可扩展 |
 
-## 4. Audio Design
+## 4. 音频设计(Audio Design)
 
-Design all three layers; never rely on the model default background track alone.
+三层都要设计;绝不只依赖模型的默认背景音轨。
 
-**Voice** — pick one: 有对白 (talent speaks), 纯 OS 心声 (inner voice, low/slow), or 无对白 (thicken ambient + physiological sounds such as 呼吸/衣物摩擦 instead). When there is dialogue, write a natural-delivery line: 每 8-12 字一次换气, 关键词前微停, 尾字自然下沉, 避免播音腔.
+**人声** — 三选一:有对白(真人说话)、纯 OS 心声(内心独白,低沉/缓慢)、或无对白(改为加厚环境音 + 生理声,如 呼吸/衣物摩擦)。有对白时,写自然的台词:每 8-12 字一次换气, 关键词前微停, 尾字自然下沉, 避免播音腔。
 
-**Ambient/SFX** — 2-3 recognizable sound words per scene; mark key SFX beats explicitly: `音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`.
+**环境音/音效** — 每场景 2-3 个可识别的拟声词;明确标注关键音效点:`音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`。
 
-**BGM** — always specify 4 fields: 风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点. Map goal and query mood to a skin, never a generic "轻音乐":
+**BGM** — 始终写明 4 个字段:风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点。把目标和 query 情绪映射为一种皮肤,绝不写通用的"轻音乐":
 
-| Goal | Serving | Tempo |
+| 目标 | 服务 | 节奏 |
 | --- | --- | --- |
 | 转化 | 抓人→证明→催单 | 快, 90-130 BPM, 音画卡点 |
 | 兴趣(种草) | 沉浸→共鸣 | 中, 75-100 BPM |
@@ -388,9 +388,9 @@ Design all three layers; never rely on the model default background track alone.
 | 温情/亲子/礼物 | 弦乐·钢琴·暖民谣 | 65-90 |
 | 科技/参数/性能 | 合成器电子·脉冲音效 | 115-130 |
 
-Levers worth one line each in the table header when applicable: 开场 3s 音频钩子, 音画卡点, 静音留白→爆点炸开, 声音记忆点, 情绪音量曲线. Silence is a tool: 情感反转前全断 0.5-1s, 数据字幕前 BGM 降 6dB+"叮", 质感片末镜 BGM 淡出只留环境音.
+适用时,表头中每个杠杆各占一行:开场 3s 音频钩子, 音画卡点, 静音留白→爆点炸开, 声音记忆点, 情绪音量曲线。沉默是一种工具:情感反转前全断 0.5-1s, 数据字幕前 BGM 降 6dB+"叮", 质感片末镜 BGM 淡出只留环境音。
 
-### 4.1 BGM 4-Field Inline Example (写入 `音频策略` 行)
+### 4.1 BGM 四字段行内示例(写入 `音频策略` 行)
 
 BGM 行必须**只填 4 个字段**,缺一不可,顺序固定:`风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点`。详细反例见 [pitfalls-and-iron-rules.md](pitfalls-and-iron-rules.md) §1.2 静止动词陷阱。下面是 [storyboard-example.md](storyboard-example.md) 的写法:
 
@@ -547,27 +547,27 @@ BGM 行必须**只填 4 个字段**,缺一不可,顺序固定:`风格(乐器/参
 
 **自检**:15s 段至少 1 处静音/降 BGM;30s 段至少 2 处;质感片至少 1 处末镜静音。
 
-## 5. Subtitle Route
+## 5. 字幕路线(Subtitle Route)
 
-Decide once and lock it in the header.
+决策一次,并在表头锁定。
 
-- 信息流投放/转化 or information-dense content → **含字幕** (many plays are muted; subtitles carry the message).
-- 质感/情感/ASMR/品牌 → **无字幕或极简 (≤2 条)**. When the picture already carries 70% of the information, subtitles are noise.
+- 信息流投放/转化 或信息密集型内容 → **含字幕**(很多播放是静音的;字幕承载信息)。
+- 质感/情感/ASMR/品牌 → **无字幕或极简 (≤2 条)**。当画面已承载 70% 的信息时,字幕就是噪音。
 
-Six subtitle types (a segment need not use all):
+六种字幕类型(一段不必全用):
 
-| Type | Position | Content |
+| 类型 | 位置 | 内容 |
 | --- | --- | --- |
 | ① 钩子 | 0-2s | 痛点问句 / 悬念 / 反常识数据 |
-| ② 数据/卖点 | 核心镜 3-7 | 具体数字+单位, avoid vague claims |
+| ② 数据/卖点 | 核心镜 3-7 | 具体数字+单位,避免模糊表述 |
 | ③ 信任背书 | 中后段 | 品牌/成分/资质/产地/销量 |
 | ④ 行动号召/slogan | 末镜 | A: 指令+利益+紧迫 / B: slogan 或情感 tag / C: 互动设问(骨架C 收尾) |
 | ⑤ 氛围/口播同步 | 全片 | 口播关键词高亮 |
 | ⑥ 金句/治愈收尾 | 末镜或黑屏 | 情绪总结句, 骨架C 合拍必用; 黑底白字+关键词黄底高亮 |
 
-Lock 5 style items across the whole segment: 字体族 (one family), 色板 (≤2 colors; 数据卖点常金黄加粗; 金句黑底白字+关键词黄底高亮), 位置 (per type), 动画 (1-2 kinds), 描边/阴影 (uniform). Design motion in three phases — 入场 (0.2-0.4s: 弹入放大/上滑淡入/逐字打字) · 停留 (1-2s) · 出场 (缓淡出/下滑). Key subtitles (hook/data/CTA) get one short SFX, e.g. `"叮",前0.1s背景降6dB反衬`.
+整段锁定 5 项样式:字体族(一个家族)、色板(≤2 色;数据卖点常金黄加粗;金句黑底白字+关键词黄底高亮)、位置(按类型)、动画(1-2 种)、描边/阴影(统一)。动效按三阶段设计 — 入场 (0.2-0.4s: 弹入放大/上滑淡入/逐字打字) · 停留 (1-2s) · 出场 (缓淡出/下滑)。关键字幕(钩子/数据/CTA)配一个短音效,例如 `"叮",前0.1s背景降6dB反衬`。
 
-Copy rules: 品牌名/型号/成分名零容错 — verbatim from the user or confirm; ≤12 字 per line, split longer ones; wrap numbers/units/brand names in English quotes so the model keeps them verbatim; avoid absolute claims; 行动号召 carries urgency when the goal is conversion (仅限今日/前100名).
+文案规则:品牌名/型号/成分名零容错 — 逐字取自用户或向用户确认;每行 ≤12 字,超长拆分;数字/单位/品牌名用英文引号包裹,让模型逐字保留;避免绝对化表述;目标为转化时,行动号召要带紧迫感(仅限今日/前100名)。
 
 ### 5.0 动效设计规范(三阶段 + 6 种入场 + 3 类节奏)
 
@@ -656,36 +656,36 @@ Copy rules: 品牌名/型号/成分名零容错 — verbatim from the user or co
 2. **关键字幕都配音效了?** ① ② ④ 必配音效(§5.1 S1),价格爆点必带 S4 静音法则。
 3. **品牌名逐字核对了吗?** R5 铁律:长品牌名/型号/成分/SPF/价格/资质/限量数字逐字核对,引号包裹,prompt 加 `verbatim` 指令。
 
-## 6. Video Prompt
+## 6. 视频 Prompt
 
-Write the whole segment as **one prompt** with `Shot 1: … Shot 2: …`, not separate short prompts:
+把整段写成**一个 prompt**,用 `Shot 1: … Shot 2: …` 连接,而不是多个独立的短 prompt:
 
 ```text
 [主体] + [详细动作] + [场景/环境] + [光线/色调] + [镜头运动] + [视觉风格/画质] + [约束条件]
 ```
 
-Mapping: 景别/视角 + 运镜 → 镜头运动; 光影/色彩 → 光线色调; 主体动作 → 详细动作; 道具/环境 → 场景环境; 字幕 per §5 rendered inline per shot; 视觉基因 → 风格/画质 + 约束.
+对应关系:景别/视角 + 运镜 → 镜头运动; 光影/色彩 → 光线色调; 主体动作 → 详细动作; 道具/环境 → 场景环境; 字幕按 §5 每镜内联渲染; 视觉基因 → 风格/画质 + 约束。
 
-Close every prompt with a constraint block: `全片约束: 避免纯色渐变背景,避免棚拍空盒子感; 色调从X自然过渡到Y,过渡流畅不跳戏; 所有中文字幕按引号内文字渲染,零错字`. For vertical delivery also state `竖屏9:16` explicitly in the prompt header.
+每个 prompt 都用约束块收尾:`全片约束: 避免纯色渐变背景,避免棚拍空盒子感; 色调从X自然过渡到Y,过渡流畅不跳戏; 所有中文字幕按引号内文字渲染,零错字`。竖屏交付时,还要在 prompt 头部显式写明 `竖屏9:16`。
 
-### 6.1 Input Binding Syntax
+### 6.1 输入绑定语法(Input Binding Syntax)
 
-When the capability uses reference inputs (`image-to-video`, `keyframes-to-video`), bind them explicitly in the prompt:
+当 capability 使用参考输入(`image-to-video`, `keyframes-to-video`)时,在 prompt 中显式绑定它们:
 
-| Purpose | Write |
+| 用途 | 写法 |
 | --- | --- |
 | 主体一致 | `以 <图片1> 为主体,保持产品外观/logo/配色一致` |
 | 首帧引导 | `以 <图片1> 作为起始画面` |
 | 风格参考 | `参考 <图片1> 的色调与光影` |
 | 分段接续 | `以 <前段> 末帧作首帧,光线/色调/风格一致` |
 
-For `keyframes-to-video`, describe the transition between the start and end frames in the prompt; the inputs themselves pin the endpoints.
+对于 `keyframes-to-video`,在 prompt 中描述起始帧与结束帧之间的过渡;输入本身钉住两端。
 
-### 6.2 Anti-Patterns
+### 6.2 反模式(Anti-Patterns)
 
-避免: 抽象堆砌 ("高级感" without concrete parameters), 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, reusing one BGM across segments with different goals, forgetting the constraint block.
+避免: 抽象堆砌(没有具体参数的"高级感"), 冲突指令/一镜 >2 种运动, 把 15s 拆成多段短生成再拼接, 烧录 SRT 而不是让模型渲染字幕, 目标不同的段落复用同一首 BGM, 忘记约束块。
 
-### 6.3 Prompt Assembly Example (八要素 + 角色四层 + 场景三层 + 约束块)
+### 6.3 Prompt 拼装示例(八要素 + 角色四层 + 场景三层 + 约束块)
 
 下面是一段**完整 prompt 拼装示例**,对应 [storyboard-example.md](storyboard-example.md) 的雄鹿与幼鹿。读者应能逐项对应到 §3 分镜表的列,并看出**数字已全部语义化降级**(展示层 → 执行层):
 
@@ -737,9 +737,9 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 
 完整对照表(12 字段)见 §3.1 颗粒度标尺;模型为什么读不懂数字的边界,见 [t2v-model-capability.md](t2v-model-capability.md) M4。
 
-### 6.4 Prompt Structure Formula (八要素 + 五定法 + 角色四层 + 场景三层)
+### 6.4 Prompt 结构公式(八要素 + 五定法 + 角色四层 + 场景三层)
 
-> 提示词的**写作骨架**。本节定义"一段 prompt 应该按什么顺序、什么结构拼接";规则在 §6 整体,术语在 [../../cinematography-reference.md](../../cinematography-reference.md),模型限制在 [t2v-model-capability.md](t2v-model-capability.md)。
+> 提示词的**写作骨架**。本节定义"一段 prompt 应该按什么顺序、什么结构拼接";规则在 §6 整体,术语在 [../cinematography-reference.md](../cinematography-reference.md),模型限制在 [t2v-model-capability.md](t2v-model-capability.md)。
 >
 > **核心原则**:八要素不可省略,五定法定维度,角色四层/场景三层定颗粒度,14 镜头库选运镜,避坑三陷阱防翻车,5 铁律做最终校验。
 
@@ -819,7 +819,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | 第三层 环境细节 | "墙角堆着几个纸箱" / "dew-drenched clover, pink wildflowers, thin drifting mist" |
 | 第四层 光线/天气 | "黄昏 / 晨雾 / 雨水" / "soft golden sunrise backlight, gentle wind" |
 
-### 6.5 Cinematic Shot Library (14 镜头库)
+### 6.5 14 镜头库(Cinematic Shot Library)
 
 > 导演级速查表。6 种运镜组合 + 4 种高级电影术语 + 4 种构图/镜头进阶技法 = 14 个技法,供写 prompt 时按场景选用。
 >
@@ -887,7 +887,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | close-up | wide | 近→远 = 释放 |
 | slow motion | normal speed | 慢→常 = 现实回归 |
 
-### 6.6 Pitfalls: 避坑三陷阱(物理互斥 / 静止动词 / 光影缺失)
+### 6.6 避坑三陷阱(物理互斥 / 静止动词 / 光影缺失)
 
 > 写 prompt 前**必读**。从原方法论拆出,便于写 prompt 时翻阅,避免跳读。
 
@@ -925,9 +925,9 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 
 **完整写法**: 光位 + 光质 + 光源 + 填充,如 `single light source — low golden morning sun behind the subject, soft fill from the sky`。
 
-详见 [../../cinematography-reference.md](../../cinematography-reference.md) §3 光影与 [t2v-model-capability.md](t2v-model-capability.md) M4 数字参数被忽略。
+详见 [../cinematography-reference.md](../cinematography-reference.md) §3 光影与 [t2v-model-capability.md](t2v-model-capability.md) M4 数字参数被忽略。
 
-### 6.7 Iron Rules: 5 铁律(最终校验)
+### 6.7 5 铁律(Iron Rules,最终校验)
 
 > 提交 prompt 前**必过**。与 §6.6 配合:那里讲"不要用什么",这里讲"必须做什么"。
 
@@ -991,7 +991,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | 具体 | "BBC Earth + ARRI Alexa" | 质感锁定 |
 | 影视级 | "in the spirit of BBC Earth, shot on ARRI Alexa with shallow depth of field" | 锁定 |
 
-### 6.8 Hook Types (钩子类型,前 3 秒防流失)
+### 6.8 钩子类型(前 3 秒防流失)
 
 | 钩子类型 | 写法 | 适用 |
 | --- | --- | --- |
@@ -1001,7 +1001,7 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 | 表情钩子 | 特写表情(歪头/凝视/微笑) | 人像/宠物 |
 | 悬念钩子 | 局部特写先出现,后揭示全貌 | 叙事 |
 
-### 6.9 Prompt Assembly Template (拼接顺序模板)
+### 6.9 Prompt 拼接模板
 
 ```text
 [画幅/时长/质感总述] Vertical 9:16, 15 seconds. [风格锚] style, shot on [摄影机] with shallow depth of field.
@@ -1038,11 +1038,11 @@ Cinematic, BBC Earth, healing and tender mood, "starts calmly → peaks with the
 — No text, no logo, no watermark, no on-screen caption.
 ```
 
-Notes for downstream audio (do NOT include in the video prompt):
-- BGM skin: [音频皮肤].
-- Ambient priorities: [环境音优先级].
+Notes for downstream audio(下游音频备注,不要写进视频 prompt):
+- BGM 皮肤: [音频皮肤]。
+- 环境音优先级: [环境音优先级]。
 
-### 6.10 Self-Check (提交 prompt 前)
+### 6.10 自检(提交 prompt 前)
 
 - [ ] 物理逻辑:无矛盾指令(光位/景别/速度)?
 - [ ] 动作:无纯静止动词,有 micro-action?
@@ -1054,14 +1054,14 @@ Notes for downstream audio (do NOT include in the video prompt):
 - [ ] 风格锚:每段 1 个明确风格标签?
 - [ ] 八要素全填(主体/动作/场景/光影/镜头/风格/画质/约束)?
 
-详见 [../../influence-factors.md](../../influence-factors.md) F9 负面约束精炼。
+详见 [../influence-factors.md](../influence-factors.md) F9 负面约束精炼。
 
-## 7. Duration And Segment Strategy
+## 7. 时长与分段策略(Duration And Segment Strategy)
 
-- **Single-segment default**: prefer one segment. The hard cap is **dynamic**, not fixed — see §7.1.
-- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must satisfy the selected Provider's `maxFrames` rule and the 8n+1 rule. Read the current Provider's `maxFrames` and `maxSingleSegmentDuration` from `capability_limits`; **do not hardcode 18s/441** in any prompt or storyboard.
+- **单段默认**:优先一段。硬上限是**动态的**,不是固定的 — 见 §7.1。
+- **帧数映射**:`num_frames = round(duration_seconds * frame_rate)`。帧数必须满足所选 Provider 的 `maxFrames` 规则和 8n+1 规则。从 `capability_limits` 读取当前 Provider 的 `maxFrames` 和 `maxSingleSegmentDuration`;**不要在任何 prompt 或 storyboard 中硬编码 18s/441**。
 
-### 7.1 Dynamic cap + Split-or-merge confirmation (生成前问,按用户选择执行)
+### 7.1 动态封顶 + 拆分或合并确认(生成前问,按用户选择执行)
 
 **硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capability_limits` 中的 `providers[].capability_limits[<capability>]`:
 
@@ -1071,7 +1071,7 @@ Notes for downstream audio (do NOT include in the video prompt):
 | `maxFrames` | `capability_limits[<capability>].maxFrames` |
 | `frameCountRule` | `capability_limits[<capability>].frameCountRule` |
 
-这些字段由各 Provider 的 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段在注册时声明。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
+这些字段由各 Provider 的 [providers/manifest.cjs](../../providers/manifest.cjs) 的 `capability_limits` 段在注册时声明。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
 
 未来 Provider 的注册参考值(以 `capability_limits` 声明为准,不是文档数字):
 
@@ -1108,14 +1108,14 @@ Notes for downstream audio (do NOT include in the video prompt):
 - ❌ skill 内部尝试合并 — 运行时无 ffmpeg 假设
 - ❌ 拆完 N 段后才问"要不要拆/怎么拼" — 生成已花额度,且 N 段已交付,"分 vs 合"已隐含决定
 
-### 7.2 Multi-segment consistency (N 段规划阶段必做)
+### 7.2 多段一致性(N 段规划阶段必做)
 
 - 每段独立满足 §2-§5(独立 brief、独立钩子、独立 audio 节点)。
 - 段间一致性: 美学母体照抄,后段以前段末帧作首帧 (§6.1),一套锁定的字幕/音频风格。
-- Default to **vertical 9:16** unless the user asks otherwise. Express it through `parameters.width/height` (e.g. 720x1280) when the Provider supports it.
-- Keep duration, frame count, and the shot-table total consistent with each other.
+- 默认**竖屏 9:16**,除非用户另有要求。Provider 支持时,通过 `parameters.width/height`(例如 720x1280)表达。
+- 保持时长、帧数与分镜表总和彼此一致。
 
-## 8. Image Work — Cross-Reference
+## 8. Image 模块 — 交叉参考
 
 > image 路径是**独立模块**,有完整的方法论、companion references、scene 路由与 sidecar 模板。本文件(视频版)不重复内容,只给跨模块衔接。
 >
