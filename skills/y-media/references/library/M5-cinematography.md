@@ -1,6 +1,8 @@
-# 影视要素词典 · Cinematography Reference
+> **[AUXILIARY]**:本文件仅在 recipe 头部声明时加载。大多数简单场景不需要读本文件。
 
-> 本文件是分镜表每一列的**参数化填写词典**。当 [video/storyboard.md](video/storyboard.md) §3 要求"方向 + 色温 + 光比 + 光质"时,从这里取具体数值与术语,不要写"暖光""柔和"这种无参数形容词。与 [influence-factors.md](influence-factors.md) 配合使用:本词典定义"填什么",影响因子定义"填到什么程度才有效"。
+# M5. cinematography · 影视要素词典(创意)
+
+> 分镜表每一列的**参数化填写词典**。当 M1 §3 要求"方向 + 色温 + 光比 + 光质"时,从这里取具体数值与术语。
 
 ---
 

@@ -1,10 +1,8 @@
-# Character · 角色设计
+﻿#﻿# M3. character · 角色设计(创意)
+
+> **模型擅长度**:外貌描述(高) / 服装-场景匹配(中) / i2v 一致性(低)
 
 > 本文件是 **5 步流程的 step 2 · 定人物** 的主文档。负责定义视频主体(人物/动物/产品)的写法、颗粒度与人物-事件一致性检查。
->
-> **何时用**: 分镜表骨架(A/B/C)选定后,本步确定"谁在演";Final Prompt 的 `Main subject` 段按本文件输出。
->
-> **不负责**: 骨架选择([storyboard.md](storyboard.md))、场景/环境([scene.md](scene.md))、动作与镜头语言([prompt-craft.md](prompt-craft.md))。
 
 ---
 
@@ -24,6 +22,24 @@
 | 第四层 气质/状态 | "看起来什么感觉" | "气质冷峻的" / "joyful temperament" |
 
 **锁定原则**: 主体描述词**全片/全系列锁同一套**,改一个词模型就漂移。
+
+### §1.1 主体四层速查表(执行层模板)
+
+> **本表用法**:按主体类型直接套四层模板(从粗到细可裁剪),不要从零写。
+
+| 主体 | 角色四层模板(执行层) |
+| --- | --- |
+| **马/pony** | `A [age]-month-old [color] pinto foal with a fluffy mane and a flowing tail, [temperament] temperament` |
+| **鹿** | `A [age]-year-old [species] deer with [antler/feature] and [coat pattern], [temperament] temperament` |
+| **猫** | `A [age]-year-old [breed] cat with [coat color/pattern], [eye color] eyes, [temperament]` |
+| **狗** | `A [age]-year-old [breed] with [coat] fur, [ear type] ears, [temperament]` |
+| **人像女** | `A [age]-year-old [ethnicity] woman with [hair], [face feature], wearing [clothing], [temperament]` |
+| **人像男** | `A [age]-year-old [ethnicity] man with [hair], [face feature], wearing [clothing], [temperament]` |
+| **食物** | `A [size] [dish name] with [topping/garnish], [texture description], on [plate/table]` |
+| **产品** | `A [size] [product] with [material/color], [brand mark in quotes], [detail]` |
+| **风景** | `A [type] landscape in [time/style], with [environment details], [lighting/weather]` |
+
+> **与 SKILL.md §4.1 场景速配表的关系**: 速配表选"运镜+光影+风格锚",本表选"主体外观"。
 
 ---
 
@@ -48,7 +64,7 @@
 | 人像 | `with soft breathing visible, hair lightly swaying, gentle eye movement` |
 | 食物/产品 | `with steam rising slowly, surface texture shifting` |
 
-完整 micro-action 写法见 [character.md §3](character.md)。避坑三陷阱的"静止动词陷阱"执行版见 [prompt-craft.md §4.2](prompt-craft.md)。
+完整 micro-action 写法见 [M3-character.md §3](M3-character.md)。避坑三陷阱的"静止动词陷阱"执行版见 [M8-prompt-craft.md §4.2](M8-prompt-craft.md)。
 
 ---
 
@@ -82,7 +98,7 @@
 - **Final Prompt 的 `Main subject` 段**: 角色四层直接搬入,关键特征锁定(只锁关键特征,不重复全部四层)
 - **场景三层**(step 3): 服装决定光照方向(深色 → 强光提反差;浅色 → 柔光)
 - **动作段**: micro-action 写进 Action 段,不放角色描述
-- 完整 5 维一致性矩阵见 [storyboard.md §5.6](storyboard.md)
+- 完整 5 维一致性矩阵见 [M1-methodology.md §5.6](M1-methodology.md)
 
 ---
 
@@ -97,11 +113,6 @@
 
 ---
 
-## §6 与其他文件的关系
+## §6 上下游
 
-| 文件 | 与本文件的关系 |
-| --- | --- |
-| [storyboard.md](storyboard.md) | §4 骨架(共情子型 C)决定气质层;§5.6 事件逻辑矩阵的"服装-场景"行 |
-| [scene.md](scene.md) | 场景三层决定光照;服装颜色决定反差 |
-| [prompt-craft.md](prompt-craft.md) | §6.2 micro-action 是本步的下游使用;§1 八要素 `主体` 段来自本文件 |
-| [example.md](example.md) | 完整 4 步流程的 step 2 实例参考 |
+→ [SKILL.md §4.0 编号索引](../../SKILL.md#40-编号索引快速定位)

@@ -1,10 +1,10 @@
-# Image Brief 示例 · 产品图 + 海报拼贴
+# I2. image-example · 图片 Brief 示例
 
-> 本文件是 [image-methodology.md](image-methodology.md) 的完整示例。每条示例都按"image-brief.md"结构填写:1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
+> 本文件是 [I1-image-methodology.md](I1-image-methodology.md) 的完整示例。每条示例都按"image-brief.md"结构填写:1. 图片主要目标 / 2. 视觉规范表 / 3. 图片 prompt。
 >
 > 写新 image-brief 前必读,作为颗粒度校准锚。
 >
-> **Negative Prompt 字段**: 图像路径不独立维护 `negative_prompt`,所有负面约束以正向写法 `no X, no Y, no Z` 焊死在 §3 Final Prompt 的 Hard Constraints 块内。详见 [image-methodology.md §A](image-methodology.md) 与 [providers/agnes/api.md](../../providers/agnes/api.md)。视频路径的方法论见 [../video/prompt-craft.md §11](../video/prompt-craft.md),**不要照搬**。
+> **Negative Prompt 字段**: 图像路径不独立维护 `negative_prompt`,所有负面约束以正向写法 `no X, no Y, no Z` 焊死在 §3 Final Prompt 的 Hard Constraints 块内。详见 [I1-image-style.md §7](I1-image-style.md) 与 [providers/agnes/api.md](../../providers/agnes/api.md)。视频路径的方法论见 M7 §11,**不要照搬**。
 
 ---
 
@@ -88,11 +88,11 @@ Product photography, Apple-minimalist, premium consumer electronics, no people, 
 
 **逐项对照 §3 视觉规范表**:
 
-| 规范表字段 | 本 prompt 写法 | 降级/保留 |
+| 规范表字段 | 本 prompt 写法 | 转换/保留 |
 | --- | --- | --- |
 | 主体 | 哑光黑色蓝牙耳机,金属铰链,USB-C 充电口 | ≥3 特征 + 材质保留 |
 | 景别与视角 | 中近景,平视,中心构图 | 完整保留 |
-| 光影·色温 | `5000K` | K 值保留(image 不必降级) |
+| 光影·色温 | `5000K` | K 值保留(image 不必转换) |
 | 光影·光比 | `3:1` | 数字保留 |
 | 色彩 | `#1A1A1A` 哑光黑 | 16 进制 + 命名 |
 | 文字 | `"BlackBeats"`(引号) | R5 铁律逐字 |
@@ -220,7 +220,7 @@ Use the uploaded photo as the exact source for the coffee cup, straw, wooden tab
 
 **逐项对照 §3 + §4 视觉规范表**:
 
-| 规范表字段 | 本 prompt 写法 | 降级/保留 |
+| 规范表字段 | 本 prompt 写法 | 转换/保留 |
 | --- | --- | --- |
 | 区域 ID | Z01(38%) / Z02(62%) | 显式分区 |
 | 区域材质 | 牛皮纸 + 透明塑料杯 | 完整保留 |

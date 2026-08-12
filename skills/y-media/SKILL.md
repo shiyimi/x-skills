@@ -1,372 +1,298 @@
 ---
 name: y-media
-description: Use when generating or editing images, generating videos, using Agnes AI or another registered media Provider, spending a Provider's free media quota, checking or resuming an existing media task, or downloading generated media. 不适用于:纯文字 brief 无媒体产物 / 离线模型训练或微调场景。
+description: 生成或编辑图片、生成视频、使用 Agnes AI 或其他已注册媒体 Provider、消耗 Provider 免费配额、查询或恢复已有媒体任务、下载已生成媒体时使用。不适用于:纯文字 brief 无媒体产物 / 离线模型训练或微调场景。
 ---
 
-# 媒体工作流
+# y-media · 媒体工作流
 
-每个媒体任务都按以下固定工作流执行。**先读 §0 五条核心原则,再按 §1-§5 推进。**
+**打开本文件第一屏 → 命中 §0 路由表 → 判定 §0.5 复杂度模式 → 按模式加载对应文件集 → 严格按 §1 铁律 + §2 5 步工作流推进**。
 
----
+> **加载规则**:每次 brief 只读路由命中的 1 个 recipe + 共享 library 集。未命中文件**不读**。文件小、加载少、成本低。
 
-## §0 五条核心原则(R1-R5)
+### 0.5 复杂度模式(先判模式,再决定加载深度)
 
-| #      | 原则                                                                                                                        | 展开                                                                                                        |
-| ------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **R1** | **一次判定,一路走到底**:开头判定"纯剪辑"还是"纯生成",判定后尽量不切换(生→剪→生 = 主体漂移 + 成本翻倍)                       | §1.1                                                                                                        |
-| **R2** | **故事驱动,而非清单罗列**:把参数装进骨架 A/B/C,以叙事方式交付;1 段 ≤ 1-3 个关键点                                           | §3 / [storyboard.md §4](references/video/storyboard.md)                                                     |
-| **R3** | **视听双轨**:① 字幕可选(若画面承载 70% 信息,质感/ASMR/情感可省);若使用,锁定一套风格;② 三层音频(人声·环境音·BGM)必须全部设计 | [subtitle-spec.md](references/video/subtitle-spec.md) + [audio-design.md](references/video/audio-design.md) |
-| **R4** | **7 秒前回收钩子**:视觉爆发或情绪爆发,二选一;7 秒后完播率下降                                                               | [storyboard.md §4.5](references/video/storyboard.md)                                                        |
-| **R5** | **零错字、品牌名逐字**:品牌名/型号/成分名逐字核对;若用户给了官方拼写,必须原样使用                                           | [subtitle-spec.md §7](references/video/subtitle-spec.md)                                                    |
+按 brief 信号判定模式,不同模式走不同的加载路径:
 
----
+| 模式         | 信号                                              | 加载路径                                | 估计加载量 |
+| ------------ | ------------------------------------------------- | --------------------------------------- | ---------- |
+| **快速模式** | 一句话需求"帮我生成XXX" / 无分镜要求 / 纯模板套用 | recipe + template(3-sets.md),跳过 M1-M9 | ~15KB      |
+| **标准模式** | 需要分镜脚本 / 有明确场景描述 / 15s 以内          | recipe + 核心 M1-M3 + M6-M7(~50KB)      | ~50KB      |
+| **完整模式** | 多段需求 / 商业带货 / 品牌年度片 / 复杂场景       | recipe + 全部 M1-M9(~95KB)              | ~95KB      |
 
-## §1 运行时与分类
+> **判定规则**:默认走标准模式。brief 含"简单""模板""套用"等词 → 快速模式。
+> brief 含"多段""系列""品牌""大片""多镜"等词 → 完整模式。
+> 不确定时 = 标准模式。
 
-### 1.0 运行时
+#### 各模式加载路径说明
 
-需要 Node.js 18 或更高版本,并定位相对于本文件的 `core/orchestrator.cjs`。阅读 [core/provider-contract.md](core/provider-contract.md) 了解请求/结果结构与错误。仅当需要某个 Provider 的凭证、模型与参数时才阅读其随附参考,如 [providers/agnes/api.md](providers/agnes/api.md)。
+**快速模式**:读 recipe 头部(获取视觉锚+场景速配)+ template(3-sets.md)→直接套模板生成。跳过 M1-M9 全部 library。
 
-Agnes 优先解析 `AGNES_API_KEY`,其次读取 `~/.config/agnes/api_key`。永远不要把凭证、提示词或请求 JSON 放进参数、日志或对话输出中。
+**标准模式**:读 recipe + 核心 6 个(M1+M5+M2+M3+M6+M7)+ L0 视觉参考。辅助文件(M4+M8+M9)仅在 recipe 头部声明时读。
 
-### 1.1 路径判定(R1)
-
-| 工作类型                            | 路由             |
-| ----------------------------------- | ---------------- |
-| 已有任务(带原始 Provider 与任务 ID) | 跳到 §4          |
-| 新图片或图片编辑                    | §2-§5 的图片分支 |
-| 新视频                              | §2-§5 的视频分支 |
-
-**视频路径判定一次,后续不再切换(R1)**:
-
-| 情况                                          | 路径         | 动作                |
-| --------------------------------------------- | ------------ | ------------------- |
-| 已有素材,只需重排+字幕+BGM                    | 纯剪辑       | ffmpeg/剪映一次剪完 |
-| 素材来自不同拍摄源需拼接                      | 纯剪辑       | ffmpeg 无缝拼接     |
-| 需要 AI 新画面(表演/产品动态/场景/静图动态化) | 纯生成(默认) | 视频模型 + 字幕直出 |
-
-**生成路径"一次到位"三条(R2)**:
-
-1. 单段时长顶格 —— 目标 15s 就 `duration=15`,不拆 3×5s。
-2. 一条 prompt 多镜头 —— 7-12 镜写进同一条,用 `Shot 1: … Shot 2: …`。
-3. 字幕写进 prompt —— 见 [subtitle-spec.md](references/video/subtitle-spec.md)。
-
-**时长-分段**:
-
-- ≤15s → 按 R2 一次到位。
-- 16-22s → 先压到 15s,压不下再拆 15+(X-15)。
-- \>22s → 顶格拆(15+15+…),避免均分。段间一致性靠:同一参考图作主体锚点、后段以前段末帧作首帧、美学母体(配色/材质/光比/风格词)照抄。
-
-永远不要从不透明的任务 ID 推断 Provider。既有工作固定在其原始 Provider,绝不重新进入优先级选择。
-
-### 1.2 模式检测(电商 vs 通用)
-
-分类工作之后,**还要在收集细节之前**对模式进行分类。模式从 brief 内容中读取,而不是仅凭用户的措辞判断——Skill 应同时识别显式与隐式的电商信号,并按结果路由。
-
-| brief 中的信号                                                           | 模式                | 应用                                    |
-| ------------------------------------------------------------------------ | ------------------- | --------------------------------------- |
-| 出现品牌/产品名 + 价格/优惠/CTA(产品名 + "99元"/"前1000名"/"点击购买"等) | **commerce(电商)**  | 电商流程                                |
-| 出现美妆/服饰/家居/数码/母婴/食品 + 测评/开箱/演示/种草                  | **commerce(电商)**  | 电商流程                                |
-| 出现"我要卖货"/"带货"/"挂车"/"挂链接"/"投流"/"完播转化"/"主图"/"详情页"  | **commerce(电商)**  | 电商流程                                |
-| 仅出现 风景/动物/治愈/故事/品牌形象/情感/ASMR/概念演示(无具体产品)       | **general(通用)**   | 默认通用流程                            |
-| 模糊(出现"产品"但无价格/优惠/CTA 信号)                                   | **ambiguous(模糊)** | **§2 收集阶段必问 1 轮**,按用户选择路由 |
-
-**电商模式 × 工作类型的差异化强制项**:
-
-| 强制项           | 视频电商                                                                                       | 图片电商                                                                            | 说明                    |
-| ---------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------- |
-| 1. 路径决策      | §1.1 (剪辑/生成/混合)                                                                          | [references/image/image-methodology.md](references/image/image-methodology.md) §1.1 | 概念相同,各自走对应路径 |
-| 2. 场景模板      | [scenes/scene-commerce-product.md](references/video/scenes/scene-commerce-product.md) 6 大品类 | 共享同一模板,取"产品摄影"相关列                                                     | 图片与视频同源          |
-| 3. 视听路线      | **默认含字幕** + 6 类字幕全用                                                                  | **默认含文字** + 4 件套(字体/色板/位置/描边)                                        | 视频 6 类 → 图片 4 件套 |
-| 4. 音频策略      | 商业目标定风格 3 步法 + 静音法则                                                               | 不适用(单图无音频)                                                                  | 跳过                    |
-| 5. R5 零错字铁律 | 品牌/型号/成分/SPF/价格/资质/限量 逐字                                                         | 同(视频列)                                                                          | R5 跨模块通用           |
-| 6. 合规清单      | [scenes/scene-commerce-product.md](references/video/scenes/scene-commerce-product.md) §9       | 同 §9(广告法/品牌/价格/资质/版权 BGM/母婴伦理;图片路径跳过"版权 BGM"那行)           | 共享清单                |
-| 7. 生成路径标注  | `<name>.video-brief.md` 表头 `生成路径`                                                        | `<name>.image-brief.md` 表头 `生成路径`                                             | 侧车文件名不同          |
-
-> **通用模式不强制这些动作**——仅在用户明确表达商业意图时才加载电商流程。
+**完整模式**:读 recipe + 全部 M1-M9(含 M4+M8+M9 辅助)+ L0 视觉参考。
 
 ---
 
-## §2 收集(Collect)
+## §0 路由表(必读 · 第一屏)
 
-复用已有信息;**至多问一轮**澄清问题,且只问会实质改变结果的项目(主体、产物类型、硬约束、输入资产)。不要循环——如果还需要第二轮,就把该槽位标上既定默认值并继续。
+按 brief 关键词匹配,只读 ✓ 列出的文件。**视频和图片走两套互不重叠的 library**。
 
-会实质改变结果的项目: 主体 / 产物类型 / 硬约束 / 输入资产。不值得追问的项目: 美学形容词偏好、次要运镜/色调、字幕文案微调——这些使用 §1 和 §3 的既定默认值,不再多问一轮。
+### 0.1 视频路由(共享 1 份 library · 4 阶段编号)
 
-**多段流程(动态上限)**: 单段上限是所选 Provider 的 `capability_limits[<capability>].maxSingleSegmentDuration`(通过 `capabilities` 读取,不硬编码)。当目标时长超出上限时,**在 §2 收集门槛处停下来问用户**,在 ① 拆分(交付 N 个独立文件,无菜谱)与 ② 合并(交付 N 段 + 侧车中的外部合并菜谱)之间二选一。不要自动决策、不要自动合并、也不要硬编码 `18s/441`。
+所有视频 recipe **统一读同一份核心 library**(M1-M9 共 9 个,按 **创意 → 执行 → 检查** 顺序编号;M10 交付层在提交阶段按需)。各 recipe 自身独有的额外文件(A1-A3)由 recipe 头部"与其他文件关系"声明,不再写在路由表里。
 
-所有新工作都收集: 目的、主体、风格、要求/禁止内容、输入资产、输出目录与可读文件名。图片还要确定尺寸与是否需要输入图片。视频还要确定时长、画幅比、节奏、镜头数、镜头语言、连续性、参考图与关键帧。
+**视频 library 分层**:核心 6 个(M1+M5+M2+M3+M6+M7)必读;辅助 3 个(M4+M8+M9)由 recipe 头部声明后按需加载,默认不读。
 
----
+**视频核心 library · M1-M9**(核心 6 个必读 + 辅助 3 个按需):
 
-## §3 规划(Plan)— 创意层
-
-Skill 拥有创意层:在提交之前把收集到的 brief 变成具体的分镜文档。core 从不规划或生成分镜。
-
-### 3.0 4 步流程(写故事 → 定人物 → 定场景 → 写脚本)+ 评审过审过门
-
-短视频构建的直觉是**先有事和主题,再定人物,环境用以衬托,最后写成 prompt 并自检**——像拍电影一样,**写电影故事 → 定人物方案 → 定场景方案 → 写剧本/分镜 → 评审过审**。每个环节有明确的"产出物"和"参考标准(DoD)",每步主引一个文件,避免在多步之间反复跳读同一个文档。
-
-> **本节 4 步是"创意规划"层——产出物是一份 `<name>.video-brief.md`**。提交前的"评审过审"在 §3.4(过门),只检模型/格式/规则,不复看创意内容。
-
-| #   | 环节       | 产出物                             | 参考标准(DoD)                                                                                                       | 主引文件                                                                                                                                         | 辅引 |
-| --- | ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
-| 1   | **写故事** | 骨架(A/B/C) + 主题母体 + 镜头结构  | 骨架选定 + 主题一句话可讲清 + 镜头 1:1 对应(无主动合并) + [§5.6 事件逻辑 4 问](references/video/storyboard.md) 全过 | [storyboard.md](references/video/storyboard.md)(§4 骨架 + §5 镜头结构 + §5.6 事件逻辑)                                                           | —    |
-| 2   | **定人物** | 角色四层(身份/外貌/服装/气质)      | 四层齐全 + 关键特征锁定 + [§4 人物-事件一致性](references/video/character.md) 全过                                  | [character.md](references/video/character.md)(§1 角色四层 + §3 micro-action + §4 人物-事件一致性)                                                | —    |
-| 3   | **定场景** | 场景三层 + 时间/天气/光线 + 风格锚 | 场景三层齐全 + 单一光源 + 风格锚 1 个 + [§6 场景内部一致性](references/video/scene.md) 全过                         | [scene.md](references/video/scene.md)(§1 场景三层 + §2 降级 + §3 单一光源 + §4 竖屏 + §5 风格锚 + §6 场景内部一致性)                             | —    |
-| 4   | **写脚本** | Final Prompt(执行层)               | 八要素齐全 + 1:1 镜号对应 + 14 镜头库术语选对 + 5 铁律同步遵守 + Negative Prompt(若必填档)                          | [prompt-craft.md](references/video/prompt-craft.md)(§1 八要素 + §3 14 镜头库 + §4 避坑 + §5 5 铁律 + §7 拼接模板 + §8 分镜列映射 + §10 Negative) | —    |
-
-**过门(不在 4 步内)**:
-
-| 阶段     | 性质                                                                  | 文档                                                                          |
-| -------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 评审过审 | 模型/格式/规则自检(M1-M6 + Provider + 侧车结构 + 1:1 镜号),不复看创意 | [§3.4](#34-提交前校验) + [media-rules.md §4](references/video/media-rules.md) |
-
-**流程关系**(每个文件的主战场唯一):
-
-- `storyboard.md` = 创意层入口(事/骨架/镜头/事件逻辑),**只在 step 1 出现 1 次**
-- `character.md` = 人物层,**只在 step 2 出现 1 次**
-- `scene.md` = 场景层,**只在 step 3 出现 1 次**
-- `prompt-craft.md` = 写作层,只在 step 4 出现 1 次
-- `media-rules.md` = 评审层,只在过门出现 1 次
-- 任何文件不跨多步被打开——消除交叉耦合
-
-**R6 事件逻辑自洽的分散执行**(横切每步的不变量,不是某一步的):
-
-| 环节          | R6 在该步的检查项                                            | 文档                                                            |
-| ------------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
-| step 1 写故事 | 5 维组合不出现反例(场景/时间/天气/服装/动作)                 | [storyboard.md §5.6](references/video/storyboard.md)            |
-| step 2 定人物 | 服装-场景匹配;身份-动作匹配;气质-情绪匹配;年龄-场景安全性    | [character.md §4](references/video/character.md)                |
-| step 3 定场景 | 场景类型内部一致;时代-光线匹配;天气-场景匹配;风格锚-场景匹配 | [scene.md §6](references/video/scene.md)                        |
-| step 4 写脚本 | Final Prompt 继承前 3 步的 R6 结论,不漂移                    | [prompt-craft.md §1 八要素表](references/video/prompt-craft.md) |
-| 评审过审      | **不复看 R6**——只检模型/格式/规则                            | [media-rules.md §4](references/video/media-rules.md)            |
-
-### 3.0.1 自动推进策略(Brief → 产物,不暂停确认)
-
-> **本 Skill 默认在 brief 写完后不向用户索要确认**,直接进入 §4 路由与 §4.2 提交。
-
-- §3 产出的 brief(`<name>.video-brief.md` / `<name>.image-brief.md`)只作为最终交付物的一部分,不充当"等待用户 review"的卡点。
-- §4.1 提交前确认门在本 Skill 默认策略下被**整体跳过**(参见 §4.1 第 1 段)。
-- 完整 brief 内容在 §5.2 报告阶段与产物路径一起呈现给用户;用户对结果不满意时,通过追加 prompt 重新发起新一轮任务来迭代,而非在原任务中途打断。
-- 例外:若用户在当前消息里**显式声明**"先给我看 brief 再决定"或"不要直接生成",则按其指示走,跳过本自动推进策略,先停在 §3 末尾等待确认。
-
-### 3.1 视频:产出 3 段侧车
-
-视频侧车文件名:`<输出文件名主干>.video-brief.md`,与最终 mp4 同行。**侧车结构固定 3 段**(`## 3-5` 顺序按 brief 需要可灵活,但 `Final Prompt` 一定在最后):
-
-| #   | 区块                                       | 必填                | 说明                                                                                                |
-| --- | ------------------------------------------ | ------------------- | --------------------------------------------------------------------------------------------------- |
-| 1   | **视频主要目标**                           | 必填                | 一行:`产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`            |
-| 2   | **分镜表格**                               | 必填                | 每镜一行,列定义见 [storyboard.md §7](references/video/storyboard.md)                                |
-| 3   | **Final Prompt(执行层 · 提交给 t2v 模型)** | 必填,**始终放最后** | 一个代码块中的完整多镜 prompt,外加 BGM 备注;`Action` 与 `Camera language` 段按 §2 表格镜号 1:1 对应 |
-
-> **§2 表格下可选的扩展项**(不破坏 3 段结构):
->
-> - **Negative Prompt**:进 §3 `Final Prompt` 内的 `Negative constraints:` 块(见 [prompt-craft.md §11](references/video/prompt-craft.md));commerce/人像/品牌必填
-> - **Inputs**(i2v/kf2v 参考图/起止帧):进 §1 表头的 `默认假设` 行或 §2 表头注释
-> - **Generation** 元数据(Provider/model/task.id/参数/warnings/timing):由 §5 追加到 §3 之后,作为「## Generation」段
-
-完整可工作的示例见 [example.md](references/video/example.md)。
-
-### 3.2 图片
-
-按 [references/image/image-methodology.md](references/image/image-methodology.md) §6 产出一条最终 prompt,并选择 `text-to-image` 或 `image-to-image`(分层布局用 `H` 多分区)。写带分层布局或文字的图片 prompt 之前,先看完整示例 [references/image/image-example.md](references/image/image-example.md)——它是 `<name>.image-brief.md` 侧车的颗粒度校准锚。`image-to-image` 要明确声明保留什么、改什么(元素级绑定)。按预期用途选择画幅比,把 `size`/`ratio` 放进 `parameters`。图片侧车是 `<输出文件名主干>.image-brief.md`(与视频的 `<name>.video-brief.md` 平级)。
-
-### 3.3 把规划转换为能力支持的形态
-
-| 输入规划   | 能力                 |
-| ---------- | -------------------- |
-| 仅 prompt  | `text-to-video`      |
-| 一张参考图 | `image-to-video`     |
-| 起止帧     | `keyframes-to-video` |
-
-默认竖屏 9:16,把时长映射为 Provider 帧数: `num_frames = round(duration_seconds * frame_rate)`。硬上限是 `capability_limits[<capability>].maxFrames` 与 `capability_limits[<capability>].maxSingleSegmentDuration`(通过 `capabilities` 读取,不要硬编码 18s/441)。两者都必须满足 `frameCountRule`(如 8n+1)。**在任何 prompt 或分镜中不要硬编码 18s/441** — 不同 Provider 上限不同。超过上限的时长,规划 N 段、各自独立提交,然后问用户是否合并。画幅比通过 `parameters.width/height` 表达。
-
-### 3.4 提交前校验
-
-- 11 列全部填满、镜头时长总和等于目标
-- 每 15s `★` ≥ 5(视觉重点)
-- 字幕文案零错字且品牌名逐字(R5)
-- 帧数满足所选 Provider `capabilities` 的 `frameCountRule`(Agnes 为 `8n + 1`)
-- 视频侧车 `Action` 与 `Camera language` 段按 §2 表格镜号 1:1 对应、**不主动合并相邻镜头**(见 [storyboard.md §5](references/video/storyboard.md))
-
-按 [core/provider-contract.md](core/provider-contract.md) 构建公共请求。视频路径把侧车 `Negative Prompt` 区块并入最终提交的 `prompt` 约束段;不要把负面提示词作为主要行为依赖独立 Provider 字段。Provider 专属控制放在 `parameters` 中,并与所选 Provider 参考核对。
-
-### 3.5 视频路径配套参考(按需读)
-
-> 5 步流程的"主引"已经在 §3.0 锁定(每步 1 个文件)。本表是**辅引**和补充参考,按需打开。
-
-| 文档                                                                                                                                                                                                                                                                                                                                        | 何时读                                                                                                                              | 与 5 步流程的关系               |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| [references/video/storyboard.md](references/video/storyboard.md)                                                                                                                                                                                                                                                                            | **主方法论** — 骨架(A/B/C) + 镜头结构 + 1:1 镜号对应 + 事件逻辑反例库 + 时间分段策略。**写任何分镜前必读**                          | step 1 主引                     |
-| [references/video/character.md](references/video/character.md)                                                                                                                                                                                                                                                                              | **角色设计** — 角色四层 + micro-action + 人物-事件一致性                                                                            | step 2 主引                     |
-| [references/video/scene.md](references/video/scene.md)                                                                                                                                                                                                                                                                                      | **场景设计** — 场景三层 + 展示层→执行层降级 + 单一光源 + 竖屏约束 + 风格锚 + 场景内部一致性                                         | step 3 主引                     |
-| [references/video/prompt-craft.md](references/video/prompt-craft.md)                                                                                                                                                                                                                                                                        | **Prompt 写作** — 八要素 + 14 镜头库(唯一版) + 避坑三陷阱 + 5 铁律(唯一版) + 钩子 + 拼接模板 + 分镜列映射 + Negative Prompt 方法论  | step 4 主引                     |
-| [references/video/media-rules.md](references/video/media-rules.md)                                                                                                                                                                                                                                                                          | **模型能力边界 + 提交前自检** — M1-M6 + 时间表达 + Provider 关键参数 + 提交前自检清单。**评审过审过门必读**                         | 评审过审主引                    |
-| [references/video/audio-design.md](references/video/audio-design.md)                                                                                                                                                                                                                                                                        | **音频三层** — 人声/环境音/BGM + 情绪杠杆 + 静音法则。Final Prompt 的 `Notes for downstream audio` 段填什么由本文件决定             | step 4 辅引(在 Notes 段)        |
-| [references/video/subtitle-spec.md](references/video/subtitle-spec.md)                                                                                                                                                                                                                                                                      | **字幕规范** — 用不用判定 + 6 类字幕 + 风格 + 动效 + 文案原则。分镜表的"屏显字幕"列填什么由本文件决定                               | step 1 辅引(分镜表"屏显字幕"列) |
-| [references/video/example.md](references/video/example.md)                                                                                                                                                                                                                                                                                  | **完整示例** — 晨雾森林雄鹿与幼鹿 6 镜完整填好示例                                                                                  | 5 步全流程实例参考              |
-| [references/video/templates/templates-3-sets.md](references/video/templates/templates-3-sets.md) + [references/video/templates/scene-quick-match.md](references/video/templates/scene-quick-match.md)                                                                                                                                       | 3 套即用模板 + 场景速配表 + 主体描述速查 + 钩子速查                                                                                 | step 1 辅引(钩子速查)           |
-| [references/video/scenes/scene-nature-animal.md](references/video/scenes/scene-nature-animal.md) / [scene-lifestyle-aesthetic.md](references/video/scenes/scene-lifestyle-aesthetic.md) / [scene-portrait-fashion.md](references/video/scenes/scene-portrait-fashion.md) / [scene-food-asmr.md](references/video/scenes/scene-food-asmr.md) | 4 类场景参考的光影/音频/骨架/7秒高潮点模板                                                                                          | step 1 辅引(场景路由)           |
-| [references/video/scenes/scene-commerce-product.md](references/video/scenes/scene-commerce-product.md)                                                                                                                                                                                                                                      | **电商模式专属** 6 大品类(美妆/服饰/家居/数码/母婴/通用);含光影/音频/高潮点/反模式/合规清单/R5 零错字铁律。**当 mode = 电商时必读** | step 1 辅引(电商强制)           |
-| [references/cinematography-reference.md](references/cinematography-reference.md)                                                                                                                                                                                                                                                            | 影视要素词典:景别/运镜/光影/色彩/声音/剪辑/构图/焦段的具体术语与数值                                                                | step 4 辅引(术语转换)           |
-| [references/influence-factors.md](references/influence-factors.md)                                                                                                                                                                                                                                                                          | 视频生成影响因子 F1-F12(带权重评分卡)                                                                                               | step 4 / 评审过审辅引           |
-
----
-
-## §4 路由与提交
-
-### 4.0 路由(Route)
-
-新工作之前先运行 `capabilities`。core 按能力、配置与详细支持过滤启用的注册项,然后选择唯一优先级最低的合格 Provider。除非用户显式选择了某个 Provider,否则省略 `provider`。
-
-额度视为未知,除非 Provider 返回权威信息。不要编造免费额度,也不要添加投机性的额度调用。只有权威的提交前拒绝(带 `accepted: false`)之后才允许回退。
-
-### 4.1 提交前确认门(视频任务)
-
-> **本 Skill 默认跳过本确认门**(由 §3.0.1 自动推进策略决定)。构建好最终 prompt 后直接调用 `generateMedia`,不在此处向用户索要确认。Brief 的可见性通过 §5.2 报告 + brief 文件交付保证,而不是中途暂停。
->
-> 如下内容仅在用户**显式要求先看 prompt 再生成**时才生效。
-
-视频生成成本远高于图片,如确需确认,提交前先征询用户确认,避免白烧额度。构建好最终 prompt 后、调用 `generateMedia` 之前,用 AskUserQuestion 展示:
-
-- 最终 prompt 摘要(主体 / 场景 / 动作 / 镜头语言 / 约束)
-- 时长与帧数(含 `frameCountRule` 合规性)、画幅比
-- 所选 Provider 与模型
-
-用户选择:
-
-- **确认提交** → 继续 §4.2;
-- **修改** → 按反馈调整 prompt 后再次征询(至多 2 轮,仍不一致则以用户最终指示为准);
-- 用户事先已明确"直接生成 / 不用确认" → 跳过本门(默认状态)。
-
-图片任务不强制确认门(成本低),但电商模式(§1.2)或 `image-to-image` 涉及原图修改时,建议同样展示 prompt 摘要。
-
-> 本门与 §2 收集阶段"至多问一轮"相互独立:§2 澄清 brief 缺失项,§4.1 确认最终 prompt 成品。
-
-### 4.2 提交(Submit)
-
-默认使用 `generateMedia`;只有请求"提交不等待"时才使用 `createMedia`。只提交一次。在接受变为 true 或未知之后,绝不重试生成 POST,也不切换 Provider。
-
-### 4.3 等待或恢复(Wait Or Resume)
-
-`status` 与 `wait` 需要确切的原始 `provider`、`capability` 与 `task.id`。它们绝不按优先级路由。
-
-绝不用 `generate` 或 `create` 恢复工作。`wait_timeout` 时,保留 Provider 与任务 ID;远端任务仍然活跃。只有被要求时才继续另一次有界 `wait`。远端成功后的 `download_failed`,对同一任务使用 `wait` 重试状态与下载,不要重新创建媒体。
-
----
-
-## §5 保存与报告
-
-### 5.0 保存(Save)
-
-成功的 `generate` 与 `wait` 操作通过 core 保存产物来源(Artifact Sources)。使用一个可读的 `output.filename`(至多 120 字符);同一个主干命名视频与其侧车。core 保证任务 ID 不进入本地路径、应用真实媒体扩展名、多产物自动编号、避免覆盖,并返回绝对路径。
-
-一次成功的视频交付两个同 basename 的相邻文件:
-
-```text
-<name>.mp4            (core 媒体产物)
-<name>.video-brief.md  (§3 创意文档 + Generation)
+```
+M1 creative-method · M5 director-presets · M2 character · M3 scene · M4 cinematography
+· M6 audio · M9 drift-prevention · M7 prompt-craft · M8 media-rules
 ```
 
-一次成功的图片交付两个同 basename 的相邻文件:
+**视频交付层 · M10**(提交阶段按需):
 
-```text
-<name>.<ext>          (core 媒体产物, .png/.jpg/.webp 依 Provider)
-<name>.image-brief.md (§3 创意文档 + Generation)
+```
+M10 delivery · Provider 参数 + 调用流程 + 结果验证
 ```
 
-侧车(video-brief.md 或 image-brief.md)是 §3 产生的创意文档,已携带 `Brief`、视觉规范表(视频为 `Storyboard` / 图片为 `视觉规范表`)、`Final Prompt`、`Negative Prompt` 与 `Inputs`。**视频侧车顺序固定**:`视频主要目标` → `分镜表格` → `Generation` → `Final Prompt(放最后)`,便于把 `Final Prompt` 作为单段独立可复制的产物提交。交付后把 `Generation` 区块(原本就是 §3 占位)就地填实,记录 Provider、模型、固定的任务 ID、生效参数与警告。不要重写创意内容。绝不要包含凭证、授权头或原始外部响应。
+**视频按需辅助 · A1-A3**(由 recipe 头部声明):
 
-恢复的任务复用原始分镜与 prompt。如果侧车不可用,不要凭空捏造;在这些区块写 `Unavailable from recovered task`,并保留可用的任务与生成元数据。如果视频成功后追加 `Generation` 失败,报告视频路径与侧车失败,不要重新生成视频。
+```
+A1 subtitle · A2 multimodal-syntax · A3 emotional-levers
+```
 
-不要声称 core 未执行的媒体完整性检查。
+| brief 关键词                                                        | recipe                                       | 额外文件(由 recipe 声明)                        | examples                                                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 风景/动物/宠物/治愈/慢生活/自然纪录片/山水/风光/野外/田园           | [nature](references/recipes/nature.md)       | A1(若 OS 解说)· A2(若有参考图)                  | [nature-fog-forest](examples/nature-fog-forest.md) · [nature-pet](examples/nature-pet.md)               |
+| 早安/咖啡/家居/阅读/旅行/节日/仪式感/圣诞/新年/生日/vlog            | [lifestyle](references/recipes/lifestyle.md) | A1(若 OS)· A2(若有参考图)                       | [lifestyle-coffee](examples/lifestyle-coffee.md) · [lifestyle-festival](examples/lifestyle-festival.md) |
+| 杂志/街拍/美妆展示/古风/国风/人像/穿搭/时尚/模特                    | [portrait](references/recipes/portrait.md)   | A2(若参考图)· A3(若商用)· A1                    | [portrait-magazine](examples/portrait-magazine.md) · [portrait-ancient](examples/portrait-ancient.md)   |
+| 烹饪/成品/摆盘/拉花/饮品/鲜食/ASMR/食欲/食物                        | [food](references/recipes/food.md)           | A2(若有参考图)                                  | [food-cooking](examples/food-cooking.md) · [food-asmr](examples/food-asmr.md)                           |
+| **美妆/服饰/家居/数码/母婴/带货/转化/测评/开箱/卖点/价格/通用产品** | [commerce](references/recipes/commerce.md)   | **A1(必)** · **A3(必)** · A2 · M4(若需具体焦段) | [commerce-phone](examples/commerce-phone.md) · [commerce-beauty](examples/commerce-beauty.md)           |
 
-### 5.1 质检(仅在用户明确要求时执行)
+> **路由匹配规则**:
+>
+> - 一个 brief **命中多个关键词** → 取最强信号(如 "美食带货" 优先 commerce,"宠物圣诞" 优先 lifestyle)
+> - **命中 0 个** → 走 §0.3 兜底
 
-默认不质检——视频/图片一旦生成,内容就锁死,机械核对没有修复手段,反而增加延迟;短视频用户一眼即知,Skill 不替用户做这件事。
+### 0.2 图片路由(独立 library 集)
 
-仅当用户**明确要求质检**("帮我看看图/视频有没有问题")时才执行一次:
+图片走**专属 library**(I1-I2 共 2 个),不读视频的 M1-M9。
 
-- 读图/读帧核对"无 AI 残留 / 无水印 / 无叠加文字"(品牌文字类场景按 brief 确认)
-- 核完如实报告,失败时不再重生成
+| brief 关键词                                          | library(必)                                                               | examples |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- | -------- |
+| 海报/广告 KV/封面/小红书/公众号/电商主图/品牌 VI/招贴 | I1                                                                        | I2       |
+| 商业带货(图片路径)                                    | I1 + [commerce recipe](references/recipes/commerce.md) 头部声明的额外文件 | —        |
+| 静物/产品摄影                                         | I1                                                                        | I2       |
 
-> 不与 §3.4 提交前校验混用:§3.4 是提交前的 prompt/分镜/帧数合规,Skill 自检;本节是产物出图后的内容核对,按需触发。
+> 图片路径**不读**视频 M1-M9。仅在"商业带货(图片)"分支读 commerce recipe。
 
-### 5.2 报告(Report)
+### 0.3 视频兜底(未命中关键词时)
 
-每个最终结论报告只呈现有证据支撑的事实:
+**触发条件**:brief 含视频/动态/分镜/t2v/图生视频 等信号,但 0.1 关键词全部未命中。
 
-- 生成信息: `provider`、`capability`、规范化 `status`、固定的 `task.id`、返回或选中的 model、生效参数、警告与耗时。
-- 每个产物: 绝对路径、媒体类型(`image` 或 `video`)、检测到的格式或 MIME 类型、字节大小与可用尺寸。视频还要报告可用的时长、画幅比与帧率。
+**兜底动作**:
 
-**双文件交付(必报 · 强制)**:
+1. **library**:读视频核心 library 全套(M1-M9)
+2. **recipe**:读全部 5 个 recipe 头部 30 行(只读"板块共性"段,作为通用场景知识)
+3. **路径**:默认走 `nature` 骨架 B(5-8 镜,慢节奏,无字幕,治愈)—— 视频兜底最稳的形态
+4. **若 brief 含明确商业意图**(带货/转化/价格/卖点)→ 即便未命中关键词,优先按 commerce 处理
 
-- 视频成功 → 必报两条绝对路径:`<name>.mp4`(产物) + `<name>.video-brief.md`(侧车 brief)。
-- 图片成功 → 必报两条绝对路径:`<name>.<ext>`(产物) + `<name>.image-brief.md`(侧车 brief)。
-- brief 文件不存在或追加 Generation 失败 → 报告缺失/失败原因,**不**重新生成视频/图片。
-- 用户必须能直接定位到 brief 与产物两份文件;若只能给出一个,说明侧车失败的事实。
+### 0.4 路径判定(决策一次,后续不切换)
 
-**交付物呈现(强制 · 不可跳过)**:
+| 情况                                              | 路径             | 动作                |
+| ------------------------------------------------- | ---------------- | ------------------- |
+| 已有任务(带 Provider + task.id)                   | 跳到 §3          | 查询/下载           |
+| 已有素材,只需重排+字幕+BGM                        | 纯剪辑           | ffmpeg/剪映一次剪完 |
+| 素材来自不同拍摄源需拼接                          | 纯剪辑           | ffmpeg 无缝拼接     |
+| **需要 AI 新画面(表演/产品动态/场景/静图动态化)** | **纯生成(默认)** | 视频模型 + 字幕直出 |
 
-> 报告阶段必须让用户**无需手动查找文件**即可看到产物。以下两条规则均为强制,不可省略。
+判定一次,后续不再切换。生→剪→生 = 主体漂移 + 成本翻倍。
 
-1. **产物可直达(链接或嵌入)**:
-   - **图片产物** → 必须用 markdown 图片语法嵌入,让用户直接看到生成结果:
-     ```markdown
-     ![<name>](file:///C:/absolute/path/to/<name>.<ext>)
-     ```
-     若环境不支持 `file://` 图片渲染,则用可点击链接:
-     ```markdown
-     [📷 打开图片 <name>.<ext>](file:///C:/absolute/path/to/<name>.<ext>)
-     ```
-   - **视频产物** → 必须用可点击链接,让用户直接打开播放:
-     ```markdown
-     [🎬 打开视频 <name>.mp4](file:///C:/absolute/path/to/<name>.mp4)
-     ```
-   - 链接路径必须是**绝对路径**,使用 `file:///` 协议(三个斜杠),Windows 路径反斜杠统一转为正斜杠。
+---
 
-2. **Brief 侧车可直达(链接)**:
-   - brief 文件必须同样用可点击链接呈现:
-     ```markdown
-     [📄 查看 Brief <name>.video-brief.md](file:///C:/absolute/path/to/<name>.video-brief.md)
-     ```
-     或
-     ```markdown
-     [📄 查看 Brief <name>.image-brief.md](file:///C:/absolute/path/to/<name>.image-brief.md)
-     ```
+## §1 六条铁律(R1-R6)
 
-3. **报告模板(每次交付必须包含)**:
-   每次成功交付必须按以下结构输出,不可省略任何区块:
+> **铁律本身是抽象的,具体落点由对应 recipe + library 负责**。不内联文件路径,避免交叉引用混乱。
 
-   ```markdown
-   ## 交付物
+| #      | 铁律                      | 含义(一行)                                                                  |
+| ------ | ------------------------- | --------------------------------------------------------------------------- |
+| **R1** | **一次判定,一路走到底**   | 开头判定"纯剪辑"还是"纯生成",后续不切换                                     |
+| **R2** | **故事驱动,而非清单罗列** | 把参数装进骨架 A/B/C,叙事方式交付,1 段 ≤ 1-3 个关键点                       |
+| **R3** | **视听双轨**              | ① 字幕可选(若画面承载 70% 信息可省);② 三层音频(人声·环境音·BGM)必须全部设计 |
+| **R4** | **7 秒前回收钩子**        | 视觉爆发或情绪爆发,二选一;7 秒后完播率下降                                  |
+| **R5** | **零错字、品牌名逐字**    | 品牌名/型号/成分名逐字核对,用户给了官方拼写必须原样使用                     |
+| **R6** | **事件逻辑自洽**          | 场景/动作/时间/天气/服装必须相互一致                                        |
 
-   | 项目 | 文件 |
-   | --- | --- |
-   | 产物 | [📷/🎬 <name>.<ext>/mp4](file:///absolute/path) |
-   | Brief | [📄 <name>.<media>-brief.md](file:///absolute/path) |
+> 铁律落点由 recipe 自己声明(每个 recipe 顶部"与其他文件关系" + 各小节约束)。不重复引用文件路径,避免与 recipe 自身引用链缠绕。
 
-   ### 产物预览(仅图片)
-   ![<name>](file:///absolute/path/to/<name>.<ext>)
+---
 
-   ### 生成信息
-   - Provider: ...
-   - Model: ...
-   - 状态: ...
-   - 耗时: ...
-   - 警告: (无 / 列出)
-   ```
+## §2 5 步工作流(创意 → 执行 → 检查 → 交付)
 
-   - 视频交付时省略"产物预览"区块(视频无法用 markdown 内嵌预览)。
-   - 若 brief 文件缺失,表格中 brief 行改为 `❌ Brief 文件缺失: <原因>`。
+```
+① 路由(§0) → ② 写故事 → ③ 定人物 → ④ 定场景 → ⑤ 写脚本 → ⑥ 评审+提交
+匹配 1 recipe     骨架+镜头  角色四层  场景三层   八要素+侧车  M8 过审 → M10 交付
++ 共享 library    1:1 对应   i2v绑定   3+1 环境   Final Prompt  Provider 提交
+                                                                 结果下载验证
+```
 
-不要从文件名或 Provider 默认值推断缺失的尺寸、时长、画幅比、帧率、model 或 MIME 类型。不可用字段标记为 `unknown` 或省略。
+### 2.1 视频步骤
 
-| 结果                 | 动作                         |
-| -------------------- | ---------------------------- |
-| `wait_timeout`       | 保留任务并提供另一次有界等待 |
-| `download_failed`    | 保留远端成功并用 `wait` 重试 |
-| 完成但无产物 URL     | 报告脱敏诊断;绝不重提        |
-| 认证、权限或额度失败 | 报告错误;不重试              |
-| 未知的 POST 接受状态 | 停止;不重试也不回退          |
+| Step     | 内容                                         | 必过项                                                                                     | 主文档      |
+| -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------- |
+| 0 路由   | 读 §0 路由表,命中 1 recipe + 共享 library 集 | brief 关键词命中 1 类;commerce 必带 A1                                                     | 本文件 §0   |
+| 1 写故事 | 骨架(A/B/C) + 主题母体 + 镜头结构            | 骨架选定 + 主题一句话可讲清 + 镜头 1:1 对应(无主动合并) + 事件逻辑 4 问全过                | recipe 内置 |
+| 2 定人物 | 角色四层(身份/外貌/服装/气质)                | 四层齐全 + 关键特征锁定 + 人物-事件一致性全过                                              | M2          |
+| 3 定场景 | 场景三层 + 时间/天气/光线 + 风格锚           | 场景三层齐全 + 单一光源 + 风格锚 1 个 + 场景内部一致性全过                                 | M3          |
+| 4 写脚本 | Final Prompt(执行层)                         | 八要素齐全 + 1:1 镜号对应 + 14 镜头库术语选对 + 5 铁律同步遵守 + Negative Prompt(若必填档) | M7          |
+| 5 提交   | 评审过门 + Provider 提交 + 收尾              | 模型/格式/规则自检(M1-M6 + Provider + 侧车结构 + 1:1 镜号),不复看创意;提交流程见 M10       | M8 + M10    |
+
+### 2.2 图片步骤
+
+图片无时间轴,合并"写故事+定人物+定场景"为"写 brief"一步。
+
+| Step       | 内容                             | 必过项                                                                        | 主文档    |
+| ---------- | -------------------------------- | ----------------------------------------------------------------------------- | --------- |
+| 0 路由     | 读 §0.2 路由表                   | 命中图片路径                                                                  | 本文件 §0 |
+| 1 写 brief | 主体 + 场景 + 构图 + 风格 + 文字 | 五段短句齐全(场景/主体/风格总纲/配色/文字) + 硬约束(安全边距/艺术字/同源媒介) | I1        |
+| 2 自检     | 五段检查 + 反模式                | 主标不被裁/艺术字带材质/文字不贴边/同源媒介                                   | I1        |
+
+### 2.3 反例快速对照
+
+| 步骤          | 反例检查                                                     |
+| ------------- | ------------------------------------------------------------ |
+| step 1 写故事 | 5 维组合不出现反例(场景/时间/天气/服装/动作)                 |
+| step 2 定人物 | 服装-场景匹配;身份-动作匹配;气质-情绪匹配;年龄-场景安全性    |
+| step 3 定场景 | 场景类型内部一致;时代-光线匹配;天气-场景匹配;风格锚-场景匹配 |
+| step 4 写脚本 | Final Prompt 继承前 3 步的 R6 结论,不漂移                    |
+| 评审过审      | **不复看 R6**——只检模型/格式/规则                            |
+
+---
+
+## §3 输出格式与提交
+
+### 3.1 视频输出文件
+
+1. **分镜表格**(必填):每镜一行,见 recipe 内的分镜模板
+2. **`<name>.video-brief.md`**(创意文档):含 brief / 分镜表 / Final Prompt(执行层)
+3. **侧车字段**:进 `core/orchestrator.cjs` 解析;**音频进 prompt 正文 ★ Audio 段(语义化,无数字) + 侧车 §4 声场设计稿 保留数字完整版**;**字幕仍不进 prompt**,进侧车 Inputs/Notes
+
+> - **Negative Prompt**:进 §3 `Final Prompt` 内的 `Negative constraints:` 块;commerce/人像/品牌必填
+
+完整可工作的示例见 [examples/](examples/),从骨架 A/B/ASMR/commerce 5 类各取典型——**默认入口** [examples/nature-fog-forest.md](examples/nature-fog-forest.md)(骨架 B 完整填好示范)。
+
+### 3.2 图片输出文件
+
+`<filename>.image-brief.md` 文档,含 brief / 五段 / Final Prompt(执行层)。参考 [I2](references/image/I2-image-example.md)。
+
+### 3.3 提交前校验(自检)
+
+- 视频侧车 `Action` 与 `Camera language` 段按 §2 表格镜号 1:1 对应、**不主动合并相邻镜头**
+- 视频侧车字段在 [core/provider-contract.md](core/provider-contract.md) §2 表格中,**不**直接 `image` 字段复用
+- 提交前自检 M1-M6 + Provider 速查表
+
+### 3.4 提交命令
+
+```bash
+# 通过 core/orchestrator.cjs 提交
+node core/orchestrator.cjs submit <name>.video-brief.md
+
+# 查询/下载
+node core/orchestrator.cjs status <task_id>
+node core/orchestrator.cjs download <task_id> --out ./out/
+```
+
+详见 [core/orchestrator.cjs](core/orchestrator.cjs) 与 [core/provider-contract.md](core/provider-contract.md)。
+
+---
+
+### 3.5 输出交付约束(硬性)
+
+> 每次任务结束后,**必须提供以下两项**,缺一不可:
+
+1. **生成的媒体产物**(image / video 文件):确保文件已生成并可访问。
+2. **`<name>.brief.md`**(创意文档):含 brief / 分镜 / Final Prompt,附带媒体产物的**可预览或可下载链接**。优先使用可预览链接(如 Markdown 图片/视频嵌入),其次才是纯下载链接。
+
+> 不可仅交付文本描述而不提供实际产物文件或链接。
+
+---
+
+## §4 视频 reference 体系(命中 §0.1 后按需读)
+
+视频的所有 reference 集中在本节。**先看 §4.0 编号索引**定位要读哪几个文件,再按编号打开。
+
+### 4.0 编号索引(快速定位)
+
+> 编号按 **创意 → 执行 → 检查 → 交付** 排序:M1+M5 导演(主方法论 + 风格预设)· M2 选角(角色)· M3 美术(场景)· M4 摄影(镜头词典)· M6 录音(音频)· M9 场记(漂移预防)· M7 剪辑(Prompt 拼接)· M8 检查(模型能力)· M10 交付(Provider + 提交流程)。A1-A3 为按需辅助。
+
+| 编号      | 文件                                                                                                                                                                                                                 | 何时读                                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **M1**    | [M1-methodology.md](references/library/M1-methodology.md)                                                                                                                                                            | 导演·创意方法论:路径判定+骨架+镜头结构+侧车                                                                   |
+| L0        | [L0-lookbook.md](references/library/L0-lookbook.md)                                                                                                                                                                  | 视觉参考速配(6 核心×4 维),替代 M4+M5+M6 大部                                                                  |
+| **M2**    | [M2-director-presets.md](references/library/M2-director-presets.md)                                                                                                                                                  | 导演·8 风格预设 P1-P8,一键套用                                                                                |
+| M3        | [M3-character.md](references/library/M3-character.md)                                                                                                                                                                | 选角·角色四层 + 人物-事件一致性                                                                               |
+| M4        | [M4-scene.md](references/library/M4-scene.md)                                                                                                                                                                        | 美术·场景三层 + 展示/执行层分离                                                                               |
+| M5        | [M5-cinematography.md](references/library/M5-cinematography.md)                                                                                                                                                      | 摄影·景别/光影/焦段 词典 [AUXILIARY]                                                                          |
+| M6        | [M6-audio.md](references/library/M6-audio.md)                                                                                                                                                                        | 录音·音频三层 + 5 杠杆 + 静音                                                                                 |
+| M7        | [M7-drift-prevention.md](references/library/M7-drift-prevention.md)                                                                                                                                                  | 场记·4 类漂移 + 5 招实战 [AUXILIARY]                                                                          |
+| M8        | [M8-prompt-craft.md](references/library/M8-prompt-craft.md)                                                                                                                                                          | 剪辑·八要素 + 14 镜头库 + Final Prompt 拼接                                                                   |
+| M9        | [M9-media-rules.md](references/library/M9-media-rules.md)                                                                                                                                                            | M1-M6 模型能力 + 提交前自检清单 [AUXILIARY]                                                                   |
+| M10       | [M10-delivery.md](references/library/M10-delivery.md)                                                                                                                                                                | 交付·Provider 参数 + 调用流程 + 结果验证                                                                      |
+| A1        | [A1-subtitle.md](references/library/A1-subtitle.md)                                                                                                                                                                  | commerce(必)/人像/口语视频                                                                                    |
+| A2        | [A2-multimodal-syntax.md](references/library/A2-multimodal-syntax.md)                                                                                                                                                | brief 含参考图/视频/音频                                                                                      |
+| A3        | [A3-emotional-levers.md](references/library/A3-emotional-levers.md)                                                                                                                                                  | commerce(必)/转化类视频                                                                                       |
+| recipes   | [nature](references/recipes/nature.md) · [lifestyle](references/recipes/lifestyle.md) · [portrait](references/recipes/portrait.md) · [food](references/recipes/food.md) · [commerce](references/recipes/commerce.md) | 命中 §0.1 后只读 1 个                                                                                         |
+| templates | [3-sets.md](references/templates/3-sets.md)                                                                                                                                                                          | 简单需求直接套 prompt 模板                                                                                    |
+| examples  | [examples/](examples/)                                                                                                                                                                                               | L5 分层策略:每例顶部标 [MUST-KEEP] / [CAN-ROTATE];默认入口 [nature-fog-forest](examples/nature-fog-forest.md) |
+
+> **数量策略**:每 recipe 保留 **2 个典型 example**,anchor 互斥或跨度大;其他 anchor 由 recipe §1.5 调色板驱动,AI 自主生成。**17 → 10,降载 41%**。
+
+### 4.1 视频场景速配表(12 类 × 4 维)
+
+> §0.1 路由表告诉你"是哪个 recipe" → **本表**(执行层速配)告诉你"这个场景用哪个运镜+光影+钩子"。完整 prompt 模板 → [4.2 templates](#42-templates视频即用模板按需)
+
+| 场景类型      | 推荐运镜                    | 推荐光影            | 风格锚                          | 警示                  |
+| ------------- | --------------------------- | ------------------- | ------------------------------- | --------------------- |
+| **人物特写**  | Intimate Dolly In           | 柔光                | 治愈清新 / 杂志风               | 主体占画面 80%+       |
+| **产品展示**  | Subtle Orbit (45°弧)        | 纯色背景 + 三点光   | 商业 / 极简                     | 数字产品避"虚化背景"  |
+| **城市夜景**  | Dutch Angle Pan             | 霓虹光污染          | 赛博朋克 / 黑紫橙               | 避免过曝              |
+| **梦境片段**  | Dolly Zoom                  | 高斯模糊            | 迷幻 / 超现实                   | 慎用,易致观感晕       |
+| **自然/治愈** | Lateral Tracking + Pull-out | 侧逆光 + 拉镜收尾   | BBC Earth / National Geographic | 禁用手持抖动          |
+| **武侠/国风** | Smooth Dolly Forward        | 柔光逆光            | 武侠电影感                      | 冷暖对比强烈          |
+| **街头纪实**  | Handheld Style              | 现场光              | 真实 / 躁动                     | 治愈系禁用            |
+| **美食 ASMR** | Macro + 顶光                | 暖食欲光 + 蒸汽粒子 | 暖食欲 / ASMR                   | 声音-视觉同源         |
+| **宠物治愈**  | Low-angle + 跟拍            | 窗光                | 暖民谣 / Vlog感                 | 自然互动,避免拟人     |
+| **抽象艺术**  | Time-lapse                  | 超广角 + 强逆光     | 史诗 / 哲理                     | t2v 支持有限,优先短段 |
+| **风光转场**  | Slow pan / Crane            | 黄金时刻            | 治愈 / 电影感                   | 竖屏避极远景          |
+| **古风舞剑**  | Dolly forward + Slow pan    | 逆光薄雾            | 武侠电影感                      | 慢动作+冷光剑         |
+
+**用法**:
+
+1. §0.1 路由表确定"是哪个 recipe"
+2. 本表第 1 列找到对应"场景类型"行 → 直接抄"运镜+光影+风格锚"到 prompt
+3. 配 [M2-director-presets.md](references/library/M2-director-presets.md) 的 P1-P8 一键套用
+
+### 4.2 钩子速查(前 3 秒防流失)
+
+| 钩子类型     | 写法                                                                            | 适用      |
+| ------------ | ------------------------------------------------------------------------------- | --------- |
+| **运动钩子** | `the [subject] trots in from the distance` / `camera slowly pushes in`          | 通用      |
+| **光影钩子** | `backlight silhouette` / `volumetric light beams` / `light shafts through mist` | 治愈/氛围 |
+| **动作钩子** | `suddenly breaks into a gallop` / `leaps up` / `shakes head`                    | 动物/运动 |
+| **表情钩子** | `close-up of [subject] tilting head` / `gazing at camera`                       | 人像/宠物 |
+| **悬念钩子** | `starts with a close-up of [detail], then reveals the full scene`               | 叙事      |
+
+> 声音钩子**进 prompt** `★ Audio` 段(语义化,无 BPM/dB)。
+> 钩子时间锚点必须落在 0.0-Xs 第 1 镜(1:1 镜号对应)。
+
+---
+
+## §5 图片 reference 体系(命中 §0.2 后按需读)
+
+图片独立于视频,只读 I1-I2。
+
+| 编号 | 文件                                                                | 何时读                                  |
+| ---- | ------------------------------------------------------------------- | --------------------------------------- |
+| I1   | [I1-image-methodology.md](references/image/I1-image-methodology.md) | 图片方法论入口(创意层 + 风格层 2 文件)  |
+| I2   | [I2-image-example.md](references/image/I2-image-example.md)         | 图片实例(产品图 + 海报拼贴完整填好示范) |

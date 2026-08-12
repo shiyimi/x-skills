@@ -1,10 +1,8 @@
-# Prompt Craft · Prompt 写作与拼接
+#﻿# M8. prompt-craft · Prompt 写作与拼接(执行)
 
-> 本文件是 **5 步流程的 step 4 · 写脚本** 的主文档。负责把 step 1-3 的成果(故事/人物/场景)拼接成最终可提交的 prompt。
->
-> **核心**: 八要素万能公式 + 14 镜头库(唯一版本) + 5 铁律(唯一版本) + 避坑三陷阱 + Final Prompt 拼接模板 + 分镜列映射表 + Negative Prompt 方法论。
->
-> **不负责**: 角色四层([character.md](character.md))、场景三层/降级/竖屏([scene.md](scene.md))、骨架与镜头结构([storyboard.md](storyboard.md))、模型能力边界([media-rules.md](media-rules.md))。
+> **模型擅长度**:基础 prompt 结构(高) / 八要素映射(中) / 约束焊死+品牌锁(低)
+
+> 本文件是 **5 步流程的 step 4 · 写脚本** 的主文档。负责把 step 1-3 的成果拼接成最终可提交的 prompt。
 
 ---
 
@@ -18,12 +16,12 @@
 
 | 要素 | 来自哪步 | 来源文件 | 写法要求 |
 | --- | --- | --- | --- |
-| 主体 | step 2 角色四层 | [character.md](character.md) | 身份 + 外貌 + 服装 + 气质(本步只锁关键特征) |
-| 动作 | step 1 镜头结构 + micro-action | [storyboard.md](storyboard.md) + [character.md §3](character.md) | 慢、连续、单动作 + micro-action |
-| 场景 | step 3 场景三层 | [scene.md](scene.md) | 场景类型 + 时代/风格 + 细节 + 光线天气 |
-| 光影 | step 3 单一光源 | [scene.md §3](scene.md) | 整段只写一次,语义化,非数字 |
-| 镜头语言 | step 1 镜头结构 | [storyboard.md](storyboard.md) + 本文件 §3 14 镜头库 | ≤2 组合,连接词分开 |
-| 风格 | step 3 风格锚 | [scene.md §5](scene.md) | 整段 1 个标签 |
+| 主体 | step 2 角色四层 | [M3-character.md](M3-character.md) | 身份 + 外貌 + 服装 + 气质(本步只锁关键特征) |
+| 动作 | step 1 镜头结构 + micro-action | [M1-methodology.md](M1-methodology.md) + [M3-character.md §3](M3-character.md) | 慢、连续、单动作 + micro-action |
+| 场景 | step 3 场景三层 | [M4-scene.md](M4-scene.md) | 场景类型 + 时代/风格 + 细节 + 光线天气 |
+| 光影 | step 3 单一光源 | [M4-scene.md §3](M4-scene.md) | 整段只写一次,语义化,非数字 |
+| 镜头语言 | step 1 镜头结构 | [M1-methodology.md](M1-methodology.md) + 本文件 §3 14 镜头库 | ≤2 组合,连接词分开 |
+| 风格 | step 3 风格锚 | [M4-scene.md §5](M4-scene.md) | 整段 1 个标签 |
 | 画质 | 本步定 | — | 后置,4K / shallow depth of field / [光质] |
 | 约束 | 本步定 | — | 末尾焊死:`no flicker / no mutation / no text` |
 
@@ -53,12 +51,12 @@
 
 ## §2 动作写法的关键约束
 
-完整动作规则见 [storyboard.md §5 镜头结构](storyboard.md) + [character.md §3 micro-action](character.md.md)。本文件只列**prompt 层的执行摘要**:
+完整动作规则见 [M1-methodology.md §5 镜头结构](M1-methodology.md) + [M3-character.md §3 micro-action](M3-character.md)。本文件只列**prompt 层的执行摘要**:
 
 1. **每镜单动作 + 至少 1 个 micro-action**(头发/呼吸/眼睛/衣角/尾巴)
 2. **写慢写连续**: "轻抬手腕" 优于 "挥手";"缓步转身" 优于 "走动"
 3. **不与光影/风格矛盾**: "微距" 不写 "大远景";"治愈" 不写 "手持抖动"
-4. **micro-action 短语按主体类型选**(见 [character.md §3](character.md) 速查表)
+4. **micro-action 短语按主体类型选**(见 [M3-character.md §3](M3-character.md) 速查表)
 
 ---
 
@@ -149,7 +147,7 @@
 
 **禁令**: 避免只用"站立"、"看着"等静止词。
 
-**修复**: 主体内部必须有微观动作(micro-action),否则画面呈"3D 模型平移感"。完整 micro-action 短语速查见 [character.md §3](character.md)。
+**修复**: 主体内部必须有微观动作(micro-action),否则画面呈"3D 模型平移感"。完整 micro-action 短语速查见 [M3-character.md §3](M3-character.md)。
 
 ### 4.3 光影指令缺失(光影层)
 
@@ -159,7 +157,7 @@
 - `soft directional lighting`
 - `volumetric morning backlight`
 
-**完整写法**: 光位 + 光质 + 光源 + 填充,如 `single light source — low golden morning sun behind the subject, soft fill from the sky`。完整单一光源规范见 [scene.md §3](scene.md)。
+**完整写法**: 光位 + 光质 + 光源 + 填充,如 `single light source — low golden morning sun behind the subject, soft fill from the sky`。完整单一光源规范见 [scene.md §3](M4-scene.md)。
 
 ---
 
@@ -203,11 +201,11 @@
 
 ★ Main subject (four layers, keep consistent in every frame):
 [角色四层描述] — keep the same [关键特征] across all frames (no character drift).
-(完整角色四层见 [character.md](character.md))
+(完整角色四层见 [M3-character.md](M3-character.md))
 
 ★ Scene (three layers + atmosphere):
 [场景三层 + 光线天气].
-(完整场景三层 + 降级 + 竖屏见 [scene.md](scene.md))
+(完整场景三层 + 层分离 + 竖屏见 [M4-scene.md](M4-scene.md))
 
 ★ Action (slow, continuous, single motion per beat; with micro-actions; 1:1 mirror of storyboard — N shots → N time anchors, do not merge adjacent shots):
 - 0.0–Xs (S01-01): [动作1 + micro-action].
@@ -224,9 +222,18 @@
 ★ Lighting (mandatory, single source):
 [单一光源语义化描述 + 配色锚 — 来自 scene.md §3].
 
+★ Audio (downstream soundscape — written into the prompt for audio engineers and audio-capable models; 1:1 mirror of storyboard, same time anchors as Action; 数字 BPM/dB 留在 §4 声场设计稿,执行层走语义化):
+- Ambient sound design (1:1 mirror, micro-actions provide sonic cues):
+  - 0.0–Xs (S01-01): [环境音 1 + 拟声].
+  - Xs–Ys (S01-02): [环境音 2 + 拟声].
+  - ...
+  - ...–15s (S01-NN): [环境音 N + 拟声].
+- BGM (1:1 mirror): [风格 + 情绪弧线,与分镜表关键节点对齐].
+- [对白/字幕策略:无对白 / 纯 OS / 配音解说]
+
 ★ Style anchor:
-[风格标签 + 情绪弧线: "starts calmly → peaks with X → ends quietly"].
-(风格锚规范见 [scene.md §5](scene.md))
+[风格标签 + 情绪弧线: "starts calmly → peaks with X → ends quietly"]。
+(风格锚规范见 [M4-scene.md §5](M4-scene.md);**导演风格预设一键套用**见 [M2-director-presets.md](M2-director-presets.md),8 个预设 P1-P8 含摄影机/光影/调色/反模式)
 
 ★ Quality (post-positioned):
 4K ultra-high definition, shallow depth of field, [光质].
@@ -240,34 +247,47 @@
 [侧车 Negative Prompt 区块内容,与 Hard Constraints 去重后并入;见 §10]
 ```
 
-Notes for downstream audio(下游音频备注,不要写进视频 prompt):
-- BGM 皮肤: [音频皮肤,见 audio-design.md]。
-- 环境音优先级: [环境音优先级,见 audio-design.md]。
+---
+
+## §7.1 §4 声场设计稿(展示层副本)
+
+> 音频描述**主要**写进 prompt `★ Audio` 段;`§4 声场设计稿` 是**数字完整版结构化副本**,供音频师快速查阅 BPM/dB 数字、关键音效时间码等参考信息,以及未来音画同出 Provider 直接读取。**两份内容必须保持一致**——`★ Audio` 段是语义化版本,`§4 声场设计稿` 是数字完整版。
+
+```
+§4 声场设计稿(数字完整版;**与 ★ Audio 段保持一致**):
+- BGM: [风格 + BPM + 入点/淡出时点 + 关键节点(镜号),见 audio.md §1.4 4 字段]。
+- 环境音优先级: [每镜 2-3 个可辨识环境音词,见 audio.md §2.2]。
+- 关键音效点: [镜号·时机·音效名·dB,如"镜3·2.5s: 鼓点 -14dB"]。
+- 对白/口播: [有/无;若有,口条节奏见 audio.md §4.5]。
+- 静音规则: [M1-M3 触发位置,见 audio.md §5]。
+```
 
 ---
 
 ## §8 分镜列 → Prompt 位置映射表(1:1 锁定)
 
-> **核心规则**: 分镜表格的每行(每个镜号)必须在 Final Prompt 的 `Action` 段和 `Camera language` 段各对应一个时间锚点,使用**同一组时间区间**。这是 [storyboard.md §5.1](storyboard.md) "1:1 镜号对应"在 prompt 层的执行版。
+> **核心规则**: 分镜表格的每行(每个镜号)必须在 Final Prompt 的 `Action` 段和 `Camera language` 段各对应一个时间锚点,使用**同一组时间区间**。这是 [M1-methodology.md §5.1](M1-methodology.md) "1:1 镜号对应"在 prompt 层的执行版。
 
 | 分镜列(规划层) | 写入 Final Prompt 的位置 | 写法 | 不允许 |
 | --- | --- | --- | --- |
 | **镜号 `S01-NN`** | Action 段每条行首 `(S01-NN)` + Camera 段每条行首时间区间 | `(S01-01)` / `(S01-02)` / ...;时间锚点用 `- Xs–Ys -` | 镜号脱锚(段里提了但表里没有) |
 | **时间区间** | Action 段和 Camera 段**用同一组** `0.0–Xs / Xs–Ys / ...` | 一一对应,顺序与镜号升序一致 | 两段时间不同;Camera 段合并 Action 没合并 |
-| **主体** | 仅在 Main subject 段首次定义 | 角色四层 + 关键特征锁定(完整四层见 [character.md](character.md)) | 每镜重复写完整主体(只锁关键特征即可) |
+| **主体** | 仅在 Main subject 段首次定义 | 角色四层 + 关键特征锁定(完整四层见 [M3-character.md](M3-character.md)) | 每镜重复写完整主体(只锁关键特征即可) |
 | **动作** | Action 段每条 | 慢、连续、单动作 + micro-action | "动作 A 后动作 B"复合(拆两镜) |
 | **镜头语言** | Camera language 段每条 | ≤2 组合运镜,从 [§3 14 镜头库](#3-14-镜头库导演级技法) 选 | Action 段写运镜;Camera 段写动作 |
-| **光影/光线** | Lighting 段(整段只写一次) | 单一光源语义化描述 + 配色锚(完整规范见 [scene.md §3](scene.md)) | 每镜重写光线(用单一光源) |
+| **光影/光线** | Lighting 段(整段只写一次) | 单一光源语义化描述 + 配色锚(完整规范见 [scene.md §3](M4-scene.md)) | 每镜重写光线(用单一光源) |
 | **视觉重点 ★** | 隐含在 Action 段(★对应那镜的 micro-action) | ★镜的 micro-action 写得更显眼(特写/光斑/质感放大) | ★标记丢失或与镜号不匹配 |
 | **字幕/口播** | **不进 prompt**,写到侧车 Inputs 或 Notes | 字幕由生成后的剪辑/Burn-in 阶段加 | 在 prompt 里写 "字幕:..." 让模型直接生成文字 |
-| **音频/音效** | **不进 prompt**,写到侧车 Notes | BGM / 环境音 / 人声由音频层处理 | 在 prompt 里写 "BGM:..." 让模型去出声音 |
+| **音频/音效** | **进 prompt**(`★ Audio` 段,语义化版本,无 BPM/dB 数字),**§4 声场设计稿** 保留数字完整版(见 §7.1) | BGM / 环境音 / 人声由 prompt 段或后期音频层处理 | 完全不放音频,导致声场意图丢失 |
 
 **校验清单**(提交前):
 - [ ] Action 段的镜号数 = Camera 段的镜号数 = 分镜表格的镜号数
 - [ ] Action 段和 Camera 段时间锚点完全一致
-- [ ] 没有任何相邻镜被合并(除非显式标 `MERGED` 并满足 [storyboard.md §5.2](storyboard.md) 三项合并条件)
+- [ ] 没有任何相邻镜被合并(除非显式标 `MERGED` 并满足 [M1-methodology.md §5.2](M1-methodology.md) 三项合并条件)
 - [ ] 镜号升序连续(中间不跳号)
-- [ ] 音频/字幕相关 token 没有进入 prompt 正文
+- [ ] `★ Audio` 段与 Action / Camera 段时间锚点 1:1 一致,语义化,无 BPM/dB 数字
+- [ ] `§4 声场设计稿` 与 `★ Audio` 段保持一致(数字完整版)
+- [ ] 字幕相关 token 没有进入 prompt 正文(字幕仍走侧车)
 
 ---
 
@@ -275,10 +295,10 @@ Notes for downstream audio(下游音频备注,不要写进视频 prompt):
 
 | 维度 | 解决什么 | 关键控制点 | 来源 |
 | --- | --- | --- | --- |
-| 定人 | 角色长什么样 | 外貌 + 服装 + 气质 | [character.md](character.md) |
-| 定景 | 故事发生在哪里 | 环境 + 时代 + 天气 + 光线 | [scene.md](scene.md) |
-| 定调 | 整体什么风格 | 片型 + 画面质感 + 情绪基调 | [scene.md §5 风格锚](scene.md) |
-| 定音 | 声音怎么处理 | 对白 + 音效 + 配乐 + 语种(**移出 prompt,进 Notes**) | [audio-design.md](audio-design.md) |
+| 定人 | 角色长什么样 | 外貌 + 服装 + 气质 | [M3-character.md](M3-character.md) |
+| 定景 | 故事发生在哪里 | 环境 + 时代 + 天气 + 光线 | [M4-scene.md](M4-scene.md) |
+| 定调 | 整体什么风格 | 片型 + 画面质感 + 情绪基调 | [M4-scene.md §5 风格锚](M4-scene.md) |
+| 定音 | 声音怎么处理 | 对白 + 音效 + 配乐 + 语种(**移出 prompt,进 §4 声场设计稿**) | [M6-audio.md](M6-audio.md) |
 | 定拍 | 怎么动、怎么拍 | 角色动作 + 镜头运动 + 节奏 | 本文件 §3 14 镜头库 |
 
 五定解决"拍什么",时间解决"什么时候拍"。
@@ -340,7 +360,7 @@ Notes for downstream audio(下游音频备注,不要写进视频 prompt):
 [完整的八要素 + 约束焊死块;Action 与 Camera language 段按 §2 表格镜号 1:1 对应]
 ```
 
-> **空区块处理**: 若本档为"可选"且判断不必填,在区块下写一行 `— (本视频无需额外 Negative Prompt,见 prompt-craft.md §10.2)`,而不是删掉区块。删区块会让侧车结构与其他 brief 不一致,影响后续模板解析。
+> **空区块处理**: 若本档为"可选"且判断不必填,在区块下写一行 `— (本视频无需额外 Negative Prompt,见 M7-prompt-craft.md §10.2)`,而不是删掉区块。删区块会让侧车结构与其他 brief 不一致,影响后续模板解析。
 >
 > **Final Prompt 始终在文档最后**(`## 6` 或最后一个小节),便于 reviewer 整段复制提交;`## 3-5` 之间的小节顺序可按 brief 实际需要调整(Negative Prompt / Inputs / Generation 的相对顺序不固定),但 **Final Prompt 一定是终点**。
 
@@ -394,14 +414,6 @@ Notes for downstream audio(下游音频备注,不要写进视频 prompt):
 
 ---
 
-## §11 与其他文件的关系
+## §11 上下游
 
-| 文件 | 与本文件的关系 |
-| --- | --- |
-| [storyboard.md](storyboard.md) | §4/§5 叙事骨架与镜头结构;§5.1 1:1 镜号对应规则是 §8 映射表的源头 |
-| [character.md](character.md) | §1 八要素 `主体` 段来自 character.md;§4.2 micro-action 短语由 character.md §3 提供 |
-| [scene.md](scene.md) | §1 八要素 `场景`/`光影`/`风格` 段来自 scene.md;§1.2 风格锚与 scene.md §5 一致 |
-| [media-rules.md](media-rules.md) | M1-M6 模型能力边界,本文件是写作执行版(模型能理解什么);提交前自检清单见 media-rules §9 |
-| [audio-design.md](audio-design.md) | BGM/环境音/口条由音频层处理;本文件 §7 Notes 段是音频层输入 |
-| [subtitle-spec.md](subtitle-spec.md) | 字幕由后期或 Burn-in 处理;本文件 §8 明确"字幕不进 prompt" |
-| [example.md](example.md) | 完整 4 步流程的 step 4 实例参考 |
+→ [SKILL.md §4.0 编号索引](../../SKILL.md#40-编号索引快速定位)

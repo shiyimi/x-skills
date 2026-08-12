@@ -1,10 +1,8 @@
-# Scene · 场景与执行层降级
+#﻿# M4. scene · 场景与层分离(创意)
 
-> 本文件是 **5 步流程的 step 3 · 定场景** 的主文档。负责场景三层写法、展示层/执行层降级、竖屏约束、场景内部一致性检查。
->
-> **何时用**: step 2(定人物)完成后,本步确定"在哪演、什么光、什么时间、什么天气";Final Prompt 的 `Scene` 段按本文件输出。
->
-> **不负责**: 角色四层([character.md](character.md))、动作与镜头语言([prompt-craft.md](prompt-craft.md))、模型能力与 Provider 参数([media-rules.md](media-rules.md))。
+> **模型擅长度**:场景类型(高) / 3+1 元素法(中) / 事件逻辑自洽(低)
+
+> 本文件是 **5 步流程的 step 3 · 定场景** 的主文档。负责场景三层写法、展示层/执行层分离与格式转换、竖屏约束、场景内部一致性检查。
 
 ---
 
@@ -25,9 +23,9 @@
 
 ---
 
-## §2 展示层 vs 执行层降级表
+## §2 展示层 vs 执行层 转换表(层分离)
 
-分镜表(展示层)记录人可理解的具体数字;**prompt(执行层)用 t2v 模型能理解的语义化描述**。两层不可混用——混用 = 数字变噪声(M4,见 [media-rules.md](media-rules.md))。
+分镜表(展示层)记录人可理解的具体数字;**prompt(执行层)用 t2v 模型能理解的语义化描述**。两层不可混用——混用 = 模型无法读取数字(M4,见 [media-rules.md §1 M4](M9-media-rules.md))。**层分离**:数字在展示层和 `§4 声场设计稿` 保留,执行层走语义化路线。
 
 | 字段 | 展示层(分镜表,人读) | 执行层(prompt,模型读) |
 | --- | --- | --- |
@@ -39,14 +37,14 @@
 | 焦段 | 16mm-85mm | 作为风格参考保留: `shot on ARRI Alexa with shallow depth of field` |
 | 时间/天气 | 黄昏/雨/雪 | `soft golden hour backlight` / `overcast misty daylight` / `snow with overcast sky` |
 
-### 2.1 降级规则速查
+### 2.1 转换规则速查
 
 1. **K 值 → 光源描述**: 4500K → `soft golden morning light`; 6500K → `cool overcast daylight`; 3200K → `warm golden hour glow`
 2. **光比 → 光源方向**: 光比大 → 强调单一主光源方向;光比小 → `soft diffused fill from all directions`
 3. **饱和度 → 删除**: 模型不理解数字,用风格标签
 4. **焦段 → 摄影机/风格标签**: `shot on ARRI Alexa` / `shot on 16mm Bolex` / `shot on iPhone`
 
-### 2.2 不在降级表的字段(保持原样)
+### 2.2 不在转换表的字段(保持原样)
 
 | 字段 | 原因 |
 | --- | --- |
@@ -141,7 +139,7 @@ Final Prompt 中**整段只写一次光源**,不每镜重写。
 | 反例 | 错在哪 | 修正 |
 | --- | --- | --- |
 | 场景三层只写两层 | 模型自由发挥,出图不稳 | 完整 4 层都写,缺第三层=画面空洞,缺第四层=平光 |
-| 在 prompt 里写"4500K" | M4 数字变噪声 | 降级为 `soft golden morning backlight` |
+| 在 prompt 里写"4500K" | M4 数字无效 | 转换为 `soft golden morning backlight` |
 | 一段多个光源方向 | 模型随机混合 | 单一光源,显式写 `single light source — ...` |
 | 风格锚写 2-3 个标签 | 风格漂移,质感混乱 | 整段 1 个风格锚 |
 | 雪夜 + 短袖 + 露天 | 6.2 时间-季节-服装三重错 | 改"雪夜厚外套 + 路灯暖光",或改"夏夜短袖" |
@@ -149,12 +147,6 @@ Final Prompt 中**整段只写一次光源**,不每镜重写。
 
 ---
 
-## §8 与其他文件的关系
+## §8 上下游
 
-| 文件 | 与本文件的关系 |
-| --- | --- |
-| [storyboard.md](storyboard.md) | §4 骨架决定场景的"基调"(A 展示 vs B 剧情 vs C 共情);§5.6 5 维矩阵的"场景/时间/天气"行 |
-| [character.md](character.md) | 服装颜色决定光照反差;人物气质与场景情绪匹配 |
-| [prompt-craft.md](prompt-craft.md) | §1 八要素 `场景` 段来自本文件;§1.2 风格锚与本文件 §5 风格锚一致 |
-| [media-rules.md](media-rules.md) | M1-M6 模型能力边界,降级表的来源是 M4;Provider 关键参数不在本文件 |
-| [example.md](example.md) | 完整 4 步流程的 step 3 实例参考 |
+→ [SKILL.md §4.0 编号索引](../../SKILL.md#40-编号索引快速定位)
