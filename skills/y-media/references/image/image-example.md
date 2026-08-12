@@ -119,7 +119,7 @@ Product photography, Apple-minimalist, premium consumer electronics, no people, 
 主色 暖棕牛皮纸 + 透明咖啡杯 + 阳光街道
 材质 牛皮纸(可见纤维纹理) + 木桌 + 透明塑料
 灯光 暖午阳光 45°侧光,4000K,光比 2:1,柔光
-质感 独立杂志剪贴风,WeChat Moments + 独立咖啡杂志
+质感 独立杂志剪贴结合做旧印刷日记感(风格总纲,§4.6)
 ```
 
 **生成路径**: H(多图分区拼贴)
@@ -193,16 +193,17 @@ Warm brown kraft paper + transparent cup + sunlit street, low-saturation warm in
 ★ Camera / composition(视角/构图):
 Static shot, eye-level, lower visual center placement, full-bleed photo extends to all edges, paper has a slight off-axis tilt.
 
-★ Typography(主/副/角标三层):
-- Primary (主标题): centered on the kraft paper, slightly below the middle of the kraft zone, a large Chinese title "一杯咖啡的午后" in black ink, using a vintage Song/serif typeface with a handwritten feel — elegant, slightly calligraphic, clear and readable.
-- Secondary (副标题): below the Chinese title, in much smaller uppercase English letters with wide letter-spacing: "AFTERNOON · COFFEE · GREEN".
-- Corner (角标): in the upper-right corner of the kraft paper area, small black text "2026.08".
+★ Typography(主/副/角标三层 · 媒介统一 §4.5):
+- Primary (主标题): centered on the kraft paper, slightly below the middle of the kraft zone, a large Chinese title "一杯咖啡的午后" rendered as **hand-brushed ink calligraphy with visible brush strokes and slight ink bleeding**, matching the aged paper texture — elegant, slightly calligraphic, as if painted directly onto the kraft paper with a traditional Chinese brush.
+- Secondary (副标题): below the Chinese title, in much smaller uppercase English letters with wide letter-spacing: "AFTERNOON · COFFEE · GREEN" — typed in a vintage typewriter font with slight ink imperfections.
+- Corner (角标): in the upper-right corner of the kraft paper area, small black text "2026.08" in a minimalist sans-serif.
+- **Text integration (§4.7)**: The title and subtitle are visually integrated into the paper texture — ink bleeds slightly into the paper fibers, creating a natural bond between text and medium.
 
 ★ Accent(点缀元素):
 A small solid caramel-brown square block (about 1.5cm visual size) placed near the title as a collage decoration element, slightly offset from the text.
 
-★ Style anchor(1 个标签 + 情绪):
-Lifestyle collage poster, indie zine, "WeChat Moments life record meets independent coffee magazine", warm and relaxed sun-drenched afternoon feeling.
+★ Style direction(自造词组 §4.6):
+独立杂志剪贴结合做旧印刷日记感,vertical 3:4,warm sun-drenched afternoon zine aesthetic.
 
 ★ Quality(后置强化):
 4K ultra-high definition, scanned-paper grain texture with slight grain, natural aging, slight crease lines on kraft paper.
