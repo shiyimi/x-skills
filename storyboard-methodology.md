@@ -24,15 +24,7 @@ Produce one Markdown file per video segment, saved next to the intended output:
 <name>.storyboard.md
 ```
 
-where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. The document content IS the prompt submitted to the Provider — nothing is extracted or compressed. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. The document has three sections (defined in §5):
-
-1. **视频主要目标** — one line: `产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`.
-2. **分镜表格** — one row per shot, columns defined in §3. Lock the following decisions in the header before the table:
-   - `默认假设`: filled defaults the user did not provide
-   - `音频策略`: one line derived from §4.1
-   - `美学母体`: the palette/material/lighting basis that every shot anchors to
-   - `视听路线`: subtitle route, `含字幕` or `无字幕`, locked for the whole segment (§4.2)
-3. **全片约束与负面提示词** — constraint block + negative prompt, as defined in §5.3.
+where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. The document content IS the prompt submitted to the Provider — nothing is extracted or compressed. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. The document structure is defined in §5.
 
 ## 2. 剧本 (Script) — Story & Narrative
 
@@ -98,6 +90,7 @@ The director phase designs **how each shot looks and moves**. This phase answers
 | 道具/环境 | 前景/中景/背景 三层; ≥3 可命名元素; 1 个光源; 背景加 1-2 个低速动态元素 | 前景冰块碎粒/中景包装袋/背景厨房台面虚化+水珠 |
 | 音频三层 | ① 人声(有对白/OS心声/无对白) ② 环境音+关键音效点(镜次+时机+音效名) ③ BGM 节点 | (环境)撕包装"嘶啦"+冰块碰撞"咔啦"/(BGM)木吉他扫弦淡入 |
 | 屏显字幕 | §4.2; empty only on the 无字幕 route | ①"这虾仁,也太鲜了!"·上1/3·弹入放大 |
+| 转场 | Transition from previous shot; first shot uses 开场. §3.3 | 匹配剪辑:虾仁滑落延续 |
 | 视觉重点 | `★` = cover-grade | ★ |
 
 ### 3.2 Environment Realism
@@ -111,40 +104,39 @@ Environment realism (`3+1` rule for any on-camera environment): `[具体场所] 
 | 光影动态 | 光斑缓移 · 明暗呼吸 · 屏幕微闪 |
 | 粒子动态 | 蒸汽升腾 · 尘埃浮动 · 水汽 |
 
+### 3.3 Transitions — 转场设计
+
+Each shot's 转场 column specifies how it connects from the previous shot. The first shot uses `开场` (no transition from nothing). The segment header locks a `转场策略` as the default; individual shots override it when their transition differs from the default.
+
+| 转场 | 用法 | 效果 |
+| --- | --- | --- |
+| 开场 | Segment's first shot only | 从黑/白/虚化中显入 |
+| 硬切 | Default, scene switch | 瞬间切换, 适合节奏快的信息流 |
+| 匹配剪辑 | Continuous action across shots | 前镜的动作/运动延续到下一镜不中断 |
+| 淡入 | Opening or mood shift | 画面从黑/白渐显 |
+| 淡出 | Ending or mood transition | 画面渐隐至黑/白 |
+| 闪白 | Time jump / flashback | 白帧过渡, 适合回忆或转场 |
+| 缓入 | Slower entrance | 前镜末端减速, 后镜渐显 |
+| 叠化 | Cross dissolve | 前后镜重叠淡入淡出, 适合时间流逝或情绪过渡 |
+
+Rules:
+- 默认硬切, 除非有特殊情绪需求
+- 一镜只做一种转场, 不要混合
+- 动作连续场景(主体动作跨镜)优先使用匹配剪辑, 并在前后镜的 主体动作 列体现动作延续
+- 情感转折(骨架C 的转拍)使用淡入/叠化, 配合§4.1 静音留白
+- 转场不应打断音频三层: BGM 跨镜持续, 音效点落在对应镜的精确时间
+
 ## 4. 后期 (Post-production) — Audio, Subtitles & Technical Parameters
 
 The post-production phase locks **how the video sounds, reads, and conforms to technical constraints**. This phase answers the question "how do we finish it?"
 
 ### 4.1 Audio Design
 
-Design all three audio layers; never rely on the model default background track alone. Full audio design reference in [references/audio-design.md](references/audio-design.md). At minimum, lock the following in the document header as a one-line `音频策略`:
+All audio design rules live in [references/audio-design.md](references/audio-design.md) (three-layer framework, voice modes, SFX annotation format, BGM specification, audio levers, anti-patterns). Read it before designing the audio layer.
 
-- **人声**: 有对白 / 纯OS心声 / 无对白
-- **BGM**: 风格(乐器+参考) + BPM
-- **关键音效**: 2-3 recognizable sound words per scene
-
-**Voice** — pick one: 有对白 (talent speaks), 纯 OS 心声 (inner voice, low/slow), or 无对白 (thicken ambient + physiological sounds such as 呼吸/衣物摩擦 instead). When there is dialogue, write a natural-delivery line: 每 8-12 字一次换气, 关键词前微停, 尾字自然下沉, 避免播音腔.
-
-**Ambient/SFX** — 2-3 recognizable sound words per scene; mark key SFX beats explicitly in the shot table: `音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`.
-
-**BGM** — always specify 4 fields in the audio strategy: 风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点. Map goal and query mood to a skin, never a generic "轻音乐":
-
-| Goal | Serving | Tempo |
-| --- | --- | --- |
-| 转化 | 抓人→证明→催单 | 快, 90-130 BPM, 音画卡点 |
-| 兴趣(种草) | 沉浸→共鸣 | 中, 75-100 BPM |
-| 认知(品牌) | 审美→记忆 | 慢, 60-85 BPM, 情绪弧 |
-
-| Query/场景情绪信号 | 风格皮肤 (示例) | BPM |
-| --- | --- | --- |
-| 食欲/鲜/香/爆汁 | 环境音为主,BGM 极淡 | ASMR 逻辑 |
-| 燃/爽/开箱/真香 | 鼓点 build-up + drop | 110-140 |
-| 甜/少女/约会/治愈 | 清新流行·木吉他·钟琴 | 90-110 |
-| 高级/质感/氛围 | 钢琴独奏·氛围 pad | 60-80 |
-| 温情/亲子/礼物 | 弦乐·钢琴·暖民谣 | 65-90 |
-| 科技/参数/性能 | 合成器电子·脉冲音效 | 115-130 |
-
-Levers worth one line each in the table header when applicable: 开场 3s 音频钩子, 音画卡点, 静音留白→爆点炸开, 声音记忆点, 情绪音量曲线. Silence is a tool: 情感反转前全断 0.5-1s, 数据字幕前 BGM 降 6dB+"叮", 质感片末镜 BGM 淡出只留环境音.
+The storyboard captures audio in two places:
+- **Header `音频策略`**: one line summary covering voice mode, BGM style+BPM, and key sound cues
+- **Shot table `音频三层` column**: per-shot SFX beats with shot number, timing, and sound word (e.g. `音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`)
 
 ### 4.2 Subtitle Route
 
@@ -174,33 +166,35 @@ The storyboard document content IS the `prompt` field sent to the Provider. The 
 
 The document has three sections, in order, producing the complete prompt:
 
-### 5.1 Section A — Brief Header
+**Section A — 视频主要目标 (Brief Header)** — the canonical source for what the storyboard locks in the header. One line summary plus the header fields:
 
 ```text
 产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 总时长 × 画幅
-默认假设: …
-音频策略: …
-美学母体: …
-视听路线: 含字幕/无字幕
+默认假设: <filled defaults the user did not provide>
+音频策略: <one line, see audio-design.md §5.1>
+转场策略: <default transition mode, see §3.3>
+美学母体: <palette/material/lighting basis that every shot anchors to>
+视听路线: <含字幕 / 无字幕, see §4.2>
 ```
 
 ### 5.2 Section B — Full Shot Table
 
-All 11 columns from §3, rendered as a markdown table. Every row preserves every column; no column is dropped:
+All 12 columns from §3, rendered as a markdown table. Every row preserves every column; no column is dropped:
 
 ```text
-| 镜号 | 时长 | 景别与视角 | 运镜 | 光影 | 色彩 | 主体动作 | 道具/环境 | 音频三层 | 屏显字幕 | 视觉重点 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S01-01 | 1.8s | 微距特写,低角度仰拍 | 缓推,跟随虾仁滑落 | 45°侧光,6000K,柔光高对比 | 青白+冰蓝,冷调 | 手撕开冷冻包装袋,冰块碎粒滑落 | 前景冰块碎粒/中景包装袋/背景厨房台面虚化+水珠 | (环境)撕包装"嘶啦"+冰块碰撞"咔啦"/(BGM)木吉他扫弦淡入 | ①"这虾仁,也太鲜了!"·上1/3·弹入放大 | ★ |
-| … | … | … | … | … | … | … | … | … | … | … |
-```
+| 镜号 | 时长 | 景别与视角 | 运镜 | 光影 | 色彩 | 主体动作 | 道具/环境 | 音频三层 | 屏显字幕 | 转场 | 视觉重点 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S01-01 | 1.8s | 微距特写,低角度仰拍 | 缓推,跟随虾仁滑落 | 45°侧光,6000K,柔光高对比 | 青白+冰蓝,冷调 | 手撕开冷冻包装袋,冰块碎粒滑落 | 前景冰块碎粒/中景包装袋/背景厨房台面虚化+水珠 | (环境)撕包装"嘶啦"+冰块碰撞"咔啦"/(BGM)木吉他扫弦淡入 | ①"这虾仁,也太鲜了!"·上1/3·弹入放大 | 开场 | ★ |
+| S01-02 | 2.0s | 中近景,平视 | 横移,跟随虾仁入碗 | 顶光+侧补光,5500K,柔光 | 橙白+暖黄,暖调 | 虾仁从袋中滑入白瓷碗,水珠弹跳 | 中景白瓷碗/背景木砧板+柠檬切片+香草 | (环境)虾仁落碗"噗"声/(BGM)木吉他节奏加入 | ②"超大只,跟我手掌一样长"·中下1/3·打字机效果 | 匹配剪辑:虾仁滑落延续 | ★ |
+| … | … | … | … | … | … | … | … | … | … | … | … |
+| | | | | | | | | | | | |
 
 ### 5.3 Section C — Constraint Block + Negative Prompt
 
 In one block at the end. **Must include an explicit `美学母体锚定` line** derived from the Section A header — this makes the aesthetic framework a binding constraint, not just a header annotation:
 
 ```text
-全片约束: 美学母体锚定: {从 Section A 抄写}; 竖屏9:16; 避免纯色渐变背景,避免棚拍空盒子感; 色调从X自然过渡到Y,过渡流畅不跳戏; 所有中文字幕按引号内文字渲染,零错字
+全片约束: 美学母体锚定: {从 Section A 抄写}; 竖屏9:16; 避免纯色渐变背景,避免棚拍空盒子感; 色调从X自然过渡到Y,过渡流畅不跳戏; 所有中文字幕按引号内文字渲染,零错字; 转场按分镜表执行,默认硬切,匹配剪辑延续动作不中断
 负面提示词: 纯色渐变背景,棚拍感,过度AI合成感,拉丁字体,乱码,画面抖动,主体畸变,多帧闪烁
 ```
 
@@ -221,7 +215,7 @@ For `keyframes-to-video`, describe the transition between the start and end fram
 
 ### 5.5 Anti-Patterns
 
-避免: 将分镜表压扁为 `Shot N: …` 导致信息丢失, 依赖 `parameters.negative_prompt` 而非写入文档 §5.3, 抽象堆砌 ("高级感" without concrete parameters), 分镜表缺少列或列内容不完整, 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, reusing one BGM across segments with different goals, 遗漏 §5.3 的约束或负面提示词.
+避免: 将分镜表压扁为 `Shot N: …` 导致信息丢失, 依赖 `parameters.negative_prompt` 而非写入文档 Section C, 抽象堆砌 ("高级感" without concrete parameters), 分镜表缺少列或列内容不完整, 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, 遗漏 Section C 的约束或负面提示词, 转场与镜头运动冲突(如运镜"缓推"+转场"淡出"无法共存), 一镜混合多种转场. 音频相关反模式见 [audio-design.md](references/audio-design.md) §6.
 
 ## 6. Duration And Segment Strategy
 

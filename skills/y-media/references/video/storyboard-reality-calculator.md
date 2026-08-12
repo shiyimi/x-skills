@@ -4,7 +4,7 @@
 >
 > 写完分镜表后,用本文件的决策表判断能否单段直出;用 Python 校验帧数合规;用 Provider 速查表确认模型支持。
 >
-> **Provider 限制(单段时长上限、帧数上限、frameCountRule)以 [`capability_limits`](../providers/manifest.cjs) 为权威源**;运行 `node <skill-dir>/core/media.cjs capabilities` 取最新值。本文件中的数字只作规划刻度参考,**不写进 prompt / storyboard**。
+> **Provider 限制(单段时长上限、帧数上限、frameCountRule)以 [`capability_limits`](../providers/manifest.cjs) 为权威源**;通过 `listCapabilities` 取最新值。本文件中的数字只作规划刻度参考,**不写进 prompt / storyboard**。
 
 ---
 
@@ -73,7 +73,7 @@
 约束 2: 帧数满足 capability_limits[<capability>].frameCountRule (如 8n+1, n = 0,1,2,...)
 ```
 
-读法: `node <skill-dir>/core/media.cjs capabilities | jq '.providers[].capability_limits'`
+读法: 通过 `listCapabilities` 读取 `providers[].capability_limits`
 
 ### 2.2 帧数速查(以 Agnes 24fps 为例,其他 Provider 见 capability_limits)
 
@@ -89,19 +89,6 @@
 ### 2.3 Python 自动校验(从 `capability_limits` 读上限,不写死 441)
 
 ```python
-def fetch_capability_limits(provider_id: str, capability: str) -> dict:
-    """从 capabilities 命令读 capability_limits,而不是硬编码 441。"""
-    import json, subprocess
-    out = subprocess.check_output(
-        ['node', '<skill-dir>/core/media.cjs', 'capabilities'],
-        text=True
-    )
-    data = json.loads(out)
-    for provider in data['providers']:
-        if provider['id'] == provider_id:
-            return provider.get('capability_limits', {}).get(capability, {})
-    return {}
-
 def validate_frames(
     duration_sec: float,
     fps: int = 24,
@@ -127,9 +114,8 @@ def validate_frames(
         "suggested_duration_sec": (8 * round(n / 8) + 1) / fps,
     }
 
-# 使用示例
-limits = fetch_capability_limits('agnes', 'text-to-video')
-# → {'maxFrames': 441, 'frameCountRule': '8n+1', 'maxSingleSegmentDuration': 18, ...}
+# 使用示例: 传入从 listCapabilities 获取的 capability_limits
+limits = {'maxFrames': 441, 'frameCountRule': '8n+1', 'maxSingleSegmentDuration': 18}
 print(validate_frames(15.0, capability_limits=limits))  # 361, 全部合规
 print(validate_frames(18.0, capability_limits=limits))  # 432, 不满足 8n+1
 print(validate_frames(20.0, capability_limits=limits))  # 480, 超 441
@@ -147,7 +133,7 @@ print(validate_frames(20.0, capability_limits=limits))  # 480, 超 441
 
 ## 3. Provider 能力速查
 
-> **以 `node <skill-dir>/core/media.cjs capabilities` 输出为准**。本表只列**未来 Provider 注册时的参考值**,数字以 `capability_limits` 声明为准。
+> **以 `listCapabilities` 输出为准**。本表只列**未来 Provider 注册时的参考值**,数字以 `capability_limits` 声明为准。
 
 ### 3.1 主流 t2v Provider 横向对比
 
@@ -187,7 +173,7 @@ print(validate_frames(20.0, capability_limits=limits))  # 480, 超 441
 ## 4. 自检流程(提交生成前)
 
 ```
-1. 读 capability_limits:`node media.cjs capabilities` 拿到 `maxSingleSegmentDuration` / `maxFrames` / `frameCountRule`
+1. 读 capability_limits: 通过 `listCapabilities` 拿到 `maxSingleSegmentDuration` / `maxFrames` / `frameCountRule`
 2. 用决策树判断: 单段直出 vs 多段拼接?
 3. 用 Python 校验: 帧数 ≤ maxFrames 且满足 frameCountRule?
 4. 用 Provider 速查: 选定 Provider,确认能力匹配?

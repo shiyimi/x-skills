@@ -2,7 +2,7 @@
 
 This reference defines the Skill-owned creative layer: how to turn a collected brief into a concrete storyboard document and a submission-ready video prompt. It is a generic, category-agnostic methodology for short-form video (selling, seeding, brand storytelling, product demos, tutorials, ASMR, emotional narratives, and similar). It is inspired by the shopping-video planning method used in the `ecom-video-generation` plugin; it is rewritten and simplified for the y-media workflow, its registered Providers, and its non-commerce uses.
 
-Core never consumes this file. The Skill reads it during Step 3 (Plan), produces a storyboard document, then extracts the prompt and submits through the CLI.
+Core never consumes this file. The Skill reads it during Step 3 (Plan), produces a storyboard document, then extracts the prompt and submits through the core.
 
 ## Five Core Principles (R1-R5) — read first
 
@@ -1059,18 +1059,17 @@ Notes for downstream audio (do NOT include in the video prompt):
 ## 7. Duration And Segment Strategy
 
 - **Single-segment default**: prefer one segment. The hard cap is **dynamic**, not fixed — see §7.1.
-- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must satisfy the selected Provider's `maxFrames` rule and the 8n+1 rule. Run `node <skill-dir>/core/media.cjs capabilities` to read the current Provider's `maxFrames` and `maxSingleSegmentDuration`; **do not hardcode 18s/441** in any prompt or storyboard.
+- **Frame mapping**: `num_frames = round(duration_seconds * frame_rate)`. Frames must satisfy the selected Provider's `maxFrames` rule and the 8n+1 rule. Read the current Provider's `maxFrames` and `maxSingleSegmentDuration` from `capability_limits`; **do not hardcode 18s/441** in any prompt or storyboard.
 
 ### 7.1 Dynamic cap + Split-or-merge confirmation (生成前问,按用户选择执行)
 
-**硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capabilities` 命令输出中的 `providers[].capability_limits[<capability>]`:
+**硬上限是动态的,不是固定 18s**。每个 Provider 的单段上限不同,取自 `capability_limits` 中的 `providers[].capability_limits[<capability>]`:
 
-```bash
-node <skill-dir>/core/media.cjs capabilities
-# → providers[].capability_limits["text-to-video"].maxSingleSegmentDuration
-# → providers[].capability_limits["text-to-video"].maxFrames
-# → providers[].capability_limits["text-to-video"].frameCountRule
-```
+| 字段 | 来源 |
+| --- | --- |
+| `maxSingleSegmentDuration` | `capability_limits[<capability>].maxSingleSegmentDuration` |
+| `maxFrames` | `capability_limits[<capability>].maxFrames` |
+| `frameCountRule` | `capability_limits[<capability>].frameCountRule` |
 
 这些字段由各 Provider 的 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段在注册时声明。**禁止在 prompt / storyboard / 决策树里硬编码 18s/441**。
 

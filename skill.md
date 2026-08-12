@@ -11,7 +11,7 @@ Follow the fixed workflow below for every media task.
 
 Require Node.js 18 or newer and locate `core/media.cjs` relative to this file. Read [core/provider-contract.md](core/provider-contract.md) for request/result shapes and errors. Read a Provider's colocated reference, such as [providers/agnes/api.md](providers/agnes/api.md), only for its credentials, models, and parameters.
 
-Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put credentials, prompts, or request JSON in arguments, logs, or chat output. Send JSON through stdin or `--request <path>`.
+Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put credentials, prompts, or request JSON in arguments, logs, or chat output.
 
 ## 1. Classify
 
@@ -59,15 +59,7 @@ Treat quota as unknown unless the Provider returns authoritative information. Do
 
 ## 5. Submit
 
-| Command | Use |
-| --- | --- |
-| `node <skill-dir>/core/media.cjs capabilities` | Inspect registrations without credentials or quota use |
-| `node <skill-dir>/core/media.cjs generate` | Run select, create, wait, and save for new work |
-| `node <skill-dir>/core/media.cjs create` | Submit once without waiting |
-| `node <skill-dir>/core/media.cjs status` | Check one existing task |
-| `node <skill-dir>/core/media.cjs wait` | Wait on and save one existing task |
-
-Use `generate` by default and `create` only when submission without waiting is requested. Submit exactly once. Never retry a generation POST outside the CLI or switch Provider after acceptance becomes true or unknown.
+Use `generateMedia` by default and `createMedia` only when submission without waiting is requested. Submit exactly once. Never retry a generation POST or switch Provider after acceptance becomes true or unknown.
 
 ## 6. Wait Or Resume
 

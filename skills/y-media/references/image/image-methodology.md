@@ -2,7 +2,7 @@
 
 > Image 路径的方法论主文件。**平级于** [../video/storyboard-methodology.md](../video/storyboard-methodology.md),但完全独立:没有时间轴/音频/字幕的复杂度,聚焦**单帧的视觉/构图/文字版式/产品摄影**。视频方法论中的 R1-R5、五定法、影响因子、颗粒度标尺在 image 路径同样适用,但要做"单帧降维"(去掉时间相关维度)。
 >
-> Core 永不消费本文件。Skill 在 Step 3 (Plan) 时为图片工作读取本文件,产出 `<name>.image-brief.md`,再抽取 prompt 通过 CLI 提交。
+> Core 永不消费本文件。Skill 在 Step 3 (Plan) 时为图片工作读取本文件,产出 `<name>.image-brief.md`,再抽取 prompt 通过 core 提交。
 
 ## Five Core Principles (R1-R5) — read first
 
@@ -388,7 +388,7 @@ Lifestyle collage poster, indie zine, WeChat-Moments-meets-coffee-magazine.
 | 9:16 | 720x1280 | 1440x2560 |
 | 16:9 | 1280x720 | 2560x1440 |
 
-> 表中数字仅作参考,实际值以 `node <skill-dir>/core/media.cjs capabilities` 中 Provider 的 `capability_limits[capability].supportedAspectRatios` 为准。
+> 表中数字仅作参考,实际值以 Provider 的 `capability_limits[capability].supportedAspectRatios` 为准。
 
 ## 8. Image Series Consistency(系列图一致性)
 

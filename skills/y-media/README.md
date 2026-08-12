@@ -1,6 +1,6 @@
 # y-media
 
-`y-media` 是一个带 Node.js CLI 的轻量媒体工作流 Skill。它通过显式注册的 Provider 支持图片与视频生成，同时保证确定性路由、任务恢复与本地产物处理。
+`y-media` 是一个轻量媒体工作流 Skill。它通过显式注册的 Provider 支持图片与视频生成，同时保证确定性路由、任务恢复与本地产物处理。
 
 运行时指令见 [SKILL.md](SKILL.md)。共享的请求、结果、错误与 Provider 契约见 [core/provider-contract.md](core/provider-contract.md)。Provider 相关的 API 事实紧邻各自的实现存放，例如 [providers/agnes/api.md](providers/agnes/api.md)。
 
@@ -9,10 +9,6 @@
 ```text
 SKILL.md
   意图收集与创意规划
-        |
-        v
-core/media.cjs
-  stdin/文件 JSON 与 stdout JSON 的 CLI 适配
         |
         v
 core/orchestrator.cjs
@@ -28,7 +24,6 @@ core/orchestrator.cjs
 | 区域         | 职责                                                                                                                             |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Skill        | 收集意图，按 [references/video/storyboard-methodology.md](references/video/storyboard-methodology.md) 规划分镜，编写创意文档，并构建公共请求 |
-| CLI          | 解析命令与 JSON、脱敏错误、输出一个 JSON 结果、映射退出码                                                                        |
 | Orchestrator | 选择 Provider、只提交一次、固定任务、轮询、协调保存                                                                              |
 | Contract     | 校验 manifest、公共请求、结果与稳定错误分类                                                                                      |
 | Artifacts    | 校验公共 URL，并原子保存下载内容、Base64 或字节                                                                                  |
@@ -74,8 +69,6 @@ y-media/
 
 ## 公共 API
 
-CLI 通过 `core/media.cjs` 暴露 `capabilities`、`generate`、`create`、`status` 与 `wait` 五个命令。
-
 `core/orchestrator.cjs` 导出可复用的工作流函数：
 
 | 函数                              | 职责                                               |
@@ -86,7 +79,7 @@ CLI 通过 `core/media.cjs` 暴露 `capabilities`、`generate`、`create`、`sta
 | `statusMedia(request, context)`   | 在其固定 Provider 上查询一个既有任务               |
 | `waitMedia(request, context)`     | 在本地截止时间内轮询一个固定任务，并保存成功的产物 |
 
-它们精确的请求与结果形状定义在 [core/provider-contract.md](core/provider-contract.md)。`core/media.cjs` 刻意只导出面向 CLI 的辅助函数。
+它们精确的请求与结果形状定义在 [core/provider-contract.md](core/provider-contract.md)。
 
 ## 视频交付物
 
@@ -145,32 +138,9 @@ Skill 的最终结论报告有证据支撑的生成与产物信息，而不仅�
 5. 在错误跨入 core 之前，规范化所有响应并脱敏 Provider 持有的凭证。
 6. 添加契约、路由、任务身份、回退、响应映射与凭证边界的测试。
 
-不要新增另一个 CLI、自动发现、Provider 基类、按能力区分的优先级，或 Provider 专属工作流。只有在至少两个真实 Provider 需要相同稳定行为后，才添加共享的 core 行为。
+不要新增自动发现、Provider 基类、按能力区分的优先级，或 Provider 专属工作流。只有在至少两个真实 Provider 需要相同稳定行为后，才添加共享的 core 行为。
 
 ## 开发
 
-运行完整回归测试套件：
-
-```text
-node --test skills/y-media/tests/media.test.cjs
-```
-
-检查可执行模块的语法：
-
-```text
-node --check skills/y-media/core/contract.cjs
-node --check skills/y-media/core/artifacts.cjs
-node --check skills/y-media/core/orchestrator.cjs
-node --check skills/y-media/core/media.cjs
-node --check skills/y-media/providers/manifest.cjs
-node --check skills/y-media/providers/agnes/provider.cjs
-```
-
-从仓库根目录校验 Skill 元数据与链接：
-
-```text
-uv run --no-project --with pyyaml python <skill-creator-dir>/scripts/quick_validate.py skills/y-media
-```
-
-测试不得发起真实生成请求或消耗 Provider 额度。Provider 与产物行为应使用注入的传输层与临时输出目录。
+测试通过 `core/orchestrator.cjs` 和 `core/contract.cjs` 等内部模块实现。测试不得发起真实生成请求或消耗 Provider 额度。Provider 与产物行为应使用注入的传输层与临时输出目录。
 
