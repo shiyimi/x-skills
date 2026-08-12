@@ -2,13 +2,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { Readable } = require('node:stream');
 const test = require('node:test');
 
 const {
   CAPABILITIES,
   ProviderError,
-  exitCodeFor,
   normalizeOutcome,
   validateManifest,
   validateRequest
@@ -20,11 +18,6 @@ const {
   statusMedia,
   waitMedia
 } = require('../core/orchestrator.cjs');
-const {
-  parseCli,
-  readRequest,
-  runCli
-} = require('../core/media.cjs');
 const {
   downloadArtifact,
   preflightOutput,
@@ -234,15 +227,6 @@ test('provider outcomes normalize optional collections and reject unknown states
     () => normalizeOutcome({ status: 'queued', task: [] }),
     (error) => error.kind === 'invalid_response'
   );
-});
-
-test('stable error categories map to CLI exit codes', () => {
-  assert.equal(exitCodeFor(new ProviderError('invalid_request', 'bad input')), 2);
-  assert.equal(exitCodeFor(new ProviderError('authentication', 'bad key')), 3);
-  assert.equal(exitCodeFor(new ProviderError('quota_exhausted', 'no quota')), 4);
-  assert.equal(exitCodeFor(new ProviderError('task_failed', 'failed')), 5);
-  assert.equal(exitCodeFor(new ProviderError('wait_timeout', 'still running')), 6);
-  assert.equal(exitCodeFor(new Error('unknown')), 5);
 });
 
 test('automatic creation uses ascending priority instead of manifest order', async () => {
@@ -1161,145 +1145,6 @@ test('wait aborts a hanging Provider status call at the local deadline', async (
   assert.ok(Date.now() - startedAt < 500);
 });
 
-test('CLI capabilities prints one manifest-derived JSON object without credentials', async () => {
-  let output = '';
-  let configuredChecks = 0;
-  const cliProvider = provider({
-    isConfigured: () => { configuredChecks += 1; return true; }
-  });
-
-  const exitCode = await runCli(['capabilities'], {
-    manifest: [entry('fixture', 10, { provider: cliProvider })],
-    stdout: { write: (chunk) => { output += chunk; } },
-    env: {}
-  });
-
-  assert.equal(exitCode, 0);
-  assert.equal(configuredChecks, 0);
-  assert.equal(output.trim().split('\n').length, 1);
-  assert.equal(JSON.parse(output).providers[0].id, 'fixture');
-});
-
-test('CLI recursively redacts the configured API key from Provider errors', async () => {
-  let output = '';
-  const leaking = provider({
-    create: async () => {
-      throw new ProviderError('invalid_response', 'remote echoed top-secret', {
-        details: { raw: 'top-secret' }
-      });
-    }
-  });
-  const request = JSON.stringify({
-    provider: 'leaking',
-    capability: 'text-to-image',
-    prompt: 'A product photo'
-  });
-
-  const exitCode = await runCli(['create'], {
-    manifest: [entry('leaking', 10, { provider: leaking })],
-    stdin: Readable.from([request]),
-    stdout: { write: (chunk) => { output += chunk; } },
-    env: { AGNES_API_KEY: 'top-secret' },
-    preflightOutput: async () => {}
-  });
-
-  assert.equal(exitCode, 5);
-  assert.doesNotMatch(output, /top-secret/);
-  assert.match(output, /\[REDACTED\]/);
-  assert.equal(JSON.parse(output).error.details.raw, '[REDACTED]');
-});
-
-test('Agnes redacts a file credential echoed by an external error response', async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-'));
-  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
-  const credentialDir = path.join(tempDir, '.config', 'agnes');
-  fs.mkdirSync(credentialDir, { recursive: true });
-  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-top-secret', { mode: 0o600 });
-  let output = '';
-
-  const exitCode = await runCli(['create'], {
-    stdin: Readable.from([JSON.stringify({
-      provider: 'agnes',
-      capability: 'text-to-image',
-      prompt: 'A product photo',
-      output: { directory: path.join(tempDir, 'output') }
-    })]),
-    stdout: { write: (chunk) => { output += chunk; } },
-    env: {},
-    homeDir: tempDir,
-    platform: 'win32',
-    fsApi: fs,
-    fetchImpl: async () => new Response(JSON.stringify({
-      error: { message: 'remote echoed file-top-secret', code: 'file-top-secret' }
-    }), { status: 400, headers: { 'Content-Type': 'application/json' } })
-  });
-
-  assert.equal(exitCode, 2);
-  assert.doesNotMatch(output, /file-top-secret/);
-  assert.match(output, /\[REDACTED\]/);
-});
-
-test('Agnes redacts a file credential echoed by a malformed success response', async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-success-'));
-  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
-  const credentialDir = path.join(tempDir, '.config', 'agnes');
-  fs.mkdirSync(credentialDir, { recursive: true });
-  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-only-secret');
-  let output = '';
-
-  const exitCode = await runCli(['create'], {
-    stdin: Readable.from([JSON.stringify({
-      provider: 'agnes',
-      capability: 'text-to-video',
-      prompt: 'A product animation',
-      output: { directory: path.join(tempDir, 'output') }
-    })]),
-    stdout: { write: (chunk) => { output += chunk; } },
-    env: {},
-    homeDir: tempDir,
-    platform: 'win32',
-    fsApi: fs,
-    fetchImpl: async () => new Response(JSON.stringify({
-      video_id: 'video-1',
-      status: 'file-only-secret'
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
-  });
-
-  assert.equal(exitCode, 5);
-  assert.doesNotMatch(output, /file-only-secret/);
-  assert.match(output, /\[REDACTED\]/);
-});
-
-test('Agnes redacts a file credential echoed in a successful outcome', async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-file-secret-outcome-'));
-  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
-  const credentialDir = path.join(tempDir, '.config', 'agnes');
-  fs.mkdirSync(credentialDir, { recursive: true });
-  fs.writeFileSync(path.join(credentialDir, 'api_key'), 'file-result-secret');
-  let output = '';
-
-  const exitCode = await runCli(['create'], {
-    stdin: Readable.from([JSON.stringify({
-      provider: 'agnes',
-      capability: 'text-to-image',
-      prompt: 'A product photo',
-      output: { directory: path.join(tempDir, 'output') }
-    })]),
-    stdout: { write: (chunk) => { output += chunk; } },
-    env: {},
-    homeDir: tempDir,
-    platform: 'win32',
-    fsApi: fs,
-    fetchImpl: async () => new Response(JSON.stringify({
-      data: [{ b64_json: 'AQIDBA==', mime_type: 'file-result-secret' }]
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
-  });
-
-  assert.equal(exitCode, 0);
-  assert.doesNotMatch(output, /file-result-secret/);
-  assert.match(output, /\[REDACTED\]/);
-});
-
 test('Agnes transient status retry cannot cross the core wait deadline', async () => {
   let currentMs = 0;
   let attempts = 0;
@@ -1442,26 +1287,4 @@ test('Agnes status retries only idempotent GET and normalizes provider failure',
   assert.equal(attempts, 2);
   assert.equal(outcome.status, 'failed');
   assert.equal(outcome.task.id, 'video id/1');
-});
-
-test('CLI parser and request reader accept only command plus stdin or request file', async (t) => {
-  assert.deepEqual(parseCli(['generate']), { command: 'generate' });
-  assert.deepEqual(parseCli(['wait', '--request', 'request.json']), {
-    command: 'wait',
-    requestPath: 'request.json'
-  });
-  assert.throws(() => parseCli(['generate', '{"prompt":"inline"}']), /stdin JSON/);
-
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-request-reader-'));
-  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
-  const requestPath = path.join(tempDir, 'request.json');
-  fs.writeFileSync(requestPath, '{"capability":"text-to-image"}');
-  assert.deepEqual(await readRequest(
-    { command: 'create', requestPath },
-    { fsApi: fs, stdin: Readable.from([]) }
-  ), { capability: 'text-to-image' });
-  assert.deepEqual(await readRequest(
-    { command: 'create' },
-    { fsApi: fs, stdin: Readable.from(['{"capability":"text-to-video"}']) }
-  ), { capability: 'text-to-video' });
 });

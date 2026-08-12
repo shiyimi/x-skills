@@ -136,7 +136,7 @@
 
 ## 5. Agnes video v2.0 关键参数(真相源 = `capability_limits`)
 
-下表的数值仅作 **当前快照**,**权威值**来自 `node <skill-dir>/core/media.cjs capabilities` 输出中的 `providers[].capability_limits[capability]` 字段(注册在 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段)。**禁止把表里的数字硬编码到 prompt / storyboard / 决策树中**。
+下表的数值仅作 **当前快照**,**权威值**来自 `listCapabilities` 输出中的 `providers[].capability_limits[capability]` 字段(注册在 [providers/manifest.cjs](../providers/manifest.cjs) 的 `capability_limits` 段)。**禁止把表里的数字硬编码到 prompt / storyboard / 决策树中**。
 
 | 项 | 值(快照) | 权威源 |
 | --- | --- | --- |
@@ -155,14 +155,9 @@
 | 输入形态 | text-to-video / image-to-video / keyframes-to-video | `capability_limits[*].requiresImageInput(s)` |
 | 关键限制 | 本地路径/Data URI 不支持,必须公网 HTTPS URL | `supports()` |
 
-### 5.1 读取 `capability_limits` 的命令
+### 5.1 读取 `capability_limits` 的方式
 
-```bash
-# 一次读所有 Provider 的所有 capability 限制
-node <skill-dir>/core/media.cjs capabilities
-```
-
-输出形如:
+通过 `listCapabilities` 获取,输出形如:
 
 ```json
 {

@@ -1,6 +1,5 @@
 const {
   ProviderError,
-  exitCodeFor,
   normalizeOutcome,
   validateManifest,
   validateRequest

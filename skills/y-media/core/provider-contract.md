@@ -32,7 +32,7 @@ Capabilities are:
 - `image-to-video`
 - `keyframes-to-video`
 
-Keep Provider-owned controls inside `parameters`. Resolve relative output directories from the CLI process working directory. Optional `output.filename` is one safe file name of at most 120 characters, not a path. Core keeps task IDs out of local paths, adds sequence numbers for multiple artifacts, and replaces the requested extension with the actual media extension.
+Keep Provider-owned controls inside `parameters`. Resolve relative output directories from the working directory. Optional `output.filename` is one safe file name of at most 120 characters, not a path. Core keeps task IDs out of local paths, adds sequence numbers for multiple artifacts, and replaces the requested extension with the actual media extension.
 
 Existing `status` and `wait` requests require the original `provider`, `capability`, and `task.id`:
 
@@ -87,7 +87,7 @@ The manifest is the only source for Provider IDs, enabled state, priority, coars
 
 ### `capability_limits` (static, request-independent)
 
-`capability_limits` exposes **static, request-independent** limits that callers need at planning time — before any request is built and before any `supports()` call. These are discoverable through `node <skill-dir>/core/media.cjs capabilities` and shown in the output `providers[].capability_limits`.
+`capability_limits` exposes **static, request-independent** limits that callers need at planning time — before any request is built and before any `supports()` call. These are shown in the output `providers[].capability_limits`.
 
 Recognized fields per capability:
 
@@ -121,7 +121,7 @@ module.exports = {
 
 `isConfigured(context)` returns a boolean without returning or logging secrets.
 
-Redact Provider credentials from every external error message, code, and detail before constructing a `ProviderError`. Core applies secondary CLI redaction but cannot know secrets loaded from Provider-owned files.
+Redact Provider credentials from every external error message, code, and detail before constructing a `ProviderError`. The core cannot know secrets loaded from Provider-owned files.
 
 `supports(request)` is synchronous and side-effect-free. Return:
 

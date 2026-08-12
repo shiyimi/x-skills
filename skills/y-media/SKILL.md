@@ -11,7 +11,7 @@ Follow the fixed workflow below for every media task.
 
 Require Node.js 18 or newer and locate `core/media.cjs` relative to this file. Read [core/provider-contract.md](core/provider-contract.md) for request/result shapes and errors. Read a Provider's colocated reference, such as [providers/agnes/api.md](providers/agnes/api.md), only for its credentials, models, and parameters.
 
-Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put credentials, prompts, or request JSON in arguments, logs, or chat output. Send JSON through stdin or `--request <path>`.
+Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put credentials, prompts, or request JSON in arguments, logs, or chat output.
 
 ## 1. Classify
 
@@ -109,15 +109,7 @@ Treat quota as unknown unless the Provider returns authoritative information. Do
 
 ## 5. Submit
 
-| Command | Use |
-| --- | --- |
-| `node <skill-dir>/core/media.cjs capabilities` | Inspect registrations without credentials or quota use |
-| `node <skill-dir>/core/media.cjs generate` | Run select, create, wait, and save for new work |
-| `node <skill-dir>/core/media.cjs create` | Submit once without waiting |
-| `node <skill-dir>/core/media.cjs status` | Check one existing task |
-| `node <skill-dir>/core/media.cjs wait` | Wait on and save one existing task |
-
-Use `generate` by default and `create` only when submission without waiting is requested. Submit exactly once. Never retry a generation POST outside the CLI or switch Provider after acceptance becomes true or unknown.
+Use `generateMedia` by default and `createMedia` only when submission without waiting is requested. Submit exactly once. Never retry a generation POST or switch Provider after acceptance becomes true or unknown.
 
 ## 6. Wait Or Resume
 
@@ -151,7 +143,7 @@ Do not claim media integrity checks that core does not perform.
 
 ## 8. Report
 
-Parse the single stdout JSON object. In every final conclusion report only evidence-backed facts:
+In every final conclusion report only evidence-backed facts:
 
 - Generation: `provider`, `capability`, normalized `status`, pinned `task.id`, model when returned or selected, effective parameters, warnings, and timing.
 - Every artifact: absolute path, media kind (`image` or `video`), detected format or MIME type, byte size, and available dimensions. For video also report available duration, aspect ratio, and frame rate.
@@ -163,7 +155,5 @@ Do not infer missing dimensions, duration, aspect ratio, frame rate, model, or M
 | `wait_timeout` | Preserve the task and offer another bounded wait |
 | `download_failed` | Preserve remote success and retry with `wait` |
 | Completed without an artifact URL | Report sanitized diagnostics; never resubmit |
-| Authentication, permission, or quota failure | Report the error; do not retry outside the CLI |
+| Authentication, permission, or quota failure | Report the error; do not retry |
 | Unknown POST acceptance | Stop; do not retry or fall back |
-
-Exit codes: `2` request/configuration, `3` authentication/permission, `4` quota/rate limit, `5` Provider/task/response, `6` network/wait/download.

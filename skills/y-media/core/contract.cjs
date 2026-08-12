@@ -273,30 +273,9 @@ function normalizeOutcome(outcome) {
   return normalized;
 }
 
-function exitCodeFor(error) {
-  const mappings = {
-    configuration: 2,
-    configuration_error: 2,
-    invalid_request: 2,
-    no_provider_available: 2,
-    authentication: 3,
-    permission: 3,
-    quota_exhausted: 4,
-    rate_limited: 4,
-    provider_unavailable: 5,
-    task_failed: 5,
-    invalid_response: 5,
-    network: 6,
-    wait_timeout: 6,
-    download_failed: 6
-  };
-  return mappings[error?.kind] ?? 5;
-}
-
 module.exports = {
   CAPABILITIES,
   ProviderError,
-  exitCodeFor,
   normalizeOutcome,
   validateManifest,
   validateRequest
