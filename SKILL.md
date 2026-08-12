@@ -106,7 +106,7 @@ A successful video delivers two adjacent files with the same basename:
 <name>.storyboard.md  (Step 3 creative document + Generation)
 ```
 
-The sidecar is the storyboard document produced in Step 3, which already carries `Brief`, `Storyboard`, `Constraints & Negative Prompt`, and `Inputs`. The document content IS the prompt, so there is no separate `Final Prompt` section. After delivery, append a `Generation` section recording the Provider, model, pinned task ID, effective parameters, and warnings. Do not rewrite the creative content. Never include credentials, authorization headers, or raw external responses.
+The sidecar is the storyboard document produced in Step 3, which already carries Section A (视频主要目标), Section B (分镜表格), and Section C (全片约束与负面提示词). The document content IS the prompt, so there is no separate `Final Prompt` section. After delivery, append a `Generation` section recording the Provider, model, pinned task ID, effective parameters, and warnings. Do not rewrite the creative content. Never include credentials, authorization headers, or raw external responses.
 
 For a resumed task, reuse the original storyboard document. If the sidecar is unavailable, do not invent it; write `Unavailable from recovered task` in the document sections and preserve the available task and generation metadata. If appending `Generation` fails after video success, report the video path and the sidecar failure without regenerating the video.
 

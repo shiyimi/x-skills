@@ -24,16 +24,7 @@ Produce one Markdown file per video segment, saved next to the intended output:
 <name>.storyboard.md
 ```
 
-where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. The document content IS the prompt submitted to the Provider — nothing is extracted or compressed. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. The document has three sections (defined in §5):
-
-1. **视频主要目标** — one line: `产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 时长 × 画幅(默认9:16竖屏)`.
-2. **分镜表格** — one row per shot, columns defined in §3. Lock the following decisions in the header before the table:
-   - `默认假设`: filled defaults the user did not provide
-   - `音频策略`: one line derived from §4.1
-   - `转场策略`: default transition mode for the segment (§3.3)
-   - `美学母体`: the palette/material/lighting basis that every shot anchors to
-   - `视听路线`: subtitle route, `含字幕` or `无字幕`, locked for the whole segment (§4.2)
-3. **全片约束与负面提示词** — constraint block + negative prompt, as defined in §5.3.
+where `<name>` matches the video's `output.filename` stem. The document doubles as the delivery sidecar: it starts as the creative plan and gains a `Generation` section after the video is delivered. The document content IS the prompt submitted to the Provider — nothing is extracted or compressed. A complete, spec-conformant example is [storyboard-example.md](storyboard-example.md) — review it before producing a new storyboard. The document structure is defined in §5.
 
 ## 2. 剧本 (Script) — Story & Narrative
 
@@ -141,34 +132,11 @@ The post-production phase locks **how the video sounds, reads, and conforms to t
 
 ### 4.1 Audio Design
 
-Design all three audio layers; never rely on the model default background track alone. Full audio design reference in [references/audio-design.md](references/audio-design.md). At minimum, lock the following in the document header as a one-line `音频策略`:
+All audio design rules live in [references/audio-design.md](references/audio-design.md) (three-layer framework, voice modes, SFX annotation format, BGM specification, audio levers, anti-patterns). Read it before designing the audio layer.
 
-- **人声**: 有对白 / 纯OS心声 / 无对白
-- **BGM**: 风格(乐器+参考) + BPM
-- **关键音效**: 2-3 recognizable sound words per scene
-
-**Voice** — pick one: 有对白 (talent speaks), 纯 OS 心声 (inner voice, low/slow), or 无对白 (thicken ambient + physiological sounds such as 呼吸/衣物摩擦 instead). When there is dialogue, write a natural-delivery line: 每 8-12 字一次换气, 关键词前微停, 尾字自然下沉, 避免播音腔.
-
-**Ambient/SFX** — 2-3 recognizable sound words per scene; mark key SFX beats explicitly in the shot table: `音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`.
-
-**BGM** — always specify 4 fields in the audio strategy: 风格(乐器/参考+BPM) + 情绪 + 入点/淡出时点 + 关键节点. Map goal and query mood to a skin, never a generic "轻音乐":
-
-| Goal | Serving | Tempo |
-| --- | --- | --- |
-| 转化 | 抓人→证明→催单 | 快, 90-130 BPM, 音画卡点 |
-| 兴趣(种草) | 沉浸→共鸣 | 中, 75-100 BPM |
-| 认知(品牌) | 审美→记忆 | 慢, 60-85 BPM, 情绪弧 |
-
-| Query/场景情绪信号 | 风格皮肤 (示例) | BPM |
-| --- | --- | --- |
-| 食欲/鲜/香/爆汁 | 环境音为主,BGM 极淡 | ASMR 逻辑 |
-| 燃/爽/开箱/真香 | 鼓点 build-up + drop | 110-140 |
-| 甜/少女/约会/治愈 | 清新流行·木吉他·钟琴 | 90-110 |
-| 高级/质感/氛围 | 钢琴独奏·氛围 pad | 60-80 |
-| 温情/亲子/礼物 | 弦乐·钢琴·暖民谣 | 65-90 |
-| 科技/参数/性能 | 合成器电子·脉冲音效 | 115-130 |
-
-Levers worth one line each in the table header when applicable: 开场 3s 音频钩子, 音画卡点, 静音留白→爆点炸开, 声音记忆点, 情绪音量曲线. Silence is a tool: 情感反转前全断 0.5-1s, 数据字幕前 BGM 降 6dB+"叮", 质感片末镜 BGM 淡出只留环境音.
+The storyboard captures audio in two places:
+- **Header `音频策略`**: one line summary covering voice mode, BGM style+BPM, and key sound cues
+- **Shot table `音频三层` column**: per-shot SFX beats with shot number, timing, and sound word (e.g. `音效点(镜3·2.5s): 裙摆"沙沙"加重 3dB`)
 
 ### 4.2 Subtitle Route
 
@@ -198,14 +166,15 @@ The storyboard document content IS the `prompt` field sent to the Provider. The 
 
 The document has three sections, in order, producing the complete prompt:
 
-### 5.1 Section A — Brief Header
+**Section A — 视频主要目标 (Brief Header)** — the canonical source for what the storyboard locks in the header. One line summary plus the header fields:
 
 ```text
 产品/主题 × 人群 × 目标(认知/兴趣/转化) × 骨架(A/B/C) × 总时长 × 画幅
-默认假设: …
-音频策略: …
-美学母体: …
-视听路线: 含字幕/无字幕
+默认假设: <filled defaults the user did not provide>
+音频策略: <one line, see audio-design.md §5.1>
+转场策略: <default transition mode, see §3.3>
+美学母体: <palette/material/lighting basis that every shot anchors to>
+视听路线: <含字幕 / 无字幕, see §4.2>
 ```
 
 ### 5.2 Section B — Full Shot Table
@@ -246,7 +215,7 @@ For `keyframes-to-video`, describe the transition between the start and end fram
 
 ### 5.5 Anti-Patterns
 
-避免: 将分镜表压扁为 `Shot N: …` 导致信息丢失, 依赖 `parameters.negative_prompt` 而非写入文档 §5.3, 抽象堆砌 ("高级感" without concrete parameters), 分镜表缺少列或列内容不完整, 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, reusing one BGM across segments with different goals, 遗漏 §5.3 的约束或负面提示词, 转场与镜头运动冲突(如运镜"缓推"+转场"淡出"无法共存), 一镜混合多种转场.
+避免: 将分镜表压扁为 `Shot N: …` 导致信息丢失, 依赖 `parameters.negative_prompt` 而非写入文档 Section C, 抽象堆砌 ("高级感" without concrete parameters), 分镜表缺少列或列内容不完整, 冲突指令/一镜 >2 种运动, splitting 15s into multiple short generations then stitching, burning SRT instead of letting the model render subtitles, 遗漏 Section C 的约束或负面提示词, 转场与镜头运动冲突(如运镜"缓推"+转场"淡出"无法共存), 一镜混合多种转场. 音频相关反模式见 [audio-design.md](references/audio-design.md) §6.
 
 ## 6. Duration And Segment Strategy
 
