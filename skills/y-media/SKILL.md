@@ -9,7 +9,7 @@ Follow the fixed workflow below for every media task.
 
 ## Runtime
 
-Require Node.js 18 or newer and locate `core/media.cjs` relative to this file. Read [core/provider-contract.md](core/provider-contract.md) for request/result shapes and errors. Read a Provider's colocated reference, such as [providers/agnes/api.md](providers/agnes/api.md), only for its credentials, models, and parameters.
+Require Node.js 18 or newer and locate `core/orchestrator.cjs` relative to this file. Read [core/provider-contract.md](core/provider-contract.md) for request/result shapes and errors. Read a Provider's colocated reference, such as [providers/agnes/api.md](providers/agnes/api.md), only for its credentials, models, and parameters.
 
 Agnes resolves `AGNES_API_KEY` before `~/.config/agnes/api_key`. Never put credentials, prompts, or request JSON in arguments, logs, or chat output.
 
