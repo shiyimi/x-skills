@@ -17,6 +17,7 @@ core/orchestrator.cjs
         +--> providers/manifest.cjs --> providers/<id>/provider.cjs
         |
         +--> core/artifacts.cjs --> 本地文件
+        +--> core/post.cjs --> 质检(probe/frames) + 字幕烧录兜底
 ```
 
 各边界是刻意划分的：
@@ -27,9 +28,58 @@ core/orchestrator.cjs
 | Orchestrator | 选择 Provider、只提交一次、固定任务、轮询、协调保存                                                                              |
 | Contract     | 校验 manifest、公共请求、结果与稳定错误分类                                                                                      |
 | Artifacts    | 校验公共 URL，并原子保存下载内容、Base64 或字节                                                                                  |
+| Post         | 产物级质检(ffprobe 客观校验 + 抽帧人工审) + 字幕烧录兜底                                                                         |
 | Provider     | 解析凭证、映射参数、调用一个外部 API、规范化结果                                                                                 |
 
-创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层:[references/library/M1-methodology.md](references/library/M1-methodology.md) 定义了通用的分镜、音频、字幕与提示词方法;一个视频 brief 会落地为具体的 `<name>.video-brief.md` 文档,其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
+创意 brief 的收集与分镜生成不属于 core。Skill 拥有创意层:[references/library/M1-methodology.md](references/library/M1-methodology.md) 定义了通用的分镜、音频、字幕与镜头语言方法;一个视频 brief 会落地为具体的 `<name>.video-brief.md` 文档,其提示词随后通过 core 提交。Provider 专属的模型、端点、凭证与响应兼容性不属于编排层。
+
+## 目录结构
+
+```text
+skills/y-media/
+|-- SKILL.md                                (路由表 §0 + 5 步工作流 + reference 索引)
+|-- README.md                               (本文件:架构 + 设计说明 + 公共 API)
+|-- references/
+|   |-- library/                            (视频横切原语,按剧组角色分层,命中 recipe 后按需加载)
+|   |   |-- M1-methodology.md               (制片+导演 · 路径+骨架+镜头结构+制片决策)
+|   |   |-- M2-character.md                 (选角 · 角色四层+人物-事件一致性)
+|   |   |-- M3-scene.md                     (美术 · 场景3+1+动态层+单一光源)
+|   |   |-- M4-cinematography.md            (摄影 · 景别+机位+运镜+焦段+构图)
+|   |   |-- M5-audio.md                     (录音 · 音频三层进prompt)
+|   |   |-- M6-prompt-craft.md              (剪辑 · 八要素+套用模板+prompt拼接+字幕直出)
+|   |   `-- A1-subtitle.md                  (字幕 · 直出文案+降级烧录)
+|   |-- recipes/                            (品类配方,按 brief 关键词只读 1 个)
+|   |   |-- nature.md                       (自然/动物/治愈)
+|   |   |-- lifestyle.md                    (生活/质感/氛围/节日)
+|   |   |-- portrait.md                     (人像/穿搭/时尚,强 i2v)
+|   |   |-- food.md                         (美食/ASMR/饮品)
+|   |   `-- commerce.md                     (商业带货)
+|   `-- image/                              (图片专属,独立于视频)
+|       |-- I1-image-core.md
+|       |-- I1-image-methodology.md
+|       |-- I1-image-style.md
+|       `-- I2-image-example.md
+|-- examples/                               (成品示范,每类 1 个 MUST-KEEP)
+|   |-- nature-fog-forest.md                (自然·骨架 B,默认入口)
+|   |-- lifestyle-coffee.md                 (生活·晨光咖啡)
+|   |-- portrait-magazine.md                (人像·杂志,强 i2v)
+|   |-- food-cooking.md                     (美食·烹饪)
+|   `-- commerce-beauty.md                  (商业·美妆)
+|-- core/
+|   |-- orchestrator.cjs
+|   |-- contract.cjs
+|   |-- artifacts.cjs
+|   |-- post.cjs
+|   `-- provider-contract.md
+|-- providers/
+|   |-- manifest.cjs
+|   `-- agnes/
+|       |-- provider.cjs
+|       `-- api.md
+`-- tests/
+    |-- media.test.cjs
+    `-- post.test.cjs
+```
 
 ## 设计说明(Why this shape)
 
@@ -41,26 +91,34 @@ core/orchestrator.cjs
 
 合并 N 个文件看似体积小,但每次 brief 都会把 N 个文件全读进上下文;**拆 N 个 + 路由 = 每次只读匹配的 1 个**。文件小,加载少,成本低。
 
-实测收益:5 个 scenes 文件 → 1 个 scenes.md 看似体积小,但每次都全读;拆 5 + 路由 = 只读匹配 1 个 ~3-5KB,实际加载量降 50%+。
-
 ### 视频与图片两路独立 library
 
 视频和图片走两套互不重叠的 library:
 
-- **视频核心 library(9 个横切原语,分层按需)**:命中任意视频 recipe 读核心 6 个(M1+M2+M3+M4+M6+M8),辅助 3 个(M5+M9+M7)由 recipe 头部声明后按需加载 — M1 creative-method · M2 director-presets · M3 character · M4 scene · M5 cinematography[AUX] · M6 audio · M7 drift-prevention[AUX] · M8 prompt-craft · M9 media-rules[AUX]
-- **视频交付层(1 个)**:提交阶段按需 — M10 delivery(Provider 参数 + 调用流程 + 结果验证)
-- **视频按需 library(3 个)**:recipe 头部声明 — A1 subtitle · A2 multimodal-syntax · A3 emotional-levers
-- **图片 library(独立)**:不读视频 9 个横切原语,只读 I1 image-methodology + I2 image-example + 必要的 commerce recipe 头
+- **视频核心 library(7 个,按剧组角色分层)**:M1 制片+导演、M2 选角、M3 美术、M4 摄影、M5 录音、M6 剪辑、A1 字幕。命中 recipe 后按需加载,镜头语言只归 M4 一处。
+- **图片 library(独立)**:不读视频 7 个原语,只读 I1 image-core/methodology/style + I2 image-example + 必要的 recipe 头。
 
-**为什么分开**:图片无时间轴/分镜/音频,视频的 9 个横切原语对图片 0 价值;硬塞进图片加载路径 = 平白增加 token 成本。
+**为什么分开**:图片无时间轴/分镜/音频,视频的 7 个原语对图片 0 价值;硬塞进图片加载路径 = 平白增加 token 成本。
 
 ### recipe 共享 1 份 library(不按 recipe 重复列)
 
-**所有 video recipe 共享同一份 9 个横切原语**;各 recipe 只在头部"与其他文件关系"声明自身独有的额外文件(2-3 个)。这样:
+**所有 video recipe 共享同一份 7 个原语**;各 recipe 只在头部"与其他文件关系"声明自身独有的额外文件。这样:
 
 - 路由表只列 1 次 library,简洁
 - recipe 不重复声明共享文件
 - 跨 recipe 知识自动同步(改一个 library 文件,所有 recipe 受益)
+
+### 镜头语言收敛在 M4 一处
+
+景别/机位/运镜/焦段/构图只维护在 [M4-cinematography.md](references/library/M4-cinematography.md),M1/M6/recipes 只引用不重复。避免同一主题多个说法。
+
+### 套用模板并入 M6
+
+即用 prompt 模板(人像/风景/i2v/古风)并入 [M6-prompt-craft.md §7](references/library/M6-prompt-craft.md),不单独设 `templates/` 目录。模板是 M6 拼接规则的现成实例,职责不拆分。
+
+### example 只留 MUST-KEEP
+
+examples 每类 1 个典型(差异最大),recipe 提供规则,AI 读完 recipe §1.5 后可自主生成其余品类,不靠 example 堆数量。
 
 ### R1-R6 铁律不内联 library 路径
 
@@ -70,116 +128,13 @@ R1-R6 只列**铁律本身**(一句话含义)。**落点由对应 recipe + libra
 - 路径真相只在每个文件自己的"与其他文件关系"段里,单一来源
 - 增删 library 文件,不需要回头改铁律表
 
-### templates/ 独立于 library/
+### M1 制片+导演合一(按工作流阶段)
 
-`templates/3-sets.md` 独立目录。它**不是横切原语**——不需要每次视频 brief 都读;只在需求简单、要直接套模板时按需加载。
-
-### 路由表在 §0 第一屏
-
-打开 SKILL.md 必先看到路由表,Agent 第一件事就是匹配 → 决定读哪几个 reference,不再"先读完全部再判断"。
-
-### 兜底路由(§0.3)
-
-当 brief 是视频但 0.1 关键词全未命中时:
-
-1. 读视频核心 library(核心 6 个 + 辅助 3 个)
-2. 读全部 5 个 recipe 头部 30 行(只读"板块共性"段)
-3. 默认走 nature 骨架 B(5-8 镜,慢节奏,无字幕,治愈)—— 视频兜底最稳的形态
-4. 若 brief 含明确商业意图(带货/转化/价格/卖点)→ 即便未命中关键词,优先按 commerce 处理
-
-### M1-methodology 合并(按工作流阶段合一)
-
-`M1-methodology.md` 是创意方法论单一文件,覆盖所有 3 个阶段:
-- **§0-§5**(规划阶段):路径判定 / 骨架 A·B·C / 镜头结构 / 1:1 镜号 / R6 5 维矩阵
-- **§6-§7**(脚本阶段):15s 段落指标 / 分镜表 11 列 / 颗粒度 / 展示层 vs 执行层 / 场景路由
-- **§8-§9**(交付阶段):时长分段 / 帧数 8n+1 / Provider 能力速查 / 自检 11 项
-
-**合并收益**:原 4 个文件 41.8KB → 1 个文件 34KB,减少 19% 加载量,消除跨文件引用开销。
-
-### I1 轻量化(创意层 + 风格层合并)
-
-`I1-image-methodology.md` 是图片方法论的唯一文件,覆盖创意层与风格层:
-
-**精简收益**:31KB → 14.5KB,对比 visual-image-generator 的 SKILL.md(6.8KB)差距缩小 50%。
-
-### 库文件"上下游"段去重
-
-M3/M4/M6/A1/M8 等库文件原本各自维护"与其他文件的关系"段,内容重复、维护成本高。统一为单行指针 → [SKILL.md §4.0 编号索引](SKILL.md#40-编号索引快速定位),重复内容上移至 SKILL.md 单一来源,各库文件只在自身内容里维护本文件专属引用。
-
-### 加载量与单文件体积目标
-
-| 类别          | 目标上限 | 说明                                        |
-| ------------- | -------- | ------------------------------------------- |
-| SKILL.md      | ≤ 30KB   | 路由表 + 工作流 + 复杂度模式 + reference 索引 |
-| library 核心文件 | ≤ 20KB | M1/M2/M3/M4/M6/M8 必读,单次按需加载 |
-| library 辅助文件 | ≤ 15KB | M5/M9/M7 仅在 recipe 声明时按需加载 |
-| recipe 文件   | ≤ 10KB   | 只放场景差异,不重复 library 内容            |
-| example 文件  | ≤ 5KB    | 每 recipe 2 个典型例,anchor 互斥或跨度大   |
-| 快速模式加载量 | ≤ 15KB  | recipe + template,跳过 M1-M9 |
-| 标准模式加载量 | ≤ 50KB  | recipe + 核心 6 个 + L0 |
-| 完整模式加载量 | ≤ 95KB  | recipe + 全部 M1-M9 + L0 |
-
-实测:典型 brief 单次加载量约 22-28KB,较 v1 合并版(45KB+)降 38-51%。
+`M1-methodology.md` 是创意方法论单一文件,覆盖规划到交付:
+- **§0-§7**(规划+脚本):路径判定 / 骨架 / 镜头结构 / 分镜表 11 列 / 展示层 vs 执行层 / 场景路由
+- **§8-§9**(交付):时长分段 / Provider 能力速查 / 制片决策(P1-P5)/ 自检
 
 ---
-
-## 目录结构
-
-```text
-y-media/
-|-- SKILL.md                                (路由表 §0 + 5 步工作流 + 场景速配表 §4,~10KB)
-|-- README.md                               (本文件:架构 + 设计说明 + 公共 API)
-|-- references/
-|   |-- library/                            (视频横切原语,核心 6 + 辅助 3 + 交付 1 个,按需加载;按 导演→选角→美术→摄影→录音→场记→剪辑→检查→交付 排序)
-|   |   |-- L0-lookbook.md                  (视觉参考速配:6 核心×4 维,替代 M4+M5+M6 大部)
-|   |   |-- M1-methodology.md               (导演·创意方法论:路径判定+骨架+镜头结构+侧车)
-|   |   |-- M2-director-presets.md          (导演·8 个风格预设 P1-P8,一键套用)
-|   |   |-- M3-character.md                 (选角·角色四层+人物-事件一致性)
-|   |   |-- M4-scene.md                     (美术·场景三层+展示/执行层分离)
-|   |   |-- M5-cinematography.md            [AUX] (摄影·影视要素词典:景别/光影/焦段)
-|   |   |-- M6-audio.md                     (录音·音频三层+5 杠杆+静音)
-|   |   |-- M7-drift-prevention.md          [AUX] (场记·分镜漂移预防,4 类漂移+5 招实战)
-|   |   |-- M8-prompt-craft.md              (剪辑·八要素+14 镜头库+Final Prompt 拼接+Negative)
-|   |   |-- M9-media-rules.md               [AUX] (检查·M1-M6 模型能力+反查清单)
-|   |   |-- M10-delivery.md                 (交付·Provider 参数+提交流程+结果验证)
-|   |   |-- A1-subtitle.md                  (字幕设计,recipe 声明后按需读)
-|   |   |-- A2-multimodal-syntax.md         (多模态参考语法,recipe 声明后按需读)
-|   |   `-- A3-emotional-levers.md          (5 情绪杠杆,recipe 声明后按需读)
-|   |-- recipes/                            (场景配方,按 brief 关键词只读 1 个)
-|   |   |-- nature.md                       (自然/动物/治愈,~4KB)
-|   |   |-- lifestyle.md                    (生活/质感/氛围/节日,~4KB)
-|   |   |-- portrait.md                     (人像/穿搭/时尚,~4KB)
-|   |   |-- food.md                         (美食/ASMR/饮品,~4KB)
-|   |   `-- commerce.md                     (商业带货 6 大品类,~10KB)
-|   |-- templates/                          (即用模板,按需;非横切原语)
-|   |   `-- 3-sets.md                       (4 套可套 prompt 模板:人像/风景/i2v/古风)
-|   `-- image/                              (图片专属,独立于视频)
-|       |-- I1-image-methodology.md         (图片方法论:创意层+风格层,14.5KB)
-|       `-- I2-image-example.md             (图片实例)
-|-- examples/                               (实例,按需;按 brief 关键词只读 1-3 个)
-|   |-- nature-fog-forest.md                (自然·骨架 B,默认入口)
-|   |-- nature-pet.md                       (宠物·骨架 A)
-|   |-- lifestyle-coffee.md                 (晨光·骨架 B)
-|   |-- lifestyle-festival.md               (节日·骨架 B)
-|   |-- portrait-magazine.md                (杂志·骨架 B,强 i2v)
-|   |-- portrait-ancient.md                 (古风·骨架 B)
-|   |-- food-cooking.md                     (烹饪·骨架 A,无 BGM)
-|   |-- food-asmr.md                        (ASMR·极慢,1/4x)
-|   |-- commerce-phone.md                   (数码带货·骨架 A,合成器电子)
-|   `-- commerce-beauty.md                  (美妆带货·骨架 A,环形灯)
-|-- core/
-|   |-- orchestrator.cjs
-|   |-- contract.cjs
-|   |-- artifacts.cjs
-|   `-- provider-contract.md
-|-- providers/
-|   |-- manifest.cjs
-|   `-- agnes/
-|       |-- provider.cjs
-|       `-- api.md
-`-- tests/
-    `-- media.test.cjs
-```
 
 ## 公共 API
 
@@ -193,6 +148,8 @@ y-media/
 | `statusMedia(request, context)`   | 在其固定 Provider 上查询一个既有任务               |
 | `waitMedia(request, context)`     | 在本地截止时间内轮询一个固定任务，并保存成功的产物 |
 
+`core/post.cjs` 导出质检与字幕兜底函数：`probe` / `frames` / `burn` / `verify` / `runtimeCapabilities`。
+
 它们精确的请求与结果形状定义在 [core/provider-contract.md](core/provider-contract.md)。
 
 ## 视频交付物
@@ -204,9 +161,9 @@ y-media/
 <name>.video-brief.md
 ```
 
-`.video-brief.md` 侧车是 Skill 创意层（Step 3）产出的创意文档：包含 brief、分镜表、最终与负向提示词。交付后追加 `Generation` 节，记录 Provider、模型、固定任务 ID、生效参数与警告，不包含密钥或原始外部响应。Skill 拥有侧车，因为 brief 收集与分镜属于创意规划关注点；core 只拥有媒体产物。
+`.video-brief.md` 伴生文档是 Skill 创意层（Step 3）产出的创意文档：包含 brief、分镜表、最终与负向提示词。交付后追加 `Generation` 节，记录 Provider、模型、固定任务 ID、生效参数与警告，不包含密钥或原始外部响应。Skill 拥有伴生文档，因为 brief 收集与分镜属于创意规划关注点；core 只拥有媒体产物。
 
-恢复的任务复用其原始规划数据。当规划数据不可用时，侧车将相关节标记为不可用，而不是重建未经证实的事实。侧车写入失败永远不会触发新的生成请求。
+恢复的任务复用其原始规划数据。当规划数据不可用时，伴生文档将相关节标记为不可用，而不是重建未经证实的事实。伴生文档写入失败永远不会触发新的生成请求。
 
 ## 免费额度 Provider 候选
 
@@ -257,4 +214,3 @@ Skill 的最终结论报告有证据支撑的生成与产物信息，而不仅�
 ## 开发
 
 测试通过 `core/orchestrator.cjs` 和 `core/contract.cjs` 等内部模块实现。测试不得发起真实生成请求或消耗 Provider 额度。Provider 与产物行为应使用注入的传输层与临时输出目录。
-

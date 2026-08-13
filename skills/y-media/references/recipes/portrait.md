@@ -4,25 +4,19 @@
 > 杂志 · 街拍 · 美妆展示 · 古风 · 国风 · 人像 · 穿搭 · 时尚 · 模特
 >
 > **与其他文件关系**:
-> - 共享 library(核心 5 个必读 + 辅助按需):M1-M9(见 [SKILL.md §4.0](../../SKILL.md))
-> - 核心必读(5 个):M1 · M2 · M3 · M6 · M7
-> - 辅助按需:M5(导演预设可丰富人像表现)
-> - 交付层 M10(提交时按需)
-> - 额外按需:A2(若参考图)· A3(若商用)· A1
-> - 额外文件:A2(若有参考图)· A3(若商用)· A1(若带字幕)
+> - 核心必读(5 个):M1 · M2 · M3 · M5 · M6
+> - 额外按需:A1(若带字幕)
 > - 图片共用:I1(当走图片路径时)
 > - 实例:见 §6 入口
 >
-> **强 i2v 优先**:真人脸 t2v 风险高(恐怖谷/穿模),必须用参考图锚定人脸。**必读 M4 + A2**。
+> **强 i2v 优先**:真人脸 t2v 风险高(恐怖谷/穿模),必须用参考图锚定人脸。**必读 M2**。
 >
 > **执行摘要(快速判断需要深读哪些 M 文件):**
 > - **M1 方法论**:中等,需深读镜头结构细节(强i2v绑定)
 > - **M2 角色**:有人物出镜,角色中等(服装-场景-身份匹配)
 > - **M3 场景**:室内/街拍/棚拍,场景中等
-> - **M6 音频**:音频简单(人物为主,环境音为辅)
-> - **M7 Prompt**:复杂 prompt 结构(需i2v一致性锁定)
-> - **M4 镜头词典**:不需读(仅特殊镜头需求时)
-> - **M5 导演预设**:推荐套用(杂志/时尚预设丰富人像表现)
+> - **M5 音频**:音频简单(人物为主,环境音为辅)
+> - **M6 Prompt**:复杂 prompt 结构(需i2v一致性锁定)
 
 ---
 
@@ -90,7 +84,7 @@ A [age]-year-old [ethnicity] [gender] with [hair: long black hair, half-up bun],
 flowing sleeves, silk sash], [temperament: serene and elegant]
 ```
 
-**i2v 绑定范式**(本场景**必填**,见 [templates/3-sets.md #3](../templates/3-sets.md) 完整版):
+**i2v 绑定范式**(本场景**必填**,见 [M6-prompt-craft.md §7.3](../library/M6-prompt-craft.md) 完整版):
 ```
 ★ Main subject: Same person as <图片1> — [补充角色四层特征以加固].
 Keep the same facial features, hairstyle, and clothing across all frames (no character drift).
@@ -116,7 +110,6 @@ clean background with gentle gradient, no hard shadows, magazine-cover look
 
 ## 6. examples 入口
 
-> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 2 个典型**(杂志高级感 + 古风意境),锚点 A+C 覆盖最广;**街头冲击 B 锚点**文字上与 A 互斥(气质冲突),本场景内 AI 读完 §1.5 后可自主生成,无需 example。
+> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 1 个典型**(杂志高级感,锚点 A，差异最大)—— 古风 C / 街头冲击 B 锚点文字上与 A 互斥，AI 读完 §1.5 后可自主生成,无需 example。
 
 - [examples/portrait-magazine.md](../../examples/portrait-magazine.md) — 杂志人像(柔光箱,无字幕,锚点 A)
-- [examples/portrait-ancient.md](../../examples/portrait-ancient.md) — 古风国风(侧逆光 + 薄雾,锚点 C)

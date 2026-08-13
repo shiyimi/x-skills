@@ -1,8 +1,8 @@
-﻿# 分镜示例 · 晨雾森林雄鹿与幼鹿(自然治愈系,骨架B)
+# 分镜示例 · 晨雾森林雄鹿与幼鹿(自然治愈系,骨架B)
 
 > 本文件是 [M1-methodology.md](../references/library/M1-methodology.md) 的**完整填好示例**,对应一次 15s 视频生成的最终交付。题材选**晨雾森林雄鹿与幼鹿**(成兽+幼兽+关系类)。
 >
-> **关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于归档;**提交给 t2v 模型的 prompt 走执行层语义化路线**——模型层分离无效(M4,K/dB/BPM 留在展示层与 `§4 声场设计稿`),且音频对**不支持音频的模型**(当前 Agnes)无效(M6)。详见 [M9-media-rules.md](../references/library/M9-media-rules.md) 与 [M8-prompt-craft.md](../references/library/M8-prompt-craft.md)。
+> **关键区分(展示层 vs 执行层)**:分镜表用具体数字(K/dB/BPM/焦段)做**展示层**记录,便于归档;**提交给 t2v 模型的 prompt 走执行层语义化路线**——模型层分离无效(M3,K/dB/BPM 留在展示层与 `§4 声场设计稿`),且音频对**不支持音频的模型**(当前 Agnes)无效(M5)。详见 [M1-methodology.md §7.1](../references/library/M1-methodology.md) 与 [M6-prompt-craft.md](../references/library/M6-prompt-craft.md)。
 >
 > **镜头结构**:`Final Prompt` 按 §2 表格镜号 **1:1 对应**——每镜一个时间锚点,`Action` 与 `Camera language` 两段都用同一组时间锚点,**不主动合并**。本例 6 镜 → 6 个时间段(0.0–2.5s/2.5–5.0s/5.0–8.0s/8.0–10.5s/10.5–13.0s/13.0–15.0s)。
 >
@@ -53,13 +53,13 @@
 
 ## 5. 视频 prompt(执行层 · 提交给 t2v 模型)
 
-> **执行层规则**(见 [M9-media-rules.md §2](../references/library/M9-media-rules.md) 与 [M8-prompt-craft.md](../references/library/M8-prompt-craft.md)):
+> **执行层规则**(见 [M1-methodology.md §7.1](../references/library/M1-methodology.md) 与 [M6-prompt-craft.md](../references/library/M6-prompt-craft.md)):
 > 1. `Action` 与 `Camera language` **按 §2 表格镜号 1:1 对应**;禁止主动合并相邻镜头
-> 2. 数字参数语义化转换(层分离):4500K → `soft golden morning backlight`;光比/dB/BPM 移出(M4)
+> 2. 数字参数语义化转换(层分离):4500K → `soft golden morning backlight`;光比/dB/BPM 移出(M3)
 > 3. 音频进 prompt 正文(`★ Audio`)——即便是 Agnes 不生成分时音频,音频描述也要写进 prompt,便于未来音画同出 Provider 与后期音频师拿到完整声场。
-> 4. 套用八要素骨架 + 角色四层 + 场景三层([M8-prompt-craft.md §1 八要素表](../references/library/M8-prompt-craft.md))
-> 5. 约束块焊死(M3 防变形)
-> 6. 侧车 `Negative Prompt` 作为 `Negative constraints:` 段并入最终 prompt,并与 Hard Constraints 去重
+> 4. 套用八要素骨架 + 角色四层 + 场景三层([M6-prompt-craft.md §1 八要素表](../references/library/M6-prompt-craft.md))
+> 5. 约束块焊死(M2 防变形)
+> 6. 伴生文档 `Negative Prompt` 作为 `Negative constraints:` 段并入最终 prompt,并与 Hard Constraints 去重
 
 ```text
 Vertical 9:16, 15 seconds. Cinematic nature documentary style, in the spirit of BBC Earth and National Geographic, shot on ARRI Alexa with shallow depth of field.
@@ -90,7 +90,7 @@ No whip pans, no shaky-cam.
 ★ Lighting (mandatory, single source):
 Single light source — low golden morning sun behind the subjects (rim/backlight), soft fill from the mist and sky. Light shafts (Tyndall effect) filter through tree trunks. Mist white + warm gold + moss green + deep brown throughout.
 
-★ Audio (downstream soundscape — written into the prompt so audio engineers and audio-capable models have the full soundscape; BPM/dB are excluded as in M4):
+★ Audio (downstream soundscape — written into the prompt so audio engineers and audio-capable models have the full soundscape; BPM/dB are excluded as in M3):
 - Ambient sound design (1:1 mirror of storyboard, micro-actions provide sonic cues):
   - 0.0–2.5s (S01-01): low-frequency forest hush, distant birdsong, soft hoof-fall on damp leaves as the stag emerges.
   - 2.5–5.0s (S01-02): gentle rustle of undergrowth, occasional soft fawn bleat, light tail-fur swish.

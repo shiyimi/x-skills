@@ -4,22 +4,16 @@
 > 早安 · 咖啡 · 家居 · 阅读 · 旅行 · 节日 · 仪式感 · 圣诞 · 新年 · 生日 · 慢生活 · vlog
 >
 > **与其他文件关系**:
-> - 共享 library(核心 5 个必读 + 辅助按需):M1-M9(见 [SKILL.md §4.0](../../SKILL.md))
-> - 核心必读(5 个):M1 · M2 · M3 · M6 · M7
-> - 辅助按需:无
-> - 交付层 M10(提交时按需)
-> - 额外按需:A1(若 OS)· A2(若有参考图)
-> - 额外文件:A1(若用 OS)· A2(若有参考图)
+> - 核心必读(5 个):M1 · M2 · M3 · M5 · M6
+> - 额外按需:A1(若用 OS 解说)
 > - 实例:见 §6 入口
 >
 > **执行摘要(快速判断需要深读哪些 M 文件):**
 > - **M1 方法论**:简单,不需深读镜头结构细节(骨架B默认)
 > - **M2 角色**:有或无人物出镜,人物简单
 > - **M3 场景**:室内/咖啡厅/家居,场景单一
-> - **M6 音频**:音频中等,BGM氛围+环境音
-> - **M7 Prompt**:标准 prompt 结构
-> - **M4 镜头词典**:不需读(仅特殊镜头需求时)
-> - **M5 导演预设**:不推荐套用(生活氛围以自然感为主)
+> - **M5 音频**:音频中等,BGM氛围+环境音
+> - **M6 Prompt**:标准 prompt 结构
 
 ---
 
@@ -81,7 +75,7 @@
 
 ## 4. prompt 模板片段(本场景常用)
 
-**主体描述**(从 M2 §3 速查表提炼):
+**主体描述**(从 M2 §1.1 速查表提炼):
 
 - 咖啡: `A cup of [type] coffee on a wooden table, steam rising slowly, soft window light from the side, gentle morning mood`
 - 书本: `An open book with cream-colored pages, gentle hand turning pages, warm lamp light, quiet room atmosphere`
@@ -114,7 +108,6 @@ no fast motion, no whip pans, contemplative pacing
 
 ## 6. examples 入口
 
-> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 2 个典型**,可覆盖晨光日常 + 节日仪式感。旅行发现场景文字上与 C 锚点类似,直接套本 recipe §1.5 即可,不另开 example。
+> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 1 个典型**(晨光咖啡，差异最大)—— 节日/旅行场景文字上与 C 锚点类似，直接套本 recipe §1.5 即可，不另开 example。
 
 - [examples/lifestyle-coffee.md](../../examples/lifestyle-coffee.md) — 晨光咖啡(暖光,OS 无字幕,锚点 A)
-- [examples/lifestyle-festival.md](../../examples/lifestyle-festival.md) — 节日仪式感(暖灯串 + 钟琴,锚点 B)
