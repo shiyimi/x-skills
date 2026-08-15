@@ -2,18 +2,6 @@
 
 > **路由触发**:brief 含以下关键词时加载本文件
 > 早安 · 咖啡 · 家居 · 阅读 · 旅行 · 节日 · 仪式感 · 圣诞 · 新年 · 生日 · 慢生活 · vlog
->
-> **与其他文件关系**:
-> - 核心必读(5 个):M1 · M2 · M3 · M5 · M6
-> - 额外按需:A1(若用 OS 解说)
-> - 实例:见 §6 入口
->
-> **执行摘要(快速判断需要深读哪些 M 文件):**
-> - **M1 方法论**:简单,不需深读镜头结构细节(骨架B默认)
-> - **M2 角色**:有或无人物出镜,人物简单
-> - **M3 场景**:室内/咖啡厅/家居,场景单一
-> - **M5 音频**:音频中等,BGM氛围+环境音
-> - **M6 Prompt**:标准 prompt 结构
 
 ---
 
@@ -75,7 +63,7 @@
 
 ## 4. prompt 模板片段(本场景常用)
 
-**主体描述**(从 M2 §1.1 速查表提炼):
+**主体描述**(从 M1 §1 提炼):
 
 - 咖啡: `A cup of [type] coffee on a wooden table, steam rising slowly, soft window light from the side, gentle morning mood`
 - 书本: `An open book with cream-colored pages, gentle hand turning pages, warm lamp light, quiet room atmosphere`
@@ -108,6 +96,4 @@ no fast motion, no whip pans, contemplative pacing
 
 ## 6. examples 入口
 
-> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 1 个典型**(晨光咖啡，差异最大)—— 节日/旅行场景文字上与 C 锚点类似，直接套本 recipe §1.5 即可，不另开 example。
-
-- [examples/lifestyle-coffee.md](../../examples/lifestyle-coffee.md) — 晨光咖啡(暖光,OS 无字幕,锚点 A)
+> 输出格式全局统一,完整可工作示例仅一份:[C4-example.md](../library/C4-example.md)(骨架 B 完整示范,已标 [MUST-KEEP] / [CAN-ROTATE] L5 分层)。本场景节日/旅行锚点直接套 §1.5 按同一格式自主生成,不另开 example。
