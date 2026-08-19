@@ -2,19 +2,6 @@
 
 > **路由触发**:brief 含以下关键词时加载本文件
 > 烹饪 · 成品 · 摆盘 · 拉花 · 饮品 · 鲜食 · ASMR · 食欲 · 食物
->
-> **与其他文件关系**:
-> - 核心必读(5 个):M1 · M2 · M3 · M5 · M6
-> - 实例:见 §6 入口
->
-> **声音进 prompt(ASMR 必填)**:ASMR 路线声音进 prompt `★ Audio` 段(纯环境音/拟声词,无 BGM)。
->
-> **执行摘要(快速判断需要深读哪些 M 文件):**
-> - **M1 方法论**:简单,不需深读镜头结构细节(骨架A或B)
-> - **M2 角色**:通常无人物(食物为主体),角色简单
-> - **M3 场景**:室内厨房/餐桌,场景单一
-> - **M5 音频**:音频中等偏复杂(ASMR环境音密集)
-> - **M6 Prompt**:标准 prompt 结构(微距+光影+蒸汽)
 
 ---
 
@@ -109,6 +96,4 @@ single continuous action, no jump cuts
 
 ## 6. examples 入口
 
-> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 1 个典型**(烹饪嗞啦 A 锚点，差异最大)—— ASMR B / 摆盘 C / 拉花 D 锚点与 A 物理互斥，AI 读完 §1.5 后可自主生成。
-
-- [examples/food-cooking.md](../../examples/food-cooking.md) — 烹饪过程(嗞啦声向,快切,锚点 A)
+> 输出格式全局统一,完整可工作示例仅一份:[C4-example.md](../library/C4-example.md)(骨架 B 完整示范,已标 [MUST-KEEP] / [CAN-ROTATE] L5 分层)。本场景 ASMR / 摆盘 / 拉花锚点与 A 物理互斥,AI 读完 §1.5 后按同一格式自主生成,不另开 example。

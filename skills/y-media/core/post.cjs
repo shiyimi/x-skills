@@ -1,27 +1,28 @@
 'use strict';
 /**
- * post · 质检引擎(可选依赖 ffmpeg/ffprobe)
+ * post · 后期引擎(可选依赖 ffmpeg/ffprobe/edge-tts)
  *
- * 只保留交付必需的最小能力:产物级质量门 + 字幕烧录兜底。
- * 配音/混音(VO)不在此引擎内:音频已由 prompt 直出(M6 §6),不再做后期 TTS 拼接。
+ * 交付必需的最小后期能力:产物级质量门 + 字幕烧录 + 配音 TTS 混入。
+ * 字幕/配音默认走后期(M4 §6 / M5 §7):文案从 storyboard 产出 SRT 与 TTS 同源,
+ * ffmpeg 烧录字幕、混入配音;环境音/BGM 仍由 prompt 直出。
  *
  * 能力:
- *  - C 产物级质量门(主):用 ffprobe 客观校验(时长/宽高/帧率)+ 抽帧供人工审「违背常理」。
- *  - B 字幕烧录(兜底):字幕已默认 prompt 直出,仅当模型直出不稳时才 SRT 烧录(A1 §6.2)。
+ *  - C 产物级质量门(主):用 ffprobe 客观校验(时长/宽高/帧率)。禁止抽帧——质检只播放成片人工审。
+ *  - B 字幕烧录:SRT 后期烧录为主(M5 §7),样式可传参。
+ *  - V 配音 TTS + 混入:edge-tts 生成人声音轨,ffmpeg 混入视频原音轨(M4 §6)。
  *
  * 依赖可降级:
- *  - probe / frames / burn 需要 ffmpeg 与 ffprobe(缺失时报能力缺口,不伪造)。
+ *  - probe / burn / mux 需要 ffmpeg 与 ffprobe;tts 需要 edge-tts(缺失时报能力缺口,不伪造)。
  *
  * 用法:
  *   node core/post.cjs probe  <video> [--expect-duration 15] [--expect-width 720] [--expect-height 1280] [--expect-fps 24]
- *   node core/post.cjs frames <video> --out <dir> [--every 1.0]
  *   node core/post.cjs burn   <video> --srt <file.srt> --out <out.mp4>
- *   node core/post.cjs verify <video> [--expect-*] [--frames-out <dir>]
+ *   node core/post.cjs tts    --text <文案> --voice <zh-CN-XiaoxiaoNeural> --out <voice.mp3>
+ *   node core/post.cjs mux    <video> --audio <voice.mp3> --out <out.mp4> [--volume 1.0]
+ *   node core/post.cjs verify <video> [--expect-*]
  */
 const { execFile } = require('child_process');
 const { promisify } = require('util');
-const fs = require('fs');
-const path = require('path');
 
 const execFileAsync = promisify(execFile);
 
@@ -163,11 +164,16 @@ function buildBurnArgs(video, srt, out, opts = {}) {
   return ['-y', '-i', video, '-vf', filter, '-c:a', 'copy', out];
 }
 
-/** 抽帧联系表: 每 every 秒 1 帧 */
-function buildFramesArgs(video, outDir, every = 1.0) {
-  fs.mkdirSync(outDir, { recursive: true });
-  const pattern = path.join(outDir, 'frame_%03d.jpg');
-  return ['-y', '-i', video, '-vf', `fps=1/${every}`, '-q:v', '2', pattern];
+/** 配音 TTS: edge-tts CLI 参数(文案/音色/输出)。 */
+function buildTtsArgs(text, voice, out) {
+  return ['--text', String(text), '--voice', voice || 'zh-CN-XiaoxiaoNeural', '--write-media', out];
+}
+
+/** 配音混入: 将配音音轨与视频原音轨(环境音/BGM)amix 合成。normalize=0 避免音量衰减。 */
+function buildMuxArgs(video, audio, out, opts = {}) {
+  const volume = opts.volume === undefined ? 1.0 : opts.volume;
+  const filter = `[1:a]volume=${volume}[v];[0:a][v]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]`;
+  return ['-y', '-i', video, '-i', audio, '-filter_complex', filter, '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-shortest', out];
 }
 
 // ---------------- 运行层(可注入 execFile 便于测试) ----------------
@@ -198,6 +204,7 @@ async function runtimeCapabilities(ctx = {}) {
   const rt = runtimeContext(ctx);
   const hasBin = await hasTool('ffmpeg', rt);
   const hasProbe = await hasTool('ffprobe', rt);
+  const hasTts = await hasTool('edge-tts', rt);
   const filters = new Set();
   let hasLavfi = false;
   if (hasBin) {
@@ -223,7 +230,7 @@ async function runtimeCapabilities(ctx = {}) {
     ffprobe: hasProbe,
     lavfi: hasLavfi,
     subtitles: hasSubtitles,
-    frames: hasBin && filters.has('fps'),
+    tts: hasTts,
     filters: [...filters].sort()
   };
 }
@@ -236,16 +243,26 @@ function burnRecipe(video, srt, out) {
   ].join('\n');
 }
 
+/** V·配音 TTS 的降级菜谱(任何有 edge-tts / python 的环境可执行) */
+function ttsRecipe(text, voice, out) {
+  return [
+    '# 配音 TTS(本机缺 edge-tts,请先安装: pip install edge-tts):',
+    `edge-tts --text "${String(text).replace(/"/g, '\\"')}" --voice ${voice || 'zh-CN-XiaoxiaoNeural'} --write-media "${out}"`
+  ].join('\n');
+}
+
+/** V·配音混入的降级菜谱(任何完整 ffmpeg 可执行) */
+function muxRecipe(video, audio, out) {
+  return [
+    '# 配音混入(本机 ffmpeg 不可用,请在完整 ffmpeg 环境执行):',
+    `ffmpeg -y -i "${video}" -i "${audio}" -filter_complex "[1:a]volume=1.0[v];[0:a][v]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -shortest "${out}"`
+  ].join('\n');
+}
+
 async function probe(video, ctx = {}) {
   const rt = runtimeContext(ctx);
   const { stdout } = await rt.execFile('ffprobe', buildProbeArgs(video), { env: rt.env });
   return JSON.parse(stdout);
-}
-
-async function frames(video, outDir, every, ctx = {}) {
-  const rt = runtimeContext(ctx);
-  await rt.execFile('ffmpeg', buildFramesArgs(video, outDir, every), { env: rt.env });
-  return fs.readdirSync(outDir).filter((f) => /\.jpe?g$/i.test(f)).sort();
 }
 
 async function burn(video, srt, out, opts, ctx = {}) {
@@ -267,7 +284,35 @@ async function burn(video, srt, out, opts, ctx = {}) {
   return out;
 }
 
-/** 质检门: 能力报告 + probe(客观校验) + 可选抽帧(人工审「违背常理」) + 决策清单 */
+/** V·配音 TTS: edge-tts 合成人声音轨(缺 edge-tts 时报能力缺口+菜谱,不伪造)。 */
+async function tts(text, voice, out, ctx = {}) {
+  const rt = runtimeContext(ctx);
+  const caps = await runtimeCapabilities(rt);
+  if (!caps.tts) {
+    const err = new Error('edge-tts unavailable: cannot synthesize voice. Install with: pip install edge-tts');
+    err.kind = 'capability_gap';
+    err.recipe = ttsRecipe(text, voice, out);
+    throw err;
+  }
+  await rt.execFile('edge-tts', buildTtsArgs(text, voice, out), { env: rt.env });
+  return out;
+}
+
+/** V·配音混入: 将 TTS 音轨混入视频原音轨(保留环境音/BGM),输出带配音的成片。 */
+async function mux(video, audio, out, opts, ctx = {}) {
+  const rt = runtimeContext(ctx);
+  const caps = await runtimeCapabilities(rt);
+  if (!caps.ffmpeg) {
+    const err = new Error('ffmpeg unavailable: cannot mux voice track.');
+    err.kind = 'capability_gap';
+    err.recipe = muxRecipe(video, audio, out);
+    throw err;
+  }
+  await rt.execFile('ffmpeg', buildMuxArgs(video, audio, out, opts), { env: rt.env });
+  return out;
+}
+
+/** 质检门: 能力报告 + probe(客观校验) + 决策清单。禁止抽帧——成片直接播放人工审(见 C1-flow §14)。 */
 async function verify(video, opts = {}, ctx = {}) {
   const rt = runtimeContext(ctx);
   const expected = opts.expected || {};
@@ -275,7 +320,6 @@ async function verify(video, opts = {}, ctx = {}) {
     file: video,
     capabilities: await runtimeCapabilities(rt),
     format: null,
-    frames: null,
     decision: null
   };
   if (!report.capabilities.ffprobe) {
@@ -286,37 +330,19 @@ async function verify(video, opts = {}, ctx = {}) {
   const validation = validateProbe(data, expected);
   report.format = validation.meta;
   report.checks = validation.checks;
-  if (opts.framesOut) {
-    if (report.capabilities.frames) {
-      report.frames = await frames(video, opts.framesOut, opts.every || 1.0, rt);
-    } else {
-      report.frames = { skipped: true, reason: 'this ffmpeg lacks the fps filter.' };
-    }
-  }
-  report.decision = buildVerdict(validation, report.frames);
+  report.decision = buildVerdict(validation);
   return report;
 }
 
-/** 违背常理无法自动判定:客观失败 -> 重生成;通过 -> 人工审帧后「重生成 / 后修 / 接受」 */
-function buildVerdict(validation, framesList) {
+/** 客观失败 -> 重生成;通过 -> 接受(成片人工审在 skill 层,见 C2-quality §7)。 */
+function buildVerdict(validation) {
   if (!validation.ok) {
     return { action: 'regenerate', reason: 'objective checks failed, see checks.' };
   }
-  if (framesList && framesList.length >= 4) {
-    return {
-      action: 'human_review',
-      reason: 'objective checks passed. Review extracted frames for 违背常理 (anatomy/physics/continuity), then decide regenerate / patch / accept.',
-      frames: framesList
-    };
-  }
-  return { action: 'accept', reason: 'objective checks passed; no frame review requested.' };
+  return { action: 'accept', reason: 'objective checks passed; play the clip for manual review.' };
 }
 
 // ---------------- CLI ----------------
-
-function printProbeSummary(report) {
-  console.log(JSON.stringify({ ok: report.ok, checks: report.checks, meta: report.meta }, null, 2));
-}
 
 async function main(argv) {
   const [cmd, ...rest] = argv;
@@ -333,14 +359,6 @@ async function main(argv) {
         console.log(JSON.stringify({ ok: validation.ok, checks: validation.checks, meta: validation.meta }, null, 2));
         return;
       }
-      case 'frames': {
-        const video = rest[0];
-        const outDir = flag('--out');
-        const every = Number(flag('--every', '1.0'));
-        const list = await frames(video, outDir, every);
-        console.log(JSON.stringify({ ok: true, frames: list.length, dir: outDir }, null, 2));
-        return;
-      }
       case 'burn': {
         const video = rest[0];
         const srt = flag('--srt');
@@ -349,15 +367,31 @@ async function main(argv) {
         console.log(JSON.stringify({ ok: true, out }, null, 2));
         return;
       }
+      case 'tts': {
+        const text = flag('--text');
+        const voice = flag('--voice');
+        const out = flag('--out');
+        await tts(text, voice, out);
+        console.log(JSON.stringify({ ok: true, out }, null, 2));
+        return;
+      }
+      case 'mux': {
+        const video = rest[0];
+        const audio = flag('--audio');
+        const out = flag('--out');
+        const volume = Number(flag('--volume', '1.0'));
+        await mux(video, audio, out, { volume });
+        console.log(JSON.stringify({ ok: true, out }, null, 2));
+        return;
+      }
       case 'verify': {
         const video = rest[0];
-        const framesOut = flag('--frames-out');
-        const report = await verify(video, { expected: parseExpected(rest), framesOut });
+        const report = await verify(video, { expected: parseExpected(rest) });
         console.log(JSON.stringify(report, null, 2));
         return;
       }
       default:
-        console.error('Usage:\n  probe/frames/burn/verify <video> [options]');
+        console.error('Usage:\n  probe/burn/tts/mux/verify <video> [options]');
         process.exitCode = 2;
     }
   } catch (error) {
@@ -380,13 +414,15 @@ module.exports = {
   buildProbeArgs,
   escapeSubtitlePath,
   buildBurnArgs,
-  buildFramesArgs,
+  buildTtsArgs,
+  buildMuxArgs,
   buildVerdict,
   runtimeContext,
   runtimeCapabilities,
   hasTool,
   probe,
-  frames,
   burn,
+  tts,
+  mux,
   verify
 };

@@ -11,11 +11,14 @@ const {
   buildProbeArgs,
   escapeSubtitlePath,
   buildBurnArgs,
-  buildFramesArgs,
+  buildTtsArgs,
+  buildMuxArgs,
   buildVerdict,
   runtimeCapabilities,
   hasTool,
-  burn
+  burn,
+  tts,
+  mux
 } = require('../core/post.cjs');
 
 test('msToSrt pads hours, minutes, seconds, and milliseconds', () => {
@@ -103,13 +106,11 @@ test('validateProbe falls back to a readable-stream check when no expectations a
   assert.equal(ok.checks[0].name, 'readable');
 });
 
-test('buildVerdict routes objective pass/fail and frame-review availability', () => {
+test('buildVerdict routes objective pass/fail (frame review removed; play for manual review)', () => {
   const pass = { ok: true, checks: [] };
   const fail = { ok: false, checks: [] };
-  assert.deepEqual(buildVerdict(fail, []), { action: 'regenerate', reason: 'objective checks failed, see checks.' });
-  assert.deepEqual(buildVerdict(pass, ['a', 'b', 'c', 'd']).action, 'human_review');
-  assert.deepEqual(buildVerdict(pass, null).action, 'accept');
-  assert.deepEqual(buildVerdict(pass, ['a', 'b']).action, 'accept');
+  assert.deepEqual(buildVerdict(fail), { action: 'regenerate', reason: 'objective checks failed, see checks.' });
+  assert.equal(buildVerdict(pass).action, 'accept');
 });
 
 test('escapeSubtitlePath escapes colons for the ffmpeg subtitles filter', () => {
@@ -121,18 +122,12 @@ test('escapeSubtitlePath escapes colons for the ffmpeg subtitles filter', () => 
   assert.ok(args.includes('out.mp4'));
 });
 
-test('buildFramesArgs shapes its filter graph', () => {
-  const frames = buildFramesArgs('in.mp4', 'C:/frames', 1.0);
-  assert.ok(frames.includes('fps=1/1'));
-  assert.ok(frames.join(' ').includes('frame_%03d.jpg'));
-});
-
 test('buildProbeArgs requests JSON format and streams', () => {
   const args = buildProbeArgs('in.mp4');
   assert.deepEqual(args, ['-v', 'error', '-show_format', '-show_streams', '-of', 'json', 'in.mp4']);
 });
 
-test('runtimeCapabilities reports subtitles and frames from the ffmpeg filter list', async () => {
+test('runtimeCapabilities reports subtitles and tts from the ffmpeg filter list', async () => {
   function fakeExecFile(bin, args) {
     if (bin === 'where' || bin === 'which') return Promise.resolve({ stdout: '' });
     if (args.includes('-filters')) {
@@ -152,8 +147,8 @@ test('runtimeCapabilities reports subtitles and frames from the ffmpeg filter li
   assert.equal(caps.ffmpeg, true);
   assert.equal(caps.ffprobe, true);
   assert.equal(caps.subtitles, true);
-  assert.equal(caps.frames, true);
   assert.equal(caps.lavfi, true);
+  assert.equal(caps.tts, true);
 });
 
 test('burn throws a capability_gap with a recipe when subtitles filter is missing', async () => {
@@ -174,4 +169,63 @@ test('burn throws a capability_gap with a recipe when subtitles filter is missin
 test('hasTool returns false when the binary probe fails', async () => {
   const ctx = { env: {}, execFile: async () => { throw new Error('missing'); } };
   assert.equal(await hasTool('ffmpeg', ctx), false);
+});
+
+test('buildTtsArgs shapes the edge-tts invocation with text, voice, and output', () => {
+  const args = buildTtsArgs('三块九,包邮到家', 'zh-CN-XiaoxiaoNeural', 'voice.mp3');
+  assert.deepEqual(args, ['--text', '三块九,包邮到家', '--voice', 'zh-CN-XiaoxiaoNeural', '--write-media', 'voice.mp3']);
+  // voice 缺省时回落到默认中文女声
+  assert.deepEqual(buildTtsArgs('你好', undefined, 'v.mp3').slice(0, 4), ['--text', '你好', '--voice', 'zh-CN-XiaoxiaoNeural']);
+});
+
+test('buildMuxArgs mixes voice onto the original audio without normalizing', () => {
+  const args = buildMuxArgs('in.mp4', 'voice.mp3', 'out.mp4');
+  const joined = args.join(' ');
+  assert.ok(joined.includes('[1:a]volume=1[v]'));
+  assert.ok(joined.includes('amix=inputs=2:duration=first:dropout_transition=0:normalize=0'));
+  assert.ok(joined.includes('-map 0:v'));
+  assert.ok(joined.includes('-c:v copy'));
+  assert.ok(joined.includes('-c:a aac'));
+  assert.ok(joined.includes('-shortest'));
+  const vol = buildMuxArgs('in.mp4', 'voice.mp3', 'out.mp4', { volume: 0.8 }).join(' ');
+  assert.ok(vol.includes('volume=0.8'));
+});
+
+test('tts throws a capability_gap with a recipe when edge-tts is missing', async () => {
+  function fakeExecFile(bin, args) {
+    if (bin === 'where' || bin === 'which') {
+      if (args[0] === 'edge-tts') return Promise.reject(new Error('missing edge-tts'));
+      return Promise.resolve({ stdout: '' });
+    }
+    if (args.includes('-filters')) return Promise.resolve({ stdout: '' });
+    if (args.includes('-formats')) return Promise.resolve({ stdout: '' });
+    return Promise.resolve({ stdout: '' });
+  }
+  await assert.rejects(
+    tts('你好', 'zh-CN-XiaoxiaoNeural', 'v.mp3', { execFile: fakeExecFile }),
+    (error) => error.kind === 'capability_gap' && /edge-tts/.test(error.message) && typeof error.recipe === 'string'
+  );
+});
+
+test('tts invokes edge-tts when the binary is present', async () => {
+  const calls = [];
+  function fakeExecFile(bin, args) {
+    calls.push([bin, args]);
+    if (bin === 'where' || bin === 'which') return Promise.resolve({ stdout: '' });
+    if (args.includes('-filters')) return Promise.resolve({ stdout: '' });
+    if (args.includes('-formats')) return Promise.resolve({ stdout: '' });
+    return Promise.resolve({ stdout: '' });
+  }
+  await tts('三块九', 'zh-CN-XiaoxiaoNeural', 'v.mp3', { execFile: fakeExecFile });
+  const call = calls.find(([bin]) => bin === 'edge-tts');
+  assert.ok(call, 'edge-tts should be invoked');
+  assert.ok(call[1].includes('--text') && call[1].includes('v.mp3'));
+});
+
+test('mux throws a capability_gap with a recipe when ffmpeg is missing', async () => {
+  const ctx = { env: {}, execFile: async () => { throw new Error('missing'); } };
+  await assert.rejects(
+    mux('in.mp4', 'voice.mp3', 'out.mp4', {}, ctx),
+    (error) => error.kind === 'capability_gap' && typeof error.recipe === 'string'
+  );
 });

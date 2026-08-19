@@ -2,21 +2,6 @@
 
 > **路由触发**:brief 含以下关键词时加载本文件
 > 杂志 · 街拍 · 美妆展示 · 古风 · 国风 · 人像 · 穿搭 · 时尚 · 模特
->
-> **与其他文件关系**:
-> - 核心必读(5 个):M1 · M2 · M3 · M5 · M6
-> - 额外按需:A1(若带字幕)
-> - 图片共用:I1(当走图片路径时)
-> - 实例:见 §6 入口
->
-> **强 i2v 优先**:真人脸 t2v 风险高(恐怖谷/穿模),必须用参考图锚定人脸。**必读 M2**。
->
-> **执行摘要(快速判断需要深读哪些 M 文件):**
-> - **M1 方法论**:中等,需深读镜头结构细节(强i2v绑定)
-> - **M2 角色**:有人物出镜,角色中等(服装-场景-身份匹配)
-> - **M3 场景**:室内/街拍/棚拍,场景中等
-> - **M5 音频**:音频简单(人物为主,环境音为辅)
-> - **M6 Prompt**:复杂 prompt 结构(需i2v一致性锁定)
 
 ---
 
@@ -31,11 +16,11 @@
 
 > 人像路线美学跨度最大,**anchor 选择 = 整个视频气质定型**。
 
-| 锚点 | 关键词 | 适合 | 视觉+音频特征 |
-| --- | --- | --- | --- |
-| **A · 杂志高级感** | 柔光 · 极简 · 高级灰 | 杂志封面/美妆/品牌 | 柔光箱 / 钢琴 60-80 / 慢动作甩发 |
-| **B · 街头冲击** | 鼓点 · 涂鸦 · 反叛 | 街拍/年轻/潮牌 | 阴天/霓虹 / trap 100-130 / 步态节奏 |
-| **C · 古风意境** | 薄雾 · 长袖 · 留白 | 国风/武侠/汉服 | 侧逆光薄雾 / 古琴+尺八 60-80 / 长袖慢动作 |
+| 锚点               | 关键词               | 适合               | 视觉+音频特征                             |
+| ------------------ | -------------------- | ------------------ | ----------------------------------------- |
+| **A · 杂志高级感** | 柔光 · 极简 · 高级灰 | 杂志封面/美妆/品牌 | 柔光箱 / 钢琴 60-80 / 慢动作甩发          |
+| **B · 街头冲击**   | 鼓点 · 涂鸦 · 反叛   | 街拍/年轻/潮牌     | 阴天/霓虹 / trap 100-130 / 步态节奏       |
+| **C · 古风意境**   | 薄雾 · 长袖 · 留白   | 国风/武侠/汉服     | 侧逆光薄雾 / 古琴+尺八 60-80 / 长袖慢动作 |
 
 **多样性预算**:本场景**严禁** A+B 混用(气质互斥);A+C 或 B+C 罕见且需明确叙事转折;默认选 1。
 
@@ -77,20 +62,22 @@
 
 ## 4. prompt 模板片段(本场景常用)
 
-**角色四层**(人物类,见 M2):
+**角色四层**(人物类,见 M1):
+
 ```
 A [age]-year-old [ethnicity] [gender] with [hair: long black hair, half-up bun],
 [face: high cheekbones, small nose, soft lips], wearing [clothing: white hanfu with
 flowing sleeves, silk sash], [temperament: serene and elegant]
 ```
 
-**i2v 绑定范式**(本场景**必填**,见 [M6-prompt-craft.md §7.3](../library/M6-prompt-craft.md) 完整版):
+**i2v 绑定范式**(本场景**必填**,见 [C3-prompt-craft.md §3.3](../library/C3-prompt-craft.md) 完整版):
+
 ```
-★ Main subject: Same person as <图片1> — [补充角色四层特征以加固].
-Keep the same facial features, hairstyle, and clothing across all frames (no character drift).
+以 <图片1> 为主体——[补充角色四层特征以加固] · 保持五官/发型/服装一致(不漂移)。
 ```
 
 **光影句**(杂志人像,数字留 §4 声场设计稿):
+
 ```
 Studio softbox key light from 45° front, low contrast,
 clean background with gentle gradient, no hard shadows, magazine-cover look
@@ -98,18 +85,16 @@ clean background with gentle gradient, no hard shadows, magazine-cover look
 
 ## 5. 反模式(本场景重点)
 
-| 反模式 | 修复 |
-| --- | --- |
-| 恐怖谷人脸 | **强 i2v**,不纯 t2v;加 `anatomically correct face` |
-| 6 指/多肢 | 加 `anatomically correct hands, five fingers each hand` |
-| 服装穿模 | 简化服装描述,避免繁复花纹 |
-| 鞋底悬浮 | 加 `gravity correct, feet on ground` |
-| 步态僵硬 | 慢动作,加微动作(头摆/臂摆) |
-| 脸崩(跨镜) | i2v + `same face across all frames` |
-| 服装塑料感 | 加 `natural fabric texture, no synthetic shine` |
+| 反模式     | 修复                                                    |
+| ---------- | ------------------------------------------------------- |
+| 恐怖谷人脸 | **强 i2v**,不纯 t2v;加 `anatomically correct face`      |
+| 6 指/多肢  | 加 `anatomically correct hands, five fingers each hand` |
+| 服装穿模   | 简化服装描述,避免繁复花纹                               |
+| 鞋底悬浮   | 加 `gravity correct, feet on ground`                    |
+| 步态僵硬   | 慢动作,加微动作(头摆/臂摆)                              |
+| 脸崩(跨镜) | i2v + `same face across all frames`                     |
+| 服装塑料感 | 加 `natural fabric texture, no synthetic shine`         |
 
 ## 6. examples 入口
 
-> 每个 example 顶部已标 [MUST-KEEP] / [CAN-ROTATE](L5 分层策略)。本场景**保留 1 个典型**(杂志高级感,锚点 A，差异最大)—— 古风 C / 街头冲击 B 锚点文字上与 A 互斥，AI 读完 §1.5 后可自主生成,无需 example。
-
-- [examples/portrait-magazine.md](../../examples/portrait-magazine.md) — 杂志人像(柔光箱,无字幕,锚点 A)
+> 输出格式全局统一,完整可工作示例仅一份:[C4-example.md](../library/C4-example.md)(骨架 B 完整示范,已标 [MUST-KEEP] / [CAN-ROTATE] L5 分层)。本场景古风 / 街头冲击锚点与 A 互斥,AI 读完 §1.5 后按同一格式自主生成,不另开 example。

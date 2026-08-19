@@ -1,3 +1,6 @@
+const fs = require('node:fs');
+const path = require('node:path');
+
 const {
   ProviderError,
   normalizeOutcome,
@@ -348,10 +351,286 @@ function listCapabilities(manifest) {
   };
 }
 
+// ---------------- CLI ----------------
+//
+// 用法(见 references/library/C1-flow.md §12 / references/image/I1-flow.md §8):
+//   node core/orchestrator.cjs submit <name>.video-brief.md|image-brief.md [--provider <id>] [--directory <dir>]
+//   node core/orchestrator.cjs status <task_id>
+//   node core/orchestrator.cjs download <task_id> [--out <dir>]
+//
+// submit 只提交一次,把固定任务记入 <cwd>/.y-media/tasks.json;status/download 凭 task_id
+// 从台账恢复 provider/capability/output 后查询或等待取回。台账缺失/未命中时如实报错,不伪造。
+
+const CLI_STATE_DIR = '.y-media';
+const CLI_STATE_FILE = 'tasks.json';
+const RATIO_DIMENSIONS = Object.freeze({
+  '16:9': [1280, 720],
+  '9:16': [720, 1280],
+  '1:1': [1024, 1024],
+  '4:3': [1152, 864],
+  '3:4': [864, 1152]
+});
+
+function cliStatePath(context = {}) {
+  return path.join(context.cwd ?? process.cwd(), CLI_STATE_DIR, CLI_STATE_FILE);
+}
+
+/**
+ * 解析 <name>.video-brief.md / <name>.image-brief.md:
+ * - Final Prompt = 文档最后一个 fenced 代码块(C1-flow §10 / I1-flow §7 约定固定最后)
+ * - capability: 默认假设/Inputs/参考图/锚定图/image_paths 声明参考图 → image-to-video / image-to-image,否则 text-to-video / text-to-image
+ * - 参数: 从文档头部(分镜/规范表之前)取显式 W×H、画幅 A:B、目标时长 s/秒 → width/height/ratio(图片) / num_frames(视频,8n+1)
+ */
+function parseBrief(text, sourceName = 'brief') {
+  const body = String(text ?? '');
+  const basename = path.basename(sourceName);
+  const name = basename
+    .replace(/\.video-brief\.md$/i, '')
+    .replace(/\.image-brief\.md$/i, '')
+    .replace(/\.md$/i, '');
+  if (!name) {
+    throw new ProviderError('invalid_request', `Unable to derive a brief name from: ${sourceName}.`);
+  }
+  const isImage = /\.image-brief\.md$/i.test(basename) || /视觉规范表/.test(body);
+
+  const fences = [...body.matchAll(/```[a-zA-Z0-9_-]*\n([\s\S]*?)(?:```|$)/g)];
+  if (fences.length === 0) {
+    throw new ProviderError('invalid_request', `${sourceName} has no fenced Final Prompt block.`);
+  }
+  const prompt = fences[fences.length - 1][1].trim();
+  if (!prompt) {
+    throw new ProviderError('invalid_request', `${sourceName} Final Prompt block is empty.`);
+  }
+
+  const section2Index = body.search(/\n##\s*2/);
+  const head = section2Index >= 0 ? body.slice(0, section2Index) : body;
+  // 显式否定("无参考图")不视为参考声明,避免 G 路径(纯生成)被误判为需要参考图
+  const negatedReference = /无(?:实拍|真实|额外|合成)?\s*参考图|不需要参考图|无需参考图|非参考图|no reference/i.test(head);
+  const declaresReferenceImage = /image_paths/i.test(body) || (!negatedReference && /Inputs|参考图|锚定图|i2v/i.test(head));
+
+  const inputs = [];
+  if (declaresReferenceImage) {
+    const urlMatch = body.match(/(?:image_paths|Inputs|参考图|锚定图)\s*[：:]\s*([^\n]+)/i);
+    if (urlMatch) {
+      for (const match of urlMatch[1].matchAll(/https?:\/\/[^\s,，;；。]+/gi)) {
+        inputs.push({ type: 'image', source: { kind: 'url', value: match[0] } });
+      }
+    }
+    if (inputs.length === 0) {
+      throw new ProviderError(
+        'invalid_request',
+        `${sourceName} declares ${isImage ? 'i2i' : 'i2v'} (参考图/Inputs/image_paths) but no public HTTPS image URL was found in the brief.`
+      );
+    }
+  }
+
+  const parameters = {};
+  const dimensionMatch = head.match(/\b(\d{3,4})\s*[x×]\s*(\d{3,4})\b/);
+  if (dimensionMatch) {
+    parameters.width = Number(dimensionMatch[1]);
+    parameters.height = Number(dimensionMatch[2]);
+  } else {
+    const ratioMatch = head.match(/\b(\d{1,2}):(\d{1,2})\b/);
+    const ratio = ratioMatch ? `${ratioMatch[1]}:${ratioMatch[2]}` : undefined;
+    if (ratio && RATIO_DIMENSIONS[ratio]) {
+      if (isImage) {
+        // 图片 provider 原生支持 ratio(只取受支持的画幅,避免误吞"光比 3:1"等非画幅 A:B)
+        parameters.ratio = ratio;
+      } else {
+        parameters.width = RATIO_DIMENSIONS[ratio][0];
+        parameters.height = RATIO_DIMENSIONS[ratio][1];
+      }
+    }
+  }
+  if (!isImage) {
+    const durationMatch = head.match(/\b(\d+(?:\.\d+)?)\s*(?:s|秒|seconds?)\b/);
+    if (durationMatch) {
+      const frames = Math.floor((Number(durationMatch[1]) * 24) / 8) * 8 + 1;
+      parameters.num_frames = Math.max(1, Math.min(441, frames));
+    }
+  }
+
+  return {
+    name,
+    prompt,
+    capability: isImage
+      ? (inputs.length > 0 ? 'image-to-image' : 'text-to-image')
+      : (inputs.length > 0 ? 'image-to-video' : 'text-to-video'),
+    inputs,
+    parameters
+  };
+}
+
+function requestFromBrief(brief, options = {}) {
+  const isImage = brief.capability === 'text-to-image' || brief.capability === 'image-to-image';
+  const request = {
+    capability: brief.capability,
+    prompt: brief.prompt,
+    output: {
+      directory: options.directory || 'outputs',
+      filename: `${brief.name}${isImage ? '.png' : '.mp4'}`
+    }
+  };
+  if (options.provider) request.provider = options.provider;
+  if (brief.inputs.length > 0) request.inputs = brief.inputs;
+  if (Object.keys(brief.parameters).length > 0) request.parameters = brief.parameters;
+  return request;
+}
+
+function readTaskLedger(context = {}) {
+  const file = cliStatePath(context);
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return Array.isArray(parsed?.tasks) ? parsed.tasks : [];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw new ProviderError('invalid_request', `Unable to read task ledger ${file}: ${error.message}`);
+  }
+}
+
+function writeTaskLedger(tasks, context = {}) {
+  const file = cliStatePath(context);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ version: 1, tasks }, null, 2));
+}
+
+function recordTask(entry, context = {}) {
+  const tasks = readTaskLedger(context);
+  const index = tasks.findIndex((item) => item.task_id === entry.task_id);
+  if (index >= 0) tasks[index] = entry;
+  else tasks.push(entry);
+  writeTaskLedger(tasks, context);
+}
+
+function findTask(taskId, context = {}) {
+  const tasks = readTaskLedger(context);
+  const entry = tasks.find((item) => item.task_id === taskId);
+  if (!entry) {
+    const known = tasks.map((item) => item.task_id).join(', ') || '(none)';
+    throw new ProviderError(
+      'invalid_request',
+      `No recorded task matches ${taskId}. Known task ids: ${known}.`
+    );
+  }
+  return entry;
+}
+
+async function submitBrief(briefFile, options = {}, context = {}) {
+  const fsApi = context.fsApi ?? fs;
+  let text;
+  try {
+    text = await fsApi.promises.readFile(briefFile, 'utf8');
+  } catch (error) {
+    throw new ProviderError('invalid_request', `Unable to read brief ${briefFile}: ${error.message}`);
+  }
+  const brief = parseBrief(text, briefFile);
+  const request = requestFromBrief(brief, options);
+  const result = await createMedia(request, context);
+  if (result.task?.id) {
+    recordTask({
+      task_id: result.task.id,
+      provider: result.provider,
+      capability: result.capability,
+      output: { directory: request.output.directory, filename: request.output.filename },
+      brief: briefFile,
+      created_at: new Date().toISOString()
+    }, context);
+  } else if (result.ok && result.artifact_sources?.length > 0) {
+    const saveArtifacts = context.saveArtifacts ?? require('./artifacts.cjs').saveArtifacts;
+    try {
+      result.artifacts = await saveArtifacts(result.artifact_sources, {
+        provider: result.provider,
+        capability: result.capability,
+        task: result.task,
+        output: request.output,
+        startedAt: result.timing.started_at_ms
+      }, context);
+    } catch (error) {
+      result.ok = false;
+      result.error = {
+        kind: 'download_failed',
+        message: error.message,
+        retryable: Boolean(error.retryable)
+      };
+    }
+    delete result.artifact_sources;
+  }
+  return { brief, result };
+}
+
+async function main(argv, context = {}) {
+  const [cmd, ...rest] = argv;
+  const flag = (name, dflt) => {
+    const index = rest.indexOf(name);
+    return index >= 0 ? rest[index + 1] : dflt;
+  };
+  try {
+    switch (cmd) {
+      case 'submit': {
+        const briefFile = rest[0];
+        if (!briefFile) throw new ProviderError('invalid_request', 'submit requires <name>.video-brief.md or <name>.image-brief.md');
+        const { result } = await submitBrief(briefFile, {
+          provider: flag('--provider'),
+          directory: flag('--directory')
+        }, context);
+        console.log(JSON.stringify(result, null, 2));
+        if (result.task?.id) {
+          console.error(`Recorded task ${result.task.id}; poll with: orchestrator.cjs status ${result.task.id}`);
+        }
+        return;
+      }
+      case 'status': {
+        const taskId = rest[0];
+        if (!taskId) throw new ProviderError('invalid_request', 'status requires <task_id>');
+        const entry = findTask(taskId, context);
+        const result = await statusMedia({
+          provider: entry.provider,
+          capability: entry.capability,
+          task: { id: entry.task_id }
+        }, context);
+        console.log(JSON.stringify(result, null, 2));
+        return;
+      }
+      case 'download': {
+        const taskId = rest[0];
+        if (!taskId) throw new ProviderError('invalid_request', 'download requires <task_id>');
+        const entry = findTask(taskId, context);
+        const result = await waitMedia({
+          provider: entry.provider,
+          capability: entry.capability,
+          task: { id: entry.task_id },
+          output: {
+            directory: flag('--out') || entry.output.directory,
+            filename: entry.output.filename
+          }
+        }, context);
+        console.log(JSON.stringify(result, null, 2));
+        return;
+      }
+      default:
+        console.error('Usage:\n  submit <name>.video-brief.md|<name>.image-brief.md [--provider <id>] [--directory <dir>]\n  status <task_id>\n  download <task_id> [--out <dir>]');
+        process.exitCode = 2;
+    }
+  } catch (error) {
+    console.error(`orchestrator: ${error?.message ?? String(error)}`);
+    process.exitCode = 1;
+  }
+}
+
+if (require.main === module) {
+  main(process.argv.slice(2));
+}
+
 module.exports = {
   createMedia,
+  findTask,
   generateMedia,
   listCapabilities,
+  main,
+  parseBrief,
+  recordTask,
+  requestFromBrief,
   statusMedia,
+  submitBrief,
   waitMedia
 };
